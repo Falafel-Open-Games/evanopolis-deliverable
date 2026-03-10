@@ -58,7 +58,7 @@ If GUT reports missing imported class names, rerun the one-time import command a
 
 ## RPC Contract
 
-The canonical RPC surface is documented in [RPC_API.md](/home/fcz/falafel/evanopolis-deliverable/apps/game-server/RPC_API.md).
+The canonical RPC surface is documented in [RPC_API.md](./RPC_API.md).
 
 That file should stay aligned with:
 
