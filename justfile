@@ -8,13 +8,13 @@ install:
   @echo "TODO: install dependencies per app"
 
 test:
-  @echo "TODO: run auth-server and game-server test suites"
+  @echo "TODO: run game-server tests and public auth integration checks"
 
 dev-auth:
-  @echo "TODO: run apps/auth-server locally"
+  @echo "TODO: run the private ../tabletop-auth repo locally and point this repo at it"
 
 dev-game:
   @echo "TODO: run apps/game-server locally"
 
 stack-up:
-  @echo "TODO: boot the integrated local stack"
+  @echo "TODO: boot the integrated local stack with a sibling ../tabletop-auth checkout"

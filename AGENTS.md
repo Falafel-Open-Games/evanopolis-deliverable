@@ -16,13 +16,13 @@ shipping the final deliverable.
 
 Work in this order unless a blocker forces a change:
 
-1. `apps/auth-server/`
-2. `apps/game-server/`
-3. `deploy/`
-4. `.github/workflows/`
-5. `apps/web-wrapper/`
-6. `apps/graphical-client/`
-7. `apps/text-client/` only as a support/testing tool
+1. `apps/game-server/`
+2. `deploy/`
+3. `.github/workflows/`
+4. `apps/web-wrapper/`
+5. `apps/graphical-client/`
+6. `apps/text-client/` only as a support/testing tool
+7. `apps/auth-server/` only as a public integration stub for the private auth repo
 
 ## Workflow Notes
 
@@ -56,7 +56,7 @@ Body line two."`
 
 ## Monorepo Structure
 
-- `apps/auth-server/` is the wallet auth, session token, and pay-to-play integration service.
+- `apps/auth-server/` is a public documentation and integration stub for the private auth service repo.
 - `apps/game-server/` is the Godot headless multiplayer server and authoritative rules runtime.
 - `apps/web-wrapper/` is the browser shell for room creation, invite links, referral flow, invitation acceptance, and launch into the game.
 - `apps/graphical-client/` is the final player-facing game client.
@@ -69,10 +69,10 @@ Body line two."`
 
 ### `apps/auth-server`
 
-- Preserve security-sensitive behavior and naming clarity.
-- Keep handler and resource naming aligned with the documented API contract.
-- Never log full signatures, JWTs, or secrets.
-- Keep tests hermetic; avoid real network or chain calls in automated tests.
+- Do not migrate private auth implementation code into this public repository.
+- Keep the folder limited to integration docs, local wiring notes, and explicit contracts with the private repo.
+- Never copy secrets, JWTs, signatures, private deploy details, or sensitive operational notes into this repo.
+- When auth integration changes, update the public contract here and the implementation in `../tabletop-auth`.
 
 ### `apps/game-server`
 
@@ -118,7 +118,7 @@ Apply these in Godot code unless a local file or subsystem already has a stronge
 ## Testing Expectations
 
 - Prefer fast, local, deterministic tests by default.
-- Keep auth tests focused on challenge, verify, JWT issuance, and negative cases.
+- Keep auth-related tests in this public repo focused on integration contracts and token handoff expectations.
 - Keep game-server tests focused on match flow, incidents, inspection, reconnect, sync, and auth integration points.
 - For deploy/integration work, add a clear manual verification checklist when full automation is not yet realistic.
 
@@ -154,3 +154,4 @@ Current migration sources:
 - `../evanopolis-ui-slice`
 
 When migrating from those repos, preserve useful constraints but do not copy stale scope assumptions blindly.
+`tabletop-auth` remains private and external unless the client requirement changes.

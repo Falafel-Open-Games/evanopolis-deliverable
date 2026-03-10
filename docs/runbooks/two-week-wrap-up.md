@@ -6,13 +6,13 @@ This plan is intentionally narrow. The goal is not to build more. The goal is to
 
 ### Day 1-2
 - Create the monorepo skeleton.
-- Migrate `tabletop-auth` into `apps/auth-server/`.
+- Keep `tabletop-auth` private and define the public integration contract in `apps/auth-server/`.
 - Migrate `godot2` headless server into `apps/game-server/`.
 - Remove obviously stale or duplicate files during migration.
 
 ### Day 3
 - Add root Docker Compose for local stack:
-- auth API
+- private auth API via sibling checkout
 - auth backing services
 - headless game server
 
@@ -67,7 +67,7 @@ This plan is intentionally narrow. The goal is not to build more. The goal is to
 
 ## Exit Criteria
 
-- auth-server and game-server live in one repo
+- game-server lives in this repo and the private auth service integrates cleanly with it
 - local stack boots from documented commands
 - staging deploy is automated
 - core gameplay flow is tested in a real environment

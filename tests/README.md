@@ -7,3 +7,4 @@ Examples:
 - auth-server to game-server token handoff checks
 - staging smoke tests
 - deployment verification scripts
+- contract-level checks that assume auth is provided by the private `tabletop-auth` repo

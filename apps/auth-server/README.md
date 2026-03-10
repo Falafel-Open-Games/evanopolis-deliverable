@@ -1,31 +1,45 @@
 # Auth Server
 
-Canonical source to migrate from: `../tabletop-auth`
+This directory is intentionally a public stub.
+
+The canonical auth service implementation remains private in:
+`../tabletop-auth`
 
 ## Purpose
 
-This app will become the final home for:
+This folder exists to document:
+
+- the public-facing integration contract with the private auth service
+- how local development in this repo should point at `../tabletop-auth`
+- what deployment surfaces depend on the auth service
+- what must not be copied into this public repository
+
+## Private Repo Responsibilities
 
 - wallet challenge and signature verification
 - JWT/session issuance
 - Arbitrum Sepolia auth and pay-to-play contract integration
 - auth-related deployment assets
+- auth implementation tests and security-sensitive operational details
 
-## First Migration Slice
+## Public Repo Responsibilities
 
-- copy current auth API and its docs
-- keep current Dockerfile and Fly/AWS deploy assets
-- keep tests that validate auth, nonce, JWT, and protected routes
+- document the auth API surface expected by the game server and web wrapper
+- document local wiring for running this repo against a sibling `../tabletop-auth` checkout
+- document staging/prod integration points
+- keep only non-sensitive examples and placeholders here
 
-## Out of Scope For The First Slice
+## Local Development Assumption
 
-- frontend/demo cleanup
-- major auth redesign
-- contract feature expansion
+Clone the private auth repo beside this one:
 
-## Definition of Done For Migration
+- `../evanopolis-deliverable`
+- `../tabletop-auth`
 
-- app runs from inside this monorepo
-- local env docs are clear
-- existing auth tests still pass
-- staging deploy path is documented
+Then point local Compose/scripts at the sibling `../tabletop-auth` checkout.
+
+## Out of Scope
+
+- copying private auth implementation into this repo
+- duplicating auth deployment secrets or operator notes
+- treating this folder as a runnable app

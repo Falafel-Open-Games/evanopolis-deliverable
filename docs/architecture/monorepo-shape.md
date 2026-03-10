@@ -11,10 +11,11 @@
 
 ### `apps/auth-server`
 Owns:
-- wallet auth
-- JWT/session issuance
-- contract/payment integration
-- auth database/cache integration
+- public integration notes for the private auth service
+- local wiring expectations for sibling checkouts
+- deploy contract notes shared with the rest of the stack
+
+The auth implementation itself stays private in `../tabletop-auth`.
 
 ### `apps/game-server`
 Owns:

@@ -2,7 +2,9 @@
 
 Source repo: `../tabletop-auth`
 
-## Copy First
+Status: keep private and external to this public repository.
+
+## Keep In The Private Repo
 
 - application source
 - package manifests and lockfile
@@ -11,6 +13,13 @@ Source repo: `../tabletop-auth`
 - `.github/workflows`
 - auth docs that describe API, threat model, and deploy steps
 
+## Mirror Publicly Only As Needed
+
+- API contract summaries that other apps depend on
+- non-sensitive local wiring instructions
+- deploy integration expectations for the public stack
+- manual validation steps for auth-to-game handoff
+
 ## Keep If Still True
 
 - Redis/Postgres requirements
@@ -18,16 +27,16 @@ Source repo: `../tabletop-auth`
 - wallet signing flow
 - Fly.io deploy setup if it remains the fastest staging path
 
-## Remove Or Reevaluate
+## Do Not Copy Into This Repo
 
-- demo-only files that do not help delivery
-- repo-specific clutter that does not belong in the final monorepo
-- duplicated deploy notes that should become shared monorepo docs
+- implementation source
+- secrets or secret-shaped examples
+- sensitive operator runbooks
+- private CI details that do not belong in a public repo
 
-## Validation After Copy
+## Validation From This Repo
 
-- install dependencies
-- run tests
-- boot auth locally
+- boot auth locally from the sibling private checkout
 - verify `/whoami`
 - verify wallet sign-in flow
+- verify token handoff into the game-server flow

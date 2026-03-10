@@ -4,7 +4,6 @@
 
 Create a production-readable monorepo that prioritizes:
 
-- auth
 - multiplayer session hosting
 - deployability
 - real-environment testing
@@ -14,9 +13,9 @@ before client polish.
 ## Phase 1: Consolidate Server Sources
 
 ### Auth Server
-- Move the canonical auth API from `../tabletop-auth` into `apps/auth-server/`.
-- Keep wallet auth, JWT issuance, nonce storage, and contract/payment integration together.
-- Preserve its current deploy assets and docs, but simplify naming for the final repo.
+- Keep the canonical auth API private in `../tabletop-auth`.
+- Document the integration contract in `apps/auth-server/` without copying implementation code into this public repo.
+- Preserve deploy compatibility with the private auth service while simplifying public integration docs.
 
 ### Game Server
 - Move the canonical Godot headless server from `../evanopolis-ui-slice/godot2` into `apps/game-server/`.
@@ -25,8 +24,8 @@ before client polish.
 
 ## Phase 2: Make the Stack Runnable
 
-- Add Dockerfiles for `auth-server` and `game-server`.
-- Add a root `docker-compose.yml` for local integration.
+- Add Dockerfiles for the public apps in this repo.
+- Add a root `docker-compose.yml` for local integration with a sibling private auth checkout.
 - Define one local boot path and one staging boot path only.
 
 ## Phase 3: Real Environment Testing
@@ -48,9 +47,9 @@ before client polish.
 
 ## Immediate Next Actions
 
-1. copy `tabletop-auth` into `apps/auth-server/`
+1. define and document the auth contract against the private `tabletop-auth` repo
 2. copy `godot2` server into `apps/game-server/`
-3. add root compose file for auth + game + backing services
+3. add root compose file for game + backing services + private auth integration points
 4. add one staging deployment workflow
 5. add the main web wrapper for room creation, invitation acceptance, and game launch
 6. adapt the approved offline-demo UI into the final graphical client using multiplayer RPCs

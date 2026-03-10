@@ -1,6 +1,7 @@
 # Deploy
 
-This folder will hold the deployment assets for the consolidated stack.
+This folder will hold the deployment assets for the consolidated public stack
+and its integration points with the private auth service.
 
 ## Intended Contents
 
@@ -12,5 +13,5 @@ This folder will hold the deployment assets for the consolidated stack.
 
 Produce one documented local boot path and one documented staging deploy path for:
 
-- auth-server
 - game-server
+- private auth-service integration
