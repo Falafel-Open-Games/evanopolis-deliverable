@@ -53,3 +53,12 @@ Every folder in this repo should answer three questions quickly:
 3. What still needs to be migrated or hardened?
 
 If a folder does not answer those clearly, it is not ready.
+
+## Published Artifacts
+
+The headless game server image is published automatically on pushes to `main`:
+
+- `ghcr.io/fczuardi/evanopolis-game-server:latest`
+- `docker.io/fczuardi/evanopolis-game-server:latest`
+
+See [apps/game-server/README.md](/home/fcz/falafel/evanopolis-deliverable/apps/game-server/README.md) and [deploy/README.md](/home/fcz/falafel/evanopolis-deliverable/deploy/README.md) for local run and deployment details.

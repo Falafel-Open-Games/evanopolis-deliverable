@@ -52,6 +52,13 @@ same image to:
 - `ghcr.io/<github-owner>/evanopolis-game-server`
 - `docker.io/<dockerhub-user>/evanopolis-game-server`
 
+Current public image locations:
+
+- `ghcr.io/fczuardi/evanopolis-game-server:latest`
+- `docker.io/fczuardi/evanopolis-game-server:latest`
+
+These images are rebuilt and published automatically on pushes to `main`.
+
 Required repository secrets:
 
 - `DOCKERHUB_USERNAME`

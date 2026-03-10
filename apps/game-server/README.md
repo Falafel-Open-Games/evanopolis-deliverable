@@ -61,6 +61,17 @@ Build the image from this directory:
 just docker-build
 ```
 
+Prebuilt images are also published automatically on each push to `main`:
+
+- `ghcr.io/fczuardi/evanopolis-game-server:latest`
+- `docker.io/fczuardi/evanopolis-game-server:latest`
+
+Pull example:
+
+```bash
+docker pull ghcr.io/fczuardi/evanopolis-game-server:latest
+```
+
 Run the Dockerized server against a local auth service on Linux:
 
 ```bash
