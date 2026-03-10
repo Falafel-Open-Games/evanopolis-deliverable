@@ -1,0 +1,10 @@
+.git
+.jj
+.github
+.godot
+.env
+.env.*
+**/.godot
+**/.DS_Store
+**/*.tmp
+tests

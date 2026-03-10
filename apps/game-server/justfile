@@ -7,5 +7,16 @@ import:
 run:
   godot --headless --path . --scene res://scenes/server_main.tscn
 
+docker-build:
+  docker build -f ../../deploy/docker/game-server/Dockerfile -t evanopolis-game-server ../..
+
+docker-run:
+  test -n "${AUTH_BASE_URL:-}" || (echo "AUTH_BASE_URL is required"; exit 1)
+  docker run --rm -it --init --network host \
+    -e AUTH_BASE_URL="${AUTH_BASE_URL}" \
+    -e AUTH_VERIFY_PATH="${AUTH_VERIFY_PATH:-}" \
+    -e GAME_SERVER_PORT="${GAME_SERVER_PORT:-9010}" \
+    evanopolis-game-server
+
 test:
   godot --headless --path . -s addons/gut/gut_cmdln.gd -gconfig=res://.gutconfig.json -gexit

@@ -210,26 +210,31 @@ func _verify_token(peer_id: int, token: String) -> void:
     request.request_completed.connect(_on_auth_request_completed.bind(request, peer_id))
     var url: String = auth_base_url + auth_verify_path
     var headers: PackedStringArray = ["Authorization: Bearer %s" % token]
+    print("server: auth verify request peer=%d url=%s" % [peer_id, url])
     var result: int = request.request(url, headers)
     if result != OK:
         request.queue_free()
-        _auth_fail(peer_id, "auth_request_failed")
+        _auth_fail(peer_id, "auth_request_failed", "request=%d url=%s" % [result, url])
 
 
 func _on_auth_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, request: HTTPRequest, peer_id: int) -> void:
     request.queue_free()
+    var body_text: String = body.get_string_from_utf8()
+    print(
+        "server: auth verify response peer=%d status=%d result=%d body=%s"
+        % [peer_id, response_code, result, _log_preview(body_text)],
+    )
     if result != OK or response_code != 200:
         _auth_fail(peer_id, "unauthorized", "status=%d result=%d" % [response_code, result])
         return
-    var body_text: String = body.get_string_from_utf8()
     var parsed: Variant = JSON.parse_string(body_text)
     if typeof(parsed) != TYPE_DICTIONARY:
-        _auth_fail(peer_id, "invalid_auth_response")
+        _auth_fail(peer_id, "invalid_auth_response", "body=%s" % _log_preview(body_text))
         return
     var payload: Dictionary = parsed
     var player_id: String = str(payload.get("sub", ""))
     if player_id.is_empty():
-        _auth_fail(peer_id, "missing_sub")
+        _auth_fail(peer_id, "missing_sub", "body=%s" % _log_preview(body_text))
         return
     var exp_value: int = int(payload.get("exp", 0))
     server.authorize_peer(peer_id, player_id)
@@ -261,6 +266,12 @@ func _auth_fail(peer_id: int, reason: String, detail: String = "") -> void:
         print("server: auth error peer=%d reason=%s %s" % [peer_id, reason, detail])
     rpc_id(peer_id, "rpc_auth_error", reason)
     _disconnect_peer(peer_id)
+
+
+func _log_preview(value: String, max_length: int = 200) -> String:
+    if value.length() <= max_length:
+        return value
+    return "%s..." % value.substr(0, max_length)
 
 
 func _handle_roll_dice(game_id: String, player_id: String) -> void:

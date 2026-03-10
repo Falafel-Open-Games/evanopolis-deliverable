@@ -35,6 +35,13 @@ Run the headless server:
 just run
 ```
 
+`AUTH_BASE_URL` is required at startup. For local auth integration with the
+private sibling repo:
+
+```bash
+AUTH_BASE_URL=http://127.0.0.1:3000 just run
+```
+
 Useful overrides:
 
 - `-- --port 9010`
@@ -45,6 +52,23 @@ Useful overrides:
 
 If `AUTH_BASE_URL` or `AUTH_VERIFY_PATH` are not provided on the command line,
 the server also reads them from `.env`.
+
+## Docker Run
+
+Build the image from this directory:
+
+```bash
+just docker-build
+```
+
+Run the Dockerized server against a local auth service on Linux:
+
+```bash
+AUTH_BASE_URL=http://127.0.0.1:3000 just docker-run
+```
+
+The `docker-run` recipe uses `--network host`, which keeps local auth lookups
+simple and avoids `host.docker.internal` issues on Linux.
 
 ## Test
 
