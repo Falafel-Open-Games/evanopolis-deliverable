@@ -44,10 +44,25 @@ class ServerMainDouble:
     var sender_id: int = 1
     var verify_called: bool = false
     var rpc_calls: Array[Dictionary] = []
+    var exited_missing_auth_config: bool = false
+    var started_server: bool = false
+    var loaded_matches: bool = false
 
 
     func _ready() -> void:
-        pass
+        super()
+
+
+    func _start_server() -> void:
+        started_server = true
+
+
+    func _load_matches() -> void:
+        loaded_matches = true
+
+
+    func _exit_missing_auth_config() -> void:
+        exited_missing_auth_config = true
 
 
     func _get_sender_id() -> int:
@@ -96,6 +111,18 @@ func test_auth_missing_service_logs_error() -> void:
     assert_eq(server.last_error_reason, "missing_auth_service", "missing auth service rejected")
     assert_eq(server.disconnects.size(), 1, "peer disconnected")
     assert_eq(server.verify_called, false, "verification not attempted")
+
+
+func test_ready_exits_early_when_auth_base_url_missing() -> void:
+    var server: ServerMainDouble = ServerMainDouble.new()
+    server.auth_base_url = ""
+
+    server._ready()
+
+    assert_eq(server.exited_missing_auth_config, true, "startup exits when auth base url missing")
+    assert_eq(server.started_server, false, "server does not bind port without auth config")
+    assert_eq(server.loaded_matches, false, "matches are not loaded without auth config")
+    server.free()
 
 
 func test_auth_unauthorized_response_logs_error() -> void:

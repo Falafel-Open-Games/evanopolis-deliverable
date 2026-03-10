@@ -17,9 +17,21 @@ var auth_verify_path: String = DEFAULT_AUTH_VERIFY_PATH
 func _ready() -> void:
     var args: PackedStringArray = OS.get_cmdline_args()
     _parse_args(args)
+    if not _validate_auth_config():
+        _exit_missing_auth_config()
+        return
     _log_auth_config()
     _start_server()
     _load_matches()
+
+
+func _validate_auth_config() -> bool:
+    return not auth_base_url.is_empty()
+
+
+func _exit_missing_auth_config() -> void:
+    push_error("server: AUTH_BASE_URL is required")
+    get_tree().quit(1)
 
 
 func _parse_args(args: PackedStringArray) -> void:
@@ -87,9 +99,6 @@ func _load_dotenv() -> Dictionary:
 
 
 func _log_auth_config() -> void:
-    if auth_base_url.is_empty():
-        print("server: auth verify url not configured")
-        return
     print("server: auth verify url=%s%s" % [auth_base_url, auth_verify_path])
 
 
