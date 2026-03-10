@@ -1,31 +1,80 @@
 # Game Server
 
-Canonical source to migrate from: `../evanopolis-ui-slice/godot2`
+Canonical source migrated from: `../evanopolis-ui-slice/godot2`
 
 ## Purpose
 
-This app will become the final home for:
+This app is the authoritative multiplayer runtime for the public deliverable
+repo.
 
-- Godot headless multiplayer server
-- rules engine and authoritative match state
-- server-side tests
+It currently contains:
 
-## First Migration Slice
+- the Godot headless server entrypoint
+- the rules engine and match state logic
+- GUT-based tests for match flow, reconnect, incidents, inspection, and auth integration points
+- demo match configs for local bring-up
+- the canonical RPC contract in `RPC_API.md`
 
-- move headless server runtime
-- keep tests for match flow, incidents, inspection, reconnect, and auth integration points
-- exclude the text-only client from the core server migration
+## Local Run
 
-## Explicit v0 Focus
+Work from this directory:
 
-- stable match hosting
-- auth handshake compatibility
-- reconnect safety
-- real-environment validation
+```bash
+cd apps/game-server
+```
 
-## Definition of Done For Migration
+On a fresh clone, import the project once:
 
-- server runs from this repo
-- tests can run from this repo
-- local compose can boot auth + game together
-- server docs are understandable without opening the old repo
+```bash
+just import
+```
+
+Run the headless server:
+
+```bash
+just run
+```
+
+Useful overrides:
+
+- `-- --port 9010`
+- `-- --config res://configs/demo_001.toml`
+- `-- --config-dir res://configs`
+- `-- --auth-base-url http://127.0.0.1:3000`
+- `-- --auth-verify-path /whoami`
+
+If `AUTH_BASE_URL` or `AUTH_VERIFY_PATH` are not provided on the command line,
+the server also reads them from `.env`.
+
+## Test
+
+Run the suite from this directory:
+
+```bash
+just test
+```
+
+If GUT reports missing imported class names, rerun the one-time import command above.
+
+## RPC Contract
+
+The canonical RPC surface is documented in [RPC_API.md](/home/fcz/falafel/evanopolis-deliverable/apps/game-server/RPC_API.md).
+
+That file should stay aligned with:
+
+- `scripts/headless_rpc.gd` for the shared method surface
+- `scripts/server_main.gd` for server-side handling
+- `tests/` for behavioral guarantees
+
+## Implementation Notes
+
+- The full `godot2` project was copied as the first safe slice because the test suite still depends on shared client-side support scripts such as `scripts/client.gd`.
+- `scenes/client_main.tscn` and related scripts are support code for tests and diagnostics, not the main deliverable runtime.
+- Auth is external to this repo. The server expects an auth service that can verify bearer tokens and return a `/whoami` payload with at least a stable `sub`.
+- `AUTH_BASE_URL` and `AUTH_VERIFY_PATH` control that auth integration.
+
+## Remaining Work
+
+- add a documented local stack path with the private auth service
+- add deploy assets for a real headless server environment
+- trim or separate non-essential support code once server coverage is preserved

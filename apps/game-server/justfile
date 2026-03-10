@@ -1,0 +1,11 @@
+default:
+  @just --list
+
+import:
+  godot --headless --path . --import
+
+run:
+  godot --headless --path . --scene res://scenes/server_main.tscn
+
+test:
+  godot --headless --path . -s addons/gut/gut_cmdln.gd -gconfig=res://.gutconfig.json -gexit
