@@ -1,0 +1,35 @@
+primary_region = "iad"
+kill_signal = "SIGTERM"
+kill_timeout = "30s"
+
+[build]
+dockerfile = "../../docker/game-server/Dockerfile"
+
+[env]
+AUTH_VERIFY_PATH = "/whoami"
+GAME_SERVER_PORT = "9010"
+
+[deploy]
+strategy = "rolling"
+wait_timeout = "10m"
+
+[[services]]
+internal_port = 9010
+protocol = "tcp"
+auto_stop_machines = "stop"
+auto_start_machines = true
+min_machines_running = 0
+
+  [[services.ports]]
+  handlers = ["http"]
+  port = 80
+  force_https = true
+
+  [[services.ports]]
+  handlers = ["tls", "http"]
+  port = 443
+
+  [[services.tcp_checks]]
+  grace_period = "15s"
+  interval = "30s"
+  timeout = "5s"

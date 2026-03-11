@@ -82,6 +82,32 @@ AUTH_BASE_URL=http://127.0.0.1:3000 just docker-run
 The `docker-run` recipe uses `--network host`, which keeps local auth lookups
 simple and avoids `host.docker.internal` issues on Linux.
 
+## Fly.io Staging Deploy
+
+Fly.io deployment assets live under
+[deploy/fly/game-server/](../../deploy/fly/game-server/README.md).
+
+Basic flow:
+
+```bash
+fly apps create <app-name>
+fly secrets set AUTH_BASE_URL=https://<auth-host> -a <app-name>
+fly deploy -c deploy/fly/game-server/fly.toml -a <app-name>
+```
+
+The public WebSocket endpoint is:
+
+```text
+wss://<app-name>.fly.dev/
+```
+
+After deploy, verify health and the WebSocket upgrade path:
+
+```bash
+fly checks list -a <app-name>
+./deploy/fly/game-server/smoke-check.sh https://<app-name>.fly.dev/
+```
+
 ## Test
 
 Run the suite from this directory:
@@ -112,5 +138,4 @@ That file should stay aligned with:
 ## Remaining Work
 
 - add a documented local stack path with the private auth service
-- add deploy assets for a real headless server environment
 - trim or separate non-essential support code once server coverage is preserved
