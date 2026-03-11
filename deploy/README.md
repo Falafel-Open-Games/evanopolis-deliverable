@@ -54,7 +54,7 @@ same image to:
 
 Current public image locations:
 
-- `ghcr.io/fczuardi/evanopolis-game-server:latest`
+- `ghcr.io/falafel-open-games/evanopolis-game-server:latest`
 - `docker.io/fczuardi/evanopolis-game-server:latest`
 
 These images are rebuilt and published automatically on pushes to `main`.

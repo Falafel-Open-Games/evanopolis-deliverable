@@ -63,13 +63,14 @@ just docker-build
 
 Prebuilt images are also published automatically on each push to `main`:
 
-- `ghcr.io/fczuardi/evanopolis-game-server:latest`
+- `ghcr.io/falafel-open-games/evanopolis-game-server:latest`
 - `docker.io/fczuardi/evanopolis-game-server:latest`
 
-Pull example:
+Anonymous pull examples:
 
 ```bash
-docker pull ghcr.io/fczuardi/evanopolis-game-server:latest
+docker pull ghcr.io/falafel-open-games/evanopolis-game-server:latest
+docker pull docker.io/fczuardi/evanopolis-game-server:latest
 ```
 
 Run the Dockerized server against a local auth service on Linux:
