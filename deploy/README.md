@@ -87,6 +87,22 @@ fly secrets set AUTH_BASE_URL=https://<auth-host> -a <app-name>
 fly deploy -c deploy/fly/game-server/fly.toml -a <app-name>
 ```
 
+GitHub Actions automation is defined in
+`.github/workflows/game-server-fly-deploy.yml`. That workflow treats GitHub
+repository settings as the source of truth and syncs Fly runtime configuration
+before each deploy.
+
+Required GitHub secret:
+
+- `FLY_API_TOKEN`
+
+Required GitHub variables:
+
+- `FLY_GAME_SERVER_APP`
+- `GAME_SERVER_AUTH_BASE_URL`
+- `GAME_SERVER_AUTH_VERIFY_PATH`
+- `GAME_SERVER_PORT`
+
 Post-deploy checks:
 
 ```bash

@@ -95,6 +95,10 @@ fly secrets set AUTH_BASE_URL=https://<auth-host> -a <app-name>
 fly deploy -c deploy/fly/game-server/fly.toml -a <app-name>
 ```
 
+For ongoing staging sync from `main`, use the GitHub Actions workflow in
+`.github/workflows/game-server-fly-deploy.yml` and keep the Fly app/runtime
+values in GitHub repository settings.
+
 The public WebSocket endpoint is:
 
 ```text

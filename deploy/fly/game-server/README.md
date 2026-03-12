@@ -46,6 +46,22 @@ fly machine destroy <old-machine-id> --force -a <app-name>
 
 ## Runtime Configuration
 
+GitHub is the intended source of truth for Fly runtime configuration.
+
+Repository settings expected by the deploy workflow:
+
+- secret `FLY_API_TOKEN`
+- variable `FLY_GAME_SERVER_APP`
+- variable `GAME_SERVER_AUTH_BASE_URL`
+- variable `GAME_SERVER_AUTH_VERIFY_PATH`
+- variable `GAME_SERVER_PORT`
+
+The workflow in
+[`game-server-fly-deploy.yml`](../../../.github/workflows/game-server-fly-deploy.yml)
+syncs those values into Fly with `flyctl secrets set` before each deploy.
+
+For a one-time bootstrap or manual recovery, you can still set them directly:
+
 Set the auth service URL before the first deploy:
 
 ```bash

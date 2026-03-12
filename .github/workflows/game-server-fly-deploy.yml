@@ -1,0 +1,47 @@
+name: Deploy Game Server To Fly.io
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/game-server-fly-deploy.yml
+      - apps/game-server/**
+      - deploy/docker/game-server/**
+      - deploy/fly/game-server/**
+      - .dockerignore
+  workflow_dispatch:
+
+env:
+  FLY_APP: ${{ vars.FLY_GAME_SERVER_APP }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Sync Fly runtime configuration
+        run: |
+          flyctl secrets set \
+            AUTH_BASE_URL="${GAME_SERVER_AUTH_BASE_URL}" \
+            AUTH_VERIFY_PATH="${GAME_SERVER_AUTH_VERIFY_PATH}" \
+            GAME_SERVER_PORT="${GAME_SERVER_PORT}" \
+            -a "${FLY_APP}"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          GAME_SERVER_AUTH_BASE_URL: ${{ vars.GAME_SERVER_AUTH_BASE_URL }}
+          GAME_SERVER_AUTH_VERIFY_PATH: ${{ vars.GAME_SERVER_AUTH_VERIFY_PATH }}
+          GAME_SERVER_PORT: ${{ vars.GAME_SERVER_PORT }}
+
+      - name: Deploy game server
+        run: flyctl deploy --remote-only --config deploy/fly/game-server/fly.toml --app "${FLY_APP}"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
