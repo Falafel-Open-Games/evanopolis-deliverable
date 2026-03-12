@@ -92,6 +92,11 @@ GitHub Actions automation is defined in
 repository settings as the source of truth and syncs Fly runtime configuration
 before each deploy.
 
+The Fly deploy workflow is separate from `.github/workflows/game-server-image.yml`.
+Registry publishing and Fly deploys both trigger from `main`, but the Fly deploy
+builds directly from source with `flyctl deploy --remote-only` instead of using
+the published registry image.
+
 Required GitHub secret:
 
 - `FLY_API_TOKEN`

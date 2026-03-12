@@ -60,6 +60,18 @@ The workflow in
 [`game-server-fly-deploy.yml`](../../../.github/workflows/game-server-fly-deploy.yml)
 syncs those values into Fly with `flyctl secrets set` before each deploy.
 
+## CI/CD Behavior
+
+The deploy workflow is intentionally separate from the image-publish workflow:
+
+- `.github/workflows/game-server-image.yml` publishes GHCR and Docker Hub images
+- `.github/workflows/game-server-fly-deploy.yml` builds from the checked-in
+  Dockerfile with `flyctl deploy --remote-only`
+
+That means Fly staging does not wait for the registry publish job and does not
+pull from GHCR or Docker Hub during deploy. Both workflows should stay aligned
+to the same Dockerfile and app sources.
+
 For a one-time bootstrap or manual recovery, you can still set them directly:
 
 Set the auth service URL before the first deploy:
@@ -108,4 +120,24 @@ If you want to verify the routed WebSocket URL directly from a client, use:
 
 ```text
 wss://<app-name>.fly.dev/
+```
+
+## Clean-Machine Validation Checklist
+
+Use this after a fresh push to `main`:
+
+1. Confirm `Publish Game Server Image` passed in GitHub Actions.
+2. Confirm `Deploy Game Server To Fly.io` passed in GitHub Actions.
+3. From a fresh machine or shell, verify anonymous image pulls:
+
+```bash
+docker pull ghcr.io/falafel-open-games/evanopolis-game-server:latest
+docker pull docker.io/fczuardi/evanopolis-game-server:latest
+```
+
+4. Verify Fly health and the WebSocket endpoint:
+
+```bash
+fly checks list -a <app-name>
+./deploy/fly/game-server/smoke-check.sh https://<app-name>.fly.dev/
 ```
