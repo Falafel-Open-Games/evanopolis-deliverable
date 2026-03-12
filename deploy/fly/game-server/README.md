@@ -67,10 +67,15 @@ The deploy workflow is intentionally separate from the image-publish workflow:
 - `.github/workflows/game-server-image.yml` publishes GHCR and Docker Hub images
 - `.github/workflows/game-server-fly-deploy.yml` builds from the checked-in
   Dockerfile with `flyctl deploy --remote-only`
+- after deploy, the workflow enforces `count = 1` in `iad` with
+  `flyctl scale count 1 --region iad --max-per-region 1`
 
 That means Fly staging does not wait for the registry publish job and does not
 pull from GHCR or Docker Hub during deploy. Both workflows should stay aligned
 to the same Dockerfile and app sources.
+
+This is the current safeguard that keeps the in-memory game server on a single
+active machine by default.
 
 For a one-time bootstrap or manual recovery, you can still set them directly:
 

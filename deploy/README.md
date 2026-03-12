@@ -95,7 +95,9 @@ before each deploy.
 The Fly deploy workflow is separate from `.github/workflows/game-server-image.yml`.
 Registry publishing and Fly deploys both trigger from `main`, but the Fly deploy
 builds directly from source with `flyctl deploy --remote-only` instead of using
-the published registry image.
+the published registry image. After deploy, the workflow also forces the app
+back to one machine in `iad` so the current in-memory room model stays on a
+single active runtime by default.
 
 Required GitHub secret:
 
