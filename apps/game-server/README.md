@@ -14,7 +14,7 @@ It currently contains:
 - GUT-based tests for match flow, reconnect, incidents, inspection, and auth integration points
 - demo match configs for local bring-up
 - the canonical RPC contract in `docs/RPC_API.md`
-- the `v0` REST contract in `docs/REST_API.md`
+- the rooms-api dependency note in `docs/ROOMS_API_INTEGRATION.md`
 
 ## Local Run
 
@@ -129,8 +129,11 @@ The canonical RPC surface is documented in [RPC_API.md](./docs/RPC_API.md).
 
 ## REST Contract
 
-The room creation and room lifecycle REST surface is documented in
-[REST_API.md](./docs/REST_API.md).
+The canonical room creation REST contract lives in
+[REST_API.md](../rooms-api/REST_API.md).
+
+The game-server-specific dependency note for that contract lives in
+[ROOMS_API_INTEGRATION.md](./docs/ROOMS_API_INTEGRATION.md).
 
 These docs should stay aligned with:
 
