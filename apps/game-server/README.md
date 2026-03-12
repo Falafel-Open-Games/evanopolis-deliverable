@@ -13,7 +13,8 @@ It currently contains:
 - the rules engine and match state logic
 - GUT-based tests for match flow, reconnect, incidents, inspection, and auth integration points
 - demo match configs for local bring-up
-- the canonical RPC contract in `RPC_API.md`
+- the canonical RPC contract in `docs/RPC_API.md`
+- the `v0` REST contract in `docs/REST_API.md`
 
 ## Local Run
 
@@ -124,9 +125,14 @@ If GUT reports missing imported class names, rerun the one-time import command a
 
 ## RPC Contract
 
-The canonical RPC surface is documented in [RPC_API.md](./RPC_API.md).
+The canonical RPC surface is documented in [RPC_API.md](./docs/RPC_API.md).
 
-That file should stay aligned with:
+## REST Contract
+
+The room creation and room lifecycle REST surface is documented in
+[REST_API.md](./docs/REST_API.md).
+
+These docs should stay aligned with:
 
 - `scripts/headless_rpc.gd` for the shared method surface
 - `scripts/server_main.gd` for server-side handling
