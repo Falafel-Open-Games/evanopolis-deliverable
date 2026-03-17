@@ -1,22 +1,25 @@
-name: Deploy Game Server To Fly.io
+name: Deploy Rooms API To Fly.io
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/game-server-fly-deploy.yml
-      - apps/game-server/**
-      - deploy/docker/game-server/**
-      - deploy/fly/game-server/**
-      - .dockerignore
+  workflow_run:
+    workflows:
+      - Rooms API CI
+    types:
+      - completed
   workflow_dispatch:
 
 env:
-  FLY_APP: ${{ vars.FLY_GAME_SERVER_APP }}
+  FLY_APP: ${{ vars.FLY_ROOMS_API_APP }}
 
 jobs:
   deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main'
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -24,6 +27,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Set up flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
@@ -33,16 +38,18 @@ jobs:
           flyctl secrets set \
             AUTH_BASE_URL="${AUTH_BASE_URL}" \
             AUTH_VERIFY_PATH="${AUTH_VERIFY_PATH}" \
-            GAME_SERVER_PORT="${GAME_SERVER_PORT}" \
+            PORT="${ROOMS_API_PORT}" \
+            ROOMS_DATA_FILE="${ROOMS_API_DATA_FILE}" \
             -a "${FLY_APP}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           AUTH_BASE_URL: ${{ vars.AUTH_BASE_URL }}
           AUTH_VERIFY_PATH: ${{ vars.AUTH_VERIFY_PATH }}
-          GAME_SERVER_PORT: ${{ vars.GAME_SERVER_PORT }}
+          ROOMS_API_PORT: ${{ vars.ROOMS_API_PORT }}
+          ROOMS_API_DATA_FILE: ${{ vars.ROOMS_API_DATA_FILE }}
 
-      - name: Deploy game server
-        run: flyctl deploy --remote-only --config deploy/fly/game-server/fly.toml --app "${FLY_APP}"
+      - name: Deploy rooms api
+        run: flyctl deploy --remote-only --config deploy/fly/rooms-api/fly.toml --app "${FLY_APP}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 

@@ -1,0 +1,27 @@
+{
+  "name": "@evanopolis/rooms-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node --enable-source-maps dist/index.js",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.1.0",
+    "@fastify/rate-limit": "^10.3.0",
+    "dotenv": "^16.4.5",
+    "fastify": "^5.6.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^5.2.0",
+    "@types/node": "^20.10.4",
+    "prettier": "^3.3.3",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3",
+    "vitest": "^4.0.16"
+  }
+}

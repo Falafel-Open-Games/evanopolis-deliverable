@@ -1,0 +1,46 @@
+name: Rooms API CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/rooms-api-ci.yml
+      - apps/rooms-api/**
+      - deploy/docker/rooms-api/**
+  pull_request:
+    paths:
+      - .github/workflows/rooms-api-ci.yml
+      - apps/rooms-api/**
+      - deploy/docker/rooms-api/**
+  workflow_dispatch:
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    defaults:
+      run:
+        working-directory: apps/rooms-api
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/rooms-api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build application
+        run: npm run build

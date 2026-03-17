@@ -52,8 +52,8 @@ Repository settings expected by the deploy workflow:
 
 - secret `FLY_API_TOKEN`
 - variable `FLY_GAME_SERVER_APP`
-- variable `GAME_SERVER_AUTH_BASE_URL`
-- variable `GAME_SERVER_AUTH_VERIFY_PATH`
+- variable `AUTH_BASE_URL`
+- variable `AUTH_VERIFY_PATH`
 - variable `GAME_SERVER_PORT`
 
 The workflow in

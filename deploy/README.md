@@ -15,12 +15,16 @@ and its integration points with the private auth service.
 Produce one documented local boot path and one documented staging deploy path for:
 
 - game-server
+- rooms-api
 - private auth-service integration
 
 ## Current Docker Assets
 
 `deploy/docker/game-server/Dockerfile` builds a portable headless Godot image for
 `apps/game-server/`.
+
+`deploy/docker/rooms-api/Dockerfile` builds a lightweight Node image for
+`apps/rooms-api/`.
 
 The image expects:
 
@@ -48,6 +52,23 @@ This matches the Linux-tested local auth path by using `--network host` and
 avoids `host.docker.internal` issues. If you are working from
 `apps/game-server/`, the equivalent app-level shortcut is `just docker-run`.
 
+For the rooms API, build from the repo root with:
+
+```bash
+docker build -f deploy/docker/rooms-api/Dockerfile -t evanopolis-rooms-api .
+```
+
+Run it against a local auth service:
+
+```bash
+docker run --rm -it --init --network host \
+  -e AUTH_BASE_URL=http://127.0.0.1:3000 \
+  -e AUTH_VERIFY_PATH="${AUTH_VERIFY_PATH:-/whoami}" \
+  -e PORT="${ROOMS_API_PORT:-3001}" \
+  -e ROOMS_DATA_FILE="${ROOMS_DATA_FILE:-}" \
+  evanopolis-rooms-api
+```
+
 ## Image Publishing
 
 GitHub Actions workflow `.github/workflows/game-server-image.yml` publishes the
@@ -63,6 +84,12 @@ Current public image locations:
 
 These images are rebuilt and published automatically on pushes to `main`.
 
+GitHub Actions workflow `.github/workflows/rooms-api-image.yml` publishes the
+rooms API image to:
+
+- `ghcr.io/<github-owner>/evanopolis-rooms-api`
+- `docker.io/<dockerhub-user>/evanopolis-rooms-api`
+
 Required repository secrets:
 
 - `DOCKERHUB_USERNAME`
@@ -72,6 +99,9 @@ Required repository secrets:
 
 `deploy/fly/game-server/fly.toml` deploys the existing game-server Dockerfile to
 Fly.io and exposes the WebSocket service through Fly's HTTP/TLS edge.
+
+`deploy/fly/rooms-api/fly.toml` deploys the rooms API and exposes a standard
+HTTPS REST surface.
 
 Expected runtime configuration:
 
@@ -106,9 +136,12 @@ Required GitHub secret:
 Required GitHub variables:
 
 - `FLY_GAME_SERVER_APP`
-- `GAME_SERVER_AUTH_BASE_URL`
-- `GAME_SERVER_AUTH_VERIFY_PATH`
+- `AUTH_BASE_URL`
+- `AUTH_VERIFY_PATH`
 - `GAME_SERVER_PORT`
+- `FLY_ROOMS_API_APP`
+- `ROOMS_API_PORT`
+- `ROOMS_API_DATA_FILE`
 
 Post-deploy checks:
 
@@ -118,4 +151,7 @@ fly checks list -a <app-name>
 ```
 
 See [deploy/fly/game-server/README.md](fly/game-server/README.md) for the full
+staging runbook.
+
+See [deploy/fly/rooms-api/README.md](fly/rooms-api/README.md) for the rooms API
 staging runbook.

@@ -16,5 +16,8 @@ dev-auth:
 dev-game:
   cd apps/game-server && godot --headless --path . --scene res://scenes/server_main.tscn
 
+dev-rooms:
+  cd apps/rooms-api && AUTH_BASE_URL="${AUTH_BASE_URL:-http://127.0.0.1:3000}" npm run dev
+
 stack-up:
   @echo "TODO: boot the integrated local stack with a sibling ../tabletop-auth checkout"
