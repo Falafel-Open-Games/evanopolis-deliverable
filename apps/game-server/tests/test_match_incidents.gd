@@ -6,7 +6,7 @@ const MatchTestClient = preload("res://tests/match_test_client.gd")
 
 
 func test_landing_context_for_non_property_tile() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -30,7 +30,7 @@ func test_landing_context_for_non_property_tile() -> void:
 
 
 func test_incident_resolution_emits_events_flips_tile_and_advances_turn() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -64,7 +64,7 @@ func test_incident_resolution_emits_events_flips_tile_and_advances_turn() -> voi
 
 
 func test_incident_event_order_is_strict() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -97,7 +97,7 @@ func test_incident_event_order_is_strict() -> void:
 
 
 func test_incident_tile_flips_back_to_bear_on_second_landing() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -117,7 +117,7 @@ func test_incident_tile_flips_back_to_bear_on_second_landing() -> void:
 
 
 func test_incident_fiat_debit_insufficient_sends_player_to_inspection() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -139,7 +139,7 @@ func test_incident_fiat_debit_insufficient_sends_player_to_inspection() -> void:
 
 
 func test_bear_deck_cycles_deterministically() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
 
     var card_1: Dictionary = game_match._draw_incident_card("bear")

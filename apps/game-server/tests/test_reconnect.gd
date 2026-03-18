@@ -6,7 +6,7 @@ const MatchTestClient = preload("res://tests/match_test_client.gd")
 
 
 func test_match_allows_reconnect_with_same_player_id() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -22,7 +22,7 @@ func test_match_allows_reconnect_with_same_player_id() -> void:
 
 
 func test_match_allows_reconnect_when_match_full() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()

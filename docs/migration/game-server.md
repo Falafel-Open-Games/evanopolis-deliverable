@@ -6,7 +6,6 @@ Source repo: `../evanopolis-ui-slice/godot2`
 
 - `scenes/`
 - `scripts/`
-- `configs/`
 - `tests/`
 - any project files required to run the Godot headless server
 

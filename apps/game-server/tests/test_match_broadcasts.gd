@@ -6,7 +6,7 @@ const MatchTestClient = preload("res://tests/match_test_client.gd")
 
 
 func test_broadcast_sequence_is_monotonic() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [], true)
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -23,7 +23,7 @@ func test_broadcast_sequence_is_monotonic() -> void:
 
 
 func test_turn_started_matches_state_player_index() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [], true)
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()

@@ -6,7 +6,7 @@ const MatchTestClient = preload("res://tests/match_test_client.gd")
 
 
 func test_landing_on_inspection_marks_player_and_emits_event() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -23,7 +23,7 @@ func test_landing_on_inspection_marks_player_and_emits_event() -> void:
 
 
 func test_inspection_player_cannot_roll_until_resolved() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -40,7 +40,7 @@ func test_inspection_player_cannot_roll_until_resolved() -> void:
 
 
 func test_pay_inspection_fee_clears_inspection_and_allows_roll() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -65,7 +65,7 @@ func test_pay_inspection_fee_clears_inspection_and_allows_roll() -> void:
 
 
 func test_pay_inspection_fee_rejected_when_not_in_inspection() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -77,7 +77,7 @@ func test_pay_inspection_fee_rejected_when_not_in_inspection() -> void:
 
 
 func test_use_inspection_voucher_clears_inspection_and_allows_roll() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -104,7 +104,7 @@ func test_use_inspection_voucher_clears_inspection_and_allows_roll() -> void:
 
 
 func test_use_inspection_voucher_rejected_without_vouchers() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -118,7 +118,7 @@ func test_use_inspection_voucher_rejected_without_vouchers() -> void:
 
 
 func test_roll_inspection_exit_with_doubles_clears_and_moves() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -142,7 +142,7 @@ func test_roll_inspection_exit_with_doubles_clears_and_moves() -> void:
 
 
 func test_roll_inspection_exit_without_doubles_advances_turn_and_stays_inspected() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -166,7 +166,7 @@ func test_roll_inspection_exit_without_doubles_advances_turn_and_stays_inspected
 
 
 func test_snapshot_reflects_inspection_status_after_bear_inspection_card() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()

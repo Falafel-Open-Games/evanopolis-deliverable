@@ -1,0 +1,13 @@
+The rooms-api staging path is now live: CI runs on GitHub, image/deploy are gated on passing test/build, and the Fly app boots successfully with persistent room storage.
+
+The highest-value next engineering step is game-server integration with rooms-api.
+
+Right now, rooms can be created online, but apps/game-server still relies on preloaded TOML configs and does not yet fetch room definitions from rooms-api on first authenticated join.
+
+Next implementation target:
+- add rooms-api lookup to game-server join flow
+- introduce game-server config for the rooms-api base URL
+- lazily create in-memory matches from returned room definitions
+- keep game-server authoritative for live state after room lookup
+
+Until that lands, the online room creation flow exists, but it is not yet connected end-to-end to online game session creation.

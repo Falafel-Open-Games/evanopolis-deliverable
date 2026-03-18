@@ -46,7 +46,6 @@ class ServerMainDouble:
     var rpc_calls: Array[Dictionary] = []
     var exited_missing_auth_config: bool = false
     var started_server: bool = false
-    var loaded_matches: bool = false
 
 
     func _ready() -> void:
@@ -55,10 +54,6 @@ class ServerMainDouble:
 
     func _start_server() -> void:
         started_server = true
-
-
-    func _load_matches() -> void:
-        loaded_matches = true
 
 
     func _exit_missing_auth_config() -> void:
@@ -121,7 +116,6 @@ func test_ready_exits_early_when_auth_base_url_missing() -> void:
 
     assert_eq(server.exited_missing_auth_config, true, "startup exits when auth base url missing")
     assert_eq(server.started_server, false, "server does not bind port without auth config")
-    assert_eq(server.loaded_matches, false, "matches are not loaded without auth config")
     server.free()
 
 

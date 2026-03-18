@@ -1,17 +1,19 @@
 extends "res://scripts/headless_rpc.gd"
 
-const Config = preload("res://scripts/config.gd")
 const HeadlessServer = preload("res://scripts/server.gd")
+const RoomDefinitionLoader = preload("res://scripts/room_definition_loader.gd")
 
 const DEFAULT_PORT: int = 9010
-const DEFAULT_CONFIG_DIR: String = "res://configs"
 const DEFAULT_AUTH_VERIFY_PATH: String = "/whoami"
+const DEFAULT_ROOMS_API_LOOKUP_TEMPLATE: String = "/v0/rooms/%s"
 
 var server: HeadlessServer
-var config_paths: Array[String] = []
 var port: int = DEFAULT_PORT
 var auth_base_url: String = ""
 var auth_verify_path: String = DEFAULT_AUTH_VERIFY_PATH
+var rooms_api_base_url: String = ""
+var rooms_api_lookup_template: String = DEFAULT_ROOMS_API_LOOKUP_TEMPLATE
+var pending_room_lookups: Dictionary = { }
 
 
 func _ready() -> void:
@@ -22,7 +24,6 @@ func _ready() -> void:
         return
     _log_auth_config()
     _start_server()
-    _load_matches()
 
 
 func _validate_auth_config() -> bool:
@@ -36,7 +37,6 @@ func _exit_missing_auth_config() -> void:
 
 func _parse_args(args: PackedStringArray) -> void:
     var index: int = 0
-    var config_dir: String = DEFAULT_CONFIG_DIR
     var env_vars: Dictionary = _load_dotenv()
     auth_base_url = str(OS.get_environment("AUTH_BASE_URL"))
     if auth_base_url.is_empty() and env_vars.has("AUTH_BASE_URL"):
@@ -46,16 +46,16 @@ func _parse_args(args: PackedStringArray) -> void:
         env_verify_path = str(env_vars.get("AUTH_VERIFY_PATH", ""))
     if not env_verify_path.is_empty():
         auth_verify_path = env_verify_path
+    rooms_api_base_url = str(OS.get_environment("ROOMS_API_BASE_URL"))
+    if rooms_api_base_url.is_empty() and env_vars.has("ROOMS_API_BASE_URL"):
+        rooms_api_base_url = str(env_vars.get("ROOMS_API_BASE_URL", ""))
+    var env_rooms_lookup_template: String = str(OS.get_environment("ROOMS_API_LOOKUP_TEMPLATE"))
+    if env_rooms_lookup_template.is_empty() and env_vars.has("ROOMS_API_LOOKUP_TEMPLATE"):
+        env_rooms_lookup_template = str(env_vars.get("ROOMS_API_LOOKUP_TEMPLATE", ""))
+    if not env_rooms_lookup_template.is_empty():
+        rooms_api_lookup_template = env_rooms_lookup_template
     while index < args.size():
         var arg: String = args[index]
-        if arg == "--config-dir" and index + 1 < args.size():
-            config_dir = args[index + 1]
-            index += 2
-            continue
-        if arg == "--config" and index + 1 < args.size():
-            config_paths.append(args[index + 1])
-            index += 2
-            continue
         if arg == "--port" and index + 1 < args.size():
             port = int(args[index + 1])
             index += 2
@@ -68,9 +68,15 @@ func _parse_args(args: PackedStringArray) -> void:
             auth_verify_path = args[index + 1]
             index += 2
             continue
+        if arg == "--rooms-api-base-url" and index + 1 < args.size():
+            rooms_api_base_url = args[index + 1]
+            index += 2
+            continue
+        if arg == "--rooms-api-lookup-template" and index + 1 < args.size():
+            rooms_api_lookup_template = args[index + 1]
+            index += 2
+            continue
         index += 1
-    if config_paths.is_empty():
-        config_paths = _configs_from_dir(config_dir)
 
 
 func _load_dotenv() -> Dictionary:
@@ -100,6 +106,8 @@ func _load_dotenv() -> Dictionary:
 
 func _log_auth_config() -> void:
     print("server: auth verify url=%s%s" % [auth_base_url, auth_verify_path])
+    if not rooms_api_base_url.is_empty():
+        print("server: rooms api lookup url=%s%s" % [rooms_api_base_url, rooms_api_lookup_template % ["<game_id>"]])
 
 
 func _start_server() -> void:
@@ -113,31 +121,6 @@ func _start_server() -> void:
     print("server: listening on port %d" % port)
 
 
-func _load_matches() -> void:
-    assert(not config_paths.is_empty())
-    for path in config_paths:
-        var config: Config = Config.new(path)
-        assert(not config.game_id.is_empty())
-        assert(not server.matches.has(config.game_id))
-        server.create_match(config, true)
-        print("server: loaded match game_id=%s from %s" % [config.game_id, path])
-
-
-func _configs_from_dir(config_dir: String) -> Array[String]:
-    var results: Array[String] = []
-    var dir: DirAccess = DirAccess.open(config_dir)
-    assert(dir)
-    dir.list_dir_begin()
-    var file_name: String = dir.get_next()
-    while file_name != "":
-        if not dir.current_is_dir() and file_name.ends_with(".toml"):
-            results.append(config_dir.path_join(file_name))
-        file_name = dir.get_next()
-    dir.list_dir_end()
-    results.sort()
-    return results
-
-
 func _on_peer_connected(peer_id: int) -> void:
     print("server: peer connected %d" % peer_id)
 
@@ -145,10 +128,17 @@ func _on_peer_connected(peer_id: int) -> void:
 func _on_peer_disconnected(peer_id: int) -> void:
     print("server: peer disconnected %d" % peer_id)
     server.handle_peer_disconnected(peer_id)
+    _remove_pending_join_waiter(peer_id)
 
 
 func _handle_join(game_id: String, player_id: String) -> void:
     var sender_id: int = _get_sender_id()
+    if _maybe_queue_room_lookup(game_id, player_id, sender_id):
+        return
+    _complete_join(game_id, player_id, sender_id)
+
+
+func _complete_join(game_id: String, player_id: String, sender_id: int) -> void:
     var result: Dictionary = server.register_remote_client(game_id, player_id, sender_id, self)
     var reason: String = str(result.get("reason", ""))
     var seq: int = int(result.get("seq", 0))
@@ -202,6 +192,147 @@ func _handle_player_ready(game_id: String, player_id: String) -> void:
     var seq: int = int(result.get("seq", 0))
     if not reason.is_empty():
         _rpc_to_peer(sender_id, "rpc_action_rejected", [seq, reason])
+
+
+func _maybe_queue_room_lookup(game_id: String, player_id: String, peer_id: int) -> bool:
+    if server.matches.has(game_id):
+        return false
+    if rooms_api_base_url.is_empty():
+        return false
+    _enqueue_room_lookup_waiter(game_id, player_id, peer_id)
+    if pending_room_lookups[game_id].get("request_started", false):
+        return true
+    return _start_room_lookup_request(game_id)
+
+
+func _rooms_api_lookup_url(game_id: String) -> String:
+    return rooms_api_base_url + (rooms_api_lookup_template % [game_id])
+
+
+func _enqueue_room_lookup_waiter(game_id: String, player_id: String, peer_id: int) -> void:
+    if not pending_room_lookups.has(game_id):
+        pending_room_lookups[game_id] = {
+            "waiters": [],
+            "request_started": false,
+            "request": null,
+        }
+    var state: Dictionary = pending_room_lookups[game_id]
+    var waiters: Array = state.get("waiters", [])
+    for waiter_variant in waiters:
+        var waiter: Dictionary = waiter_variant
+        if int(waiter.get("peer_id", -1)) == peer_id:
+            return
+    waiters.append(
+        {
+            "peer_id": peer_id,
+            "player_id": player_id,
+        },
+    )
+    state["waiters"] = waiters
+    pending_room_lookups[game_id] = state
+
+
+func _start_room_lookup_request(game_id: String) -> bool:
+    var state: Dictionary = pending_room_lookups[game_id]
+    var request: HTTPRequest = HTTPRequest.new()
+    add_child(request)
+    request.request_completed.connect(_on_room_lookup_request_completed.bind(game_id, request))
+    var url: String = _rooms_api_lookup_url(game_id)
+    state["request_started"] = true
+    state["request"] = request
+    pending_room_lookups[game_id] = state
+    print("server: rooms api lookup request game_id=%s url=%s" % [game_id, url])
+    var result: int = request.request(url, ["Accept: application/json"])
+    if result != OK:
+        request.queue_free()
+        _reject_pending_room_lookup(game_id, "invalid_game_id", "request=%d url=%s" % [result, url])
+    return true
+
+
+func _on_room_lookup_request_completed(
+        result: int,
+        response_code: int,
+        _headers: PackedStringArray,
+        body: PackedByteArray,
+        game_id: String,
+        request: HTTPRequest,
+) -> void:
+    request.queue_free()
+    var body_text: String = body.get_string_from_utf8()
+    print(
+        "server: rooms api lookup response game_id=%s status=%d result=%d body=%s"
+        % [game_id, response_code, result, _log_preview(body_text)],
+    )
+    if result != OK or response_code != 200:
+        _reject_pending_room_lookup(game_id, "invalid_game_id", "status=%d result=%d" % [response_code, result])
+        return
+    var parsed: Variant = JSON.parse_string(body_text)
+    if typeof(parsed) != TYPE_DICTIONARY:
+        _reject_pending_room_lookup(game_id, "invalid_room_definition", "body=%s" % _log_preview(body_text))
+        return
+    var room_definition: Dictionary = parsed
+    var hydrate_reason: String = RoomDefinitionLoader.hydrate_match(server, game_id, room_definition, true)
+    if not hydrate_reason.is_empty():
+        _reject_pending_room_lookup(game_id, hydrate_reason, "body=%s" % _log_preview(body_text))
+        return
+    print("server: loaded match game_id=%s from rooms api" % game_id)
+    _complete_pending_room_lookup(game_id)
+
+
+func _complete_pending_room_lookup(game_id: String) -> void:
+    if not pending_room_lookups.has(game_id):
+        return
+    var state: Dictionary = pending_room_lookups.get(game_id, { })
+    var waiters: Array = state.get("waiters", [])
+    pending_room_lookups.erase(game_id)
+    for waiter_variant in waiters:
+        var waiter: Dictionary = waiter_variant
+        var peer_id: int = int(waiter.get("peer_id", -1))
+        var player_id: String = str(waiter.get("player_id", ""))
+        if peer_id <= 0:
+            continue
+        if not multiplayer.get_peers().has(peer_id):
+            continue
+        _complete_join(game_id, player_id, peer_id)
+
+
+func _reject_pending_room_lookup(game_id: String, reason: String, detail: String = "") -> void:
+    if not detail.is_empty():
+        print("server: rooms api lookup error game_id=%s reason=%s %s" % [game_id, reason, detail])
+    else:
+        print("server: rooms api lookup error game_id=%s reason=%s" % [game_id, reason])
+    if not pending_room_lookups.has(game_id):
+        return
+    var state: Dictionary = pending_room_lookups.get(game_id, { })
+    var waiters: Array = state.get("waiters", [])
+    pending_room_lookups.erase(game_id)
+    for waiter_variant in waiters:
+        var waiter: Dictionary = waiter_variant
+        var peer_id: int = int(waiter.get("peer_id", -1))
+        if peer_id <= 0:
+            continue
+        if not multiplayer.get_peers().has(peer_id):
+            continue
+        _rpc_to_peer(peer_id, "rpc_action_rejected", [0, reason])
+
+
+func _remove_pending_join_waiter(peer_id: int) -> void:
+    var game_ids: Array = pending_room_lookups.keys()
+    for game_id_variant in game_ids:
+        var game_id: String = str(game_id_variant)
+        var state: Dictionary = pending_room_lookups.get(game_id, { })
+        var waiters: Array = state.get("waiters", [])
+        var filtered_waiters: Array = []
+        for waiter_variant in waiters:
+            var waiter: Dictionary = waiter_variant
+            if int(waiter.get("peer_id", -1)) == peer_id:
+                continue
+            filtered_waiters.append(waiter)
+        if filtered_waiters.is_empty():
+            pending_room_lookups.erase(game_id)
+            continue
+        state["waiters"] = filtered_waiters
+        pending_room_lookups[game_id] = state
 
 
 func _verify_token(peer_id: int, token: String) -> void:

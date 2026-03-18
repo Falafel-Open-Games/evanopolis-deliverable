@@ -55,6 +55,8 @@ Repository settings expected by the deploy workflow:
 - variable `AUTH_BASE_URL`
 - variable `AUTH_VERIFY_PATH`
 - variable `GAME_SERVER_PORT`
+- variable `ROOMS_API_BASE_URL`
+- variable `ROOMS_API_LOOKUP_TEMPLATE`
 
 The workflow in
 [`game-server-fly-deploy.yml`](../../../.github/workflows/game-server-fly-deploy.yml)
@@ -89,11 +91,15 @@ Optional overrides:
 
 ```bash
 fly secrets set AUTH_VERIFY_PATH=/whoami -a <app-name>
+fly secrets set ROOMS_API_BASE_URL=https://<rooms-api-app>.fly.dev -a <app-name>
+fly secrets set ROOMS_API_LOOKUP_TEMPLATE=/v0/rooms/%s -a <app-name>
 ```
 
-`AUTH_BASE_URL` is the only required runtime value. `AUTH_VERIFY_PATH` already
-has a default in the Fly config and Docker image. Leave `GAME_SERVER_PORT` at
-`9010` unless you also update
+`AUTH_BASE_URL` is the only required startup value. `AUTH_VERIFY_PATH` and
+`ROOMS_API_LOOKUP_TEMPLATE` already have defaults in the Fly config or runtime.
+Set `ROOMS_API_BASE_URL` if you want the deployed game server to lazily hydrate
+matches from `rooms-api` on first join. Leave `GAME_SERVER_PORT` at `9010`
+unless you also update
 [`fly.toml`](fly.toml)
 to keep `internal_port` aligned.
 

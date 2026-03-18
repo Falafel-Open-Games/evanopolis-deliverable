@@ -5,7 +5,7 @@ const HeadlessServer = preload("res://scripts/server.gd")
 
 
 func test_join_rejects_without_auth() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
 
@@ -15,7 +15,7 @@ func test_join_rejects_without_auth() -> void:
 
 
 func test_join_accepts_after_auth() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
 

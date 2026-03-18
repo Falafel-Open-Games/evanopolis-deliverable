@@ -34,12 +34,16 @@ jobs:
             AUTH_BASE_URL="${AUTH_BASE_URL}" \
             AUTH_VERIFY_PATH="${AUTH_VERIFY_PATH}" \
             GAME_SERVER_PORT="${GAME_SERVER_PORT}" \
+            ROOMS_API_BASE_URL="${ROOMS_API_BASE_URL}" \
+            ROOMS_API_LOOKUP_TEMPLATE="${ROOMS_API_LOOKUP_TEMPLATE}" \
             -a "${FLY_APP}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           AUTH_BASE_URL: ${{ vars.AUTH_BASE_URL }}
           AUTH_VERIFY_PATH: ${{ vars.AUTH_VERIFY_PATH }}
           GAME_SERVER_PORT: ${{ vars.GAME_SERVER_PORT }}
+          ROOMS_API_BASE_URL: ${{ vars.ROOMS_API_BASE_URL }}
+          ROOMS_API_LOOKUP_TEMPLATE: ${{ vars.ROOMS_API_LOOKUP_TEMPLATE }}
 
       - name: Deploy game server
         run: flyctl deploy --remote-only --config deploy/fly/game-server/fly.toml --app "${FLY_APP}"

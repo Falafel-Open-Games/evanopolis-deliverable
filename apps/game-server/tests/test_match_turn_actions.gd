@@ -6,7 +6,7 @@ const MatchTestClient = preload("res://tests/match_test_client.gd")
 
 
 func test_roll_emits_landing_context_for_property_tile() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -30,7 +30,7 @@ func test_roll_emits_landing_context_for_property_tile() -> void:
 
 
 func test_landing_context_for_owned_property_by_other_player() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -61,7 +61,7 @@ func test_landing_context_for_owned_property_by_other_player() -> void:
 
 
 func test_landing_context_for_owned_property_by_self() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -89,7 +89,7 @@ func test_landing_context_for_owned_property_by_self() -> void:
 
 
 func test_owned_property_landing_without_miners_emits_no_btc_reward() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -117,7 +117,7 @@ func test_owned_property_landing_without_miners_emits_no_btc_reward() -> void:
 
 
 func test_owned_property_landing_by_other_player_emits_owner_btc_reward() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -150,7 +150,7 @@ func test_owned_property_landing_by_other_player_emits_owner_btc_reward() -> voi
 
 
 func test_owned_property_landing_emits_mining_reward_to_all_clients() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -181,7 +181,7 @@ func test_owned_property_landing_emits_mining_reward_to_all_clients() -> void:
 
 
 func test_reaching_btc_goal_ends_match_immediately_on_mining_reward() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -214,7 +214,7 @@ func test_reaching_btc_goal_ends_match_immediately_on_mining_reward() -> void:
 
 
 func test_owned_property_landing_by_owner_emits_owner_btc_reward_without_toll() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -248,7 +248,7 @@ func test_owned_property_landing_by_owner_emits_owner_btc_reward_without_toll() 
 
 
 func test_owned_property_landing_does_not_emit_btc_reward_when_owner_is_in_inspection() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -275,7 +275,7 @@ func test_owned_property_landing_does_not_emit_btc_reward_when_owner_is_in_inspe
 
 
 func test_buy_property_resolves_pending_action_and_advances_turn() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -303,7 +303,7 @@ func test_buy_property_resolves_pending_action_and_advances_turn() -> void:
 
 
 func test_end_turn_resolves_pending_action_without_purchase() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -326,7 +326,7 @@ func test_end_turn_resolves_pending_action_without_purchase() -> void:
 
 
 func test_pay_toll_resolves_pending_action_and_advances_turn() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -356,7 +356,7 @@ func test_pay_toll_resolves_pending_action_and_advances_turn() -> void:
 
 
 func test_buy_property_rejected_without_pending_action() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -371,7 +371,7 @@ func test_buy_property_rejected_without_pending_action() -> void:
 
 
 func test_pay_toll_rejected_without_pending_action() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -383,7 +383,7 @@ func test_pay_toll_rejected_without_pending_action() -> void:
 
 
 func test_pay_toll_insufficient_fiat_sends_player_to_inspection_and_advances_turn() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -413,7 +413,7 @@ func test_pay_toll_insufficient_fiat_sends_player_to_inspection_and_advances_tur
 
 
 func test_pay_toll_insufficient_fiat_keeps_prior_mining_reward_to_owner() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -452,7 +452,7 @@ func test_pay_toll_insufficient_fiat_keeps_prior_mining_reward_to_owner() -> voi
 
 
 func test_actions_are_rejected_after_match_finished() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -486,7 +486,7 @@ func test_actions_are_rejected_after_match_finished() -> void:
 
 
 func test_pay_toll_rejected_for_non_current_player() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -506,7 +506,7 @@ func test_pay_toll_rejected_for_non_current_player() -> void:
 
 
 func test_pay_toll_rejected_when_pending_action_type_mismatch() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -519,7 +519,7 @@ func test_pay_toll_rejected_when_pending_action_type_mismatch() -> void:
 
 
 func test_pay_toll_rejected_with_invalid_owner_index() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -540,7 +540,7 @@ func test_pay_toll_rejected_with_invalid_owner_index() -> void:
 
 
 func test_pay_toll_rejected_when_owner_is_payer() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -561,7 +561,7 @@ func test_pay_toll_rejected_when_owner_is_payer() -> void:
 
 
 func test_pay_toll_rejected_with_invalid_toll_amount() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -582,7 +582,7 @@ func test_pay_toll_rejected_with_invalid_toll_amount() -> void:
 
 
 func test_end_turn_rejected_for_non_current_player() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -598,7 +598,7 @@ func test_end_turn_rejected_for_non_current_player() -> void:
 
 
 func test_buy_property_rejected_on_tile_mismatch() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -611,7 +611,7 @@ func test_buy_property_rejected_on_tile_mismatch() -> void:
 
 
 func test_buy_property_rejected_when_property_already_owned() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -630,7 +630,7 @@ func test_buy_property_rejected_when_property_already_owned() -> void:
 
 
 func test_buy_property_rejected_for_insufficient_fiat() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -644,7 +644,7 @@ func test_buy_property_rejected_for_insufficient_fiat() -> void:
 
 
 func test_turn_number_increments_after_last_player_ends_turn() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -661,7 +661,7 @@ func test_turn_number_increments_after_last_player_ends_turn() -> void:
 
 
 func test_buy_miner_batch_updates_balance_and_tile_state() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -697,7 +697,7 @@ func test_buy_miner_batch_updates_balance_and_tile_state() -> void:
 
 
 func test_buy_miner_batch_rejected_for_non_owner_tile() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -709,7 +709,7 @@ func test_buy_miner_batch_rejected_for_non_owner_tile() -> void:
 
 
 func test_buy_miner_batch_rejected_for_insufficient_fiat() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -729,7 +729,7 @@ func test_buy_miner_batch_rejected_for_insufficient_fiat() -> void:
 
 
 func test_buy_miner_batch_rejected_for_max_miner_batches_reached() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -752,7 +752,7 @@ func test_buy_miner_batch_rejected_for_max_miner_batches_reached() -> void:
 
 
 func test_buy_miner_batch_rejected_for_non_property_tile() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -764,7 +764,7 @@ func test_buy_miner_batch_rejected_for_non_property_tile() -> void:
 
 
 func test_buy_miner_batch_rejected_while_pending_action_exists() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -777,7 +777,7 @@ func test_buy_miner_batch_rejected_while_pending_action_exists() -> void:
 
 
 func test_buy_miner_batch_rejected_while_in_inspection() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -790,7 +790,7 @@ func test_buy_miner_batch_rejected_while_in_inspection() -> void:
 
 
 func test_buy_miner_batch_rejected_for_non_current_player() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -802,7 +802,7 @@ func test_buy_miner_batch_rejected_for_non_current_player() -> void:
 
 
 func test_buy_miner_batch_rejected_for_invalid_tile_index() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -814,7 +814,7 @@ func test_buy_miner_batch_rejected_for_invalid_tile_index() -> void:
 
 
 func test_buy_miner_batch_emits_balance_change_before_miner_added() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()

@@ -1,56 +1,30 @@
 class_name Config
 extends RefCounted
 
-const CONFIG_PATH: String = "res://config.toml"
+const DEFAULT_BOARD_SIZE: int = 24
 
 var game_id: String = ""
 var board_size: int = 0
 var player_count: int = 0
 
 
-func _init(path: String = CONFIG_PATH) -> void:
-	load_from_file(path)
+func _init(initial_game_id: String = "", initial_player_count: int = 0, initial_board_size: int = DEFAULT_BOARD_SIZE) -> void:
+	game_id = initial_game_id
+	player_count = initial_player_count
+	board_size = initial_board_size
 
 
-func load_from_file(path: String) -> void:
-	var file: FileAccess = FileAccess.open(path, FileAccess.READ)
-	assert(file)
-	var text: String = file.get_as_text()
-	var data: Dictionary = _parse_toml(text)
+static func from_values(initial_game_id: String, initial_player_count: int, initial_board_size: int = DEFAULT_BOARD_SIZE) -> Config:
+	return Config.new(initial_game_id, initial_player_count, initial_board_size)
+
+
+func load_from_dictionary(data: Dictionary) -> void:
 	game_id = str(data.get("game_id", ""))
-	board_size = int(data.get("board_size", 0))
 	player_count = int(data.get("player_count", 0))
-
-
-func _parse_toml(text: String) -> Dictionary:
-	var result: Dictionary = { }
-	var lines: PackedStringArray = text.split("\n")
-	for raw_line in lines:
-		var line: String = raw_line.strip_edges()
-		if line.is_empty():
-			continue
-		if line.begins_with("#"):
-			continue
-		var comment_index: int = line.find("#")
-		if comment_index >= 0:
-			line = line.substr(0, comment_index).strip_edges()
-		if line.is_empty():
-			continue
-		var parts: PackedStringArray = line.split("=")
-		if parts.size() < 2:
-			continue
-		var key: String = parts[0].strip_edges()
-		var value_text: String = "=".join(parts.slice(1, parts.size())).strip_edges()
-		var value: Variant = _parse_toml_value(value_text)
-		result[key] = value
-	return result
-
-
-func _parse_toml_value(text: String) -> Variant:
-	if text.begins_with("\"") and text.ends_with("\"") and text.length() >= 2:
-		return text.substr(1, text.length() - 2)
-	if text.is_valid_float():
-		if text.find(".") >= 0:
-			return float(text)
-		return int(text)
-	return text
+	var experimental: Dictionary = data.get("experimental", { })
+	var board_size_value: int = int(data.get("board_size", 0))
+	if board_size_value <= 0 and typeof(experimental) == TYPE_DICTIONARY:
+		board_size_value = int(experimental.get("board_size", 0))
+	if board_size_value <= 0:
+		board_size_value = DEFAULT_BOARD_SIZE
+	board_size = board_size_value

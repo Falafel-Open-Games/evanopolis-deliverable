@@ -107,6 +107,8 @@ Expected runtime configuration:
 
 - required `AUTH_BASE_URL`
 - optional `AUTH_VERIFY_PATH` (default `/whoami`)
+- optional `ROOMS_API_BASE_URL` for lazy room hydration from `rooms-api`
+- optional `ROOMS_API_LOOKUP_TEMPLATE` (default `/v0/rooms/%s`)
 - `GAME_SERVER_PORT`, kept at `9010` unless `internal_port` is also changed in the Fly config
 
 Typical deploy flow:
@@ -139,6 +141,8 @@ Required GitHub variables:
 - `AUTH_BASE_URL`
 - `AUTH_VERIFY_PATH`
 - `GAME_SERVER_PORT`
+- `ROOMS_API_BASE_URL`
+- `ROOMS_API_LOOKUP_TEMPLATE`
 - `FLY_ROOMS_API_APP`
 - `ROOMS_API_PORT`
 - `ROOMS_API_DATA_FILE`

@@ -12,7 +12,6 @@ It currently contains:
 - the Godot headless server entrypoint
 - the rules engine and match state logic
 - GUT-based tests for match flow, reconnect, incidents, inspection, and auth integration points
-- demo match configs for local bring-up
 - the canonical RPC contract in `docs/RPC_API.md`
 - the rooms-api dependency note in `docs/ROOMS_API_INTEGRATION.md`
 
@@ -43,16 +42,28 @@ private sibling repo:
 AUTH_BASE_URL=http://127.0.0.1:3000 just run
 ```
 
+To enable lazy room hydration from `rooms-api` on first join:
+
+```bash
+AUTH_BASE_URL=http://127.0.0.1:3000 \
+ROOMS_API_BASE_URL=http://127.0.0.1:8787 \
+just run
+```
+
 Useful overrides:
 
 - `-- --port 9010`
-- `-- --config res://configs/demo_001.toml`
-- `-- --config-dir res://configs`
 - `-- --auth-base-url http://127.0.0.1:3000`
 - `-- --auth-verify-path /whoami`
+- `-- --rooms-api-base-url http://127.0.0.1:8787`
+- `-- --rooms-api-lookup-template /v0/rooms/%s`
 
 If `AUTH_BASE_URL` or `AUTH_VERIFY_PATH` are not provided on the command line,
 the server also reads them from `.env`.
+
+If `ROOMS_API_BASE_URL` is set, the server will fetch `GET /v0/rooms/:game_id`
+when an authenticated join targets a match that is not already live in memory.
+Boot-time filesystem match loading has been removed from the server runtime.
 
 ## Docker Run
 
@@ -98,7 +109,8 @@ fly deploy -c deploy/fly/game-server/fly.toml -a <app-name>
 
 For ongoing staging sync from `main`, use the GitHub Actions workflow in
 `.github/workflows/game-server-fly-deploy.yml` and keep the Fly app/runtime
-values in GitHub repository settings.
+values in GitHub repository settings, including `ROOMS_API_BASE_URL` if the
+deployed server should hydrate matches from the deployed rooms API.
 
 The public WebSocket endpoint is:
 
@@ -147,6 +159,7 @@ These docs should stay aligned with:
 - `scenes/client_main.tscn` and related scripts are support code for tests and diagnostics, not the main deliverable runtime.
 - Auth is external to this repo. The server expects an auth service that can verify bearer tokens and return a `/whoami` payload with at least a stable `sub`.
 - `AUTH_BASE_URL` and `AUTH_VERIFY_PATH` control that auth integration.
+- `ROOMS_API_BASE_URL` and `ROOMS_API_LOOKUP_TEMPLATE` control lazy room-definition lookup.
 
 ## Remaining Work
 

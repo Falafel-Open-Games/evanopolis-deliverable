@@ -7,7 +7,7 @@ const MatchTestClient = preload("res://tests/match_test_client.gd")
 
 
 func test_roll_rejected_for_non_current_player() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -25,7 +25,7 @@ func test_roll_rejected_for_non_current_player() -> void:
 
 
 func test_roll_rejected_before_match_start() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -46,7 +46,7 @@ func test_roll_rejects_invalid_game_id() -> void:
 
 
 func test_roll_rejects_unregistered_player_id() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
 
@@ -55,8 +55,8 @@ func test_roll_rejects_unregistered_player_id() -> void:
 
 
 func test_roll_rejects_peer_game_id_mismatch() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
-    var config_other: Config = Config.new("res://configs/demo_003.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
+    var config_other: Config = Config.from_values("demo_003", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.create_match(config_other)
@@ -71,7 +71,7 @@ func test_roll_rejects_peer_game_id_mismatch() -> void:
 
 
 func test_roll_rejects_peer_player_mismatch() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.peer_slots[8] = {
@@ -85,7 +85,7 @@ func test_roll_rejects_peer_player_mismatch() -> void:
 
 
 func test_roll_rejected_while_pending_action_required() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()

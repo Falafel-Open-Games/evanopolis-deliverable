@@ -6,7 +6,7 @@ const MatchTestClient = preload("res://tests/match_test_client.gd")
 
 
 func test_match_start_emits_game_started_after_all_players_ready() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     assert_eq(config.player_count, 2, "demo_002 expects two players")
     var game_match: GameMatch = GameMatch.new(config, [], true)
     var client_a: MatchTestClient = MatchTestClient.new()
@@ -42,7 +42,7 @@ func test_match_start_emits_game_started_after_all_players_ready() -> void:
 
 
 func test_join_broadcasts_player_joined() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [], true)
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -63,7 +63,7 @@ func test_join_broadcasts_player_joined() -> void:
 
 
 func test_join_replaces_duplicate_player_id() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [], true)
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -78,7 +78,7 @@ func test_join_replaces_duplicate_player_id() -> void:
 
 
 func test_join_rejects_when_match_full() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [], true)
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -95,7 +95,7 @@ func test_join_rejects_when_match_full() -> void:
 
 
 func test_rejects_invalid_player_id() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [], true)
     var client_a: MatchTestClient = MatchTestClient.new()
     var result: Dictionary = game_match.assign_client("", client_a)
@@ -103,7 +103,7 @@ func test_rejects_invalid_player_id() -> void:
 
 
 func test_rejects_invalid_player_index() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [], true)
     var client_a: MatchTestClient = MatchTestClient.new()
     var reason_negative: String = game_match.register_client_at_index("alice", -1, client_a)
@@ -113,7 +113,7 @@ func test_rejects_invalid_player_index() -> void:
 
 
 func test_last_seq_progresses_on_join() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [], true)
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -133,7 +133,7 @@ func test_last_seq_progresses_on_join() -> void:
 
 
 func test_three_player_match_starts_after_third_ready() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     config.game_id = "demo_003_three"
     config.player_count = 3
     var game_match: GameMatch = GameMatch.new(config, [], true)
@@ -175,7 +175,7 @@ func test_three_player_match_starts_after_third_ready() -> void:
 
 
 func test_match_full_rejected_via_server_registration() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [], true)
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()
@@ -191,7 +191,7 @@ func test_match_full_rejected_via_server_registration() -> void:
 
 
 func test_game_start_emitted_once_after_full() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var game_match: GameMatch = GameMatch.new(config, [], true)
     var client_a: MatchTestClient = MatchTestClient.new()
     var client_b: MatchTestClient = MatchTestClient.new()

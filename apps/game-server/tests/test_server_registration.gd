@@ -12,7 +12,7 @@ func test_join_rejects_invalid_game_id() -> void:
 
 
 func test_rejects_duplicate_peer_registration() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.authorize_peer(3, "bob")
@@ -27,7 +27,7 @@ func test_rejects_duplicate_peer_registration() -> void:
 
 
 func test_reconnect_rebinds_peer_slot() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.authorize_peer(11, "alice")
@@ -45,7 +45,7 @@ func test_reconnect_rebinds_peer_slot() -> void:
 
 
 func test_sync_request_returns_snapshot_for_registered_peer() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.authorize_peer(11, "alice")
@@ -71,7 +71,7 @@ func test_sync_request_returns_snapshot_for_registered_peer() -> void:
 
 
 func test_sync_request_rejects_peer_player_mismatch() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.authorize_peer(11, "alice")
@@ -96,7 +96,7 @@ func test_sync_request_rejects_invalid_game_id() -> void:
 
 
 func test_sync_request_rejects_unregistered_peer() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
 
@@ -105,7 +105,7 @@ func test_sync_request_rejects_unregistered_peer() -> void:
 
 
 func test_sync_snapshot_reflects_moved_pawn_state() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.authorize_peer(11, "alice")
@@ -128,7 +128,7 @@ func test_sync_snapshot_reflects_moved_pawn_state() -> void:
 
 
 func test_reconnect_sync_includes_incident_mutated_player_balances() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     var game_match = server.create_match(config)
     server.authorize_peer(11, "alice")
@@ -162,7 +162,7 @@ func test_reconnect_sync_includes_incident_mutated_player_balances() -> void:
 
 
 func test_peer_disconnect_detaches_match_client_slot() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     var game_match = server.create_match(config)
     server.authorize_peer(11, "alice")
@@ -184,7 +184,7 @@ func test_end_turn_rejects_invalid_game_id() -> void:
 
 
 func test_end_turn_rejects_unregistered_peer() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     var result: Dictionary = server.rpc_end_turn("demo_002", "alice", 1)
@@ -192,7 +192,7 @@ func test_end_turn_rejects_unregistered_peer() -> void:
 
 
 func test_end_turn_rejects_peer_game_id_mismatch() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.peer_slots[1] = {
@@ -205,7 +205,7 @@ func test_end_turn_rejects_peer_game_id_mismatch() -> void:
 
 
 func test_end_turn_rejects_peer_player_mismatch() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.peer_slots[1] = {
@@ -224,7 +224,7 @@ func test_buy_property_rejects_invalid_game_id() -> void:
 
 
 func test_buy_property_rejects_unregistered_peer() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     var result: Dictionary = server.rpc_buy_property("demo_002", "alice", 6, 1)
@@ -232,7 +232,7 @@ func test_buy_property_rejects_unregistered_peer() -> void:
 
 
 func test_buy_property_rejects_peer_game_id_mismatch() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.peer_slots[1] = {
@@ -245,7 +245,7 @@ func test_buy_property_rejects_peer_game_id_mismatch() -> void:
 
 
 func test_buy_property_rejects_peer_player_mismatch() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.peer_slots[1] = {
@@ -264,7 +264,7 @@ func test_pay_toll_rejects_invalid_game_id() -> void:
 
 
 func test_pay_toll_rejects_unregistered_peer() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     var result: Dictionary = server.rpc_pay_toll("demo_002", "alice", 1)
@@ -272,7 +272,7 @@ func test_pay_toll_rejects_unregistered_peer() -> void:
 
 
 func test_pay_toll_rejects_peer_game_id_mismatch() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.peer_slots[1] = {
@@ -285,7 +285,7 @@ func test_pay_toll_rejects_peer_game_id_mismatch() -> void:
 
 
 func test_pay_toll_rejects_peer_player_mismatch() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.peer_slots[1] = {
@@ -304,7 +304,7 @@ func test_buy_miner_batch_rejects_invalid_game_id() -> void:
 
 
 func test_buy_miner_batch_rejects_unregistered_peer() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     var result: Dictionary = server.rpc_buy_miner_batch("demo_002", "alice", 6, 1)
@@ -312,7 +312,7 @@ func test_buy_miner_batch_rejects_unregistered_peer() -> void:
 
 
 func test_buy_miner_batch_rejects_peer_game_id_mismatch() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.peer_slots[1] = {
@@ -325,7 +325,7 @@ func test_buy_miner_batch_rejects_peer_game_id_mismatch() -> void:
 
 
 func test_buy_miner_batch_rejects_peer_player_mismatch() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.peer_slots[1] = {
@@ -338,7 +338,7 @@ func test_buy_miner_batch_rejects_peer_player_mismatch() -> void:
 
 
 func test_sync_snapshot_includes_pending_action() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     server.create_match(config)
     server.authorize_peer(11, "alice")
@@ -357,7 +357,7 @@ func test_sync_snapshot_includes_pending_action() -> void:
 
 
 func test_sync_snapshot_includes_pay_toll_pending_action_metadata() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     var game_match = server.create_match(config)
     server.authorize_peer(11, "alice")
@@ -384,7 +384,7 @@ func test_sync_snapshot_includes_pay_toll_pending_action_metadata() -> void:
 
 
 func test_sync_snapshot_includes_finished_match_metadata() -> void:
-    var config: Config = Config.new("res://configs/demo_002.toml")
+    var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     var game_match = server.create_match(config)
     server.authorize_peer(11, "alice")
