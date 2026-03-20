@@ -1,24 +1,33 @@
-# Evanopolis Deliverable TODO
+# Evanopolis Deliverable Backlog
 
-## Current Priority: Replace Baked-In Demo Matches
+This file is for real backlog work that is not the current session focus.
 
-- Design the server-side flow for creating a new game room at runtime instead of relying on baked-in `configs/*.toml`.
-- Define how a room creator gets a shareable `game_id` and how invited players use it to join the same room.
-- Decide where room metadata lives and how long unused rooms persist.
-- Clarify the boundary between `apps/web-wrapper/` room creation UX and `apps/game-server/` room lifecycle/auth enforcement.
-- Remove or isolate baked-in demo configs from the production/staging path once runtime room creation exists.
+Immediate focus should stay in active session notes and the work itself, not
+here.
 
-## Follow-Up Validation
+## Backlog
 
-- Completed: test text-only clients from `../evanopolis-ui-slice` against the Fly game server over `wss://`.
-- Add a short runbook for obtaining a JWT from the deployed auth service and joining a remote game-server room.
-- Keep the deliverable docs aligned with the real deploy and testing path as it evolves.
+- add one documented local integration path for the public apps with the private
+  `../tabletop-auth` checkout
+- tighten app-level docs where the required run/test/hardening status is still
+  not explicit, especially in `apps/web-wrapper/` and `apps/graphical-client/`
+- trim or isolate non-essential support code in `apps/game-server/` once that
+  can be done without weakening current coverage
+- define the `rooms-api` room-lifecycle policy for expiration and cleanup,
+  including unused rooms and rooms whose matches have already finished
+- explore whether `rooms-api` should accept and return a creator alias/display
+  name so invite flows can say who invited the player without depending on raw
+  wallet addresses
+- decide whether the repo still needs `docs/migration/` planning artifacts in
+  their current form or whether they should be reduced to durable runbooks only
+- keep the staging validation path re-runnable after deploy/config changes,
+  including the remote text-client flow
 
-## Completed: Game Server Staging and CI/CD
+## Parking Lot
 
-- Completed: document the Fly.io staging deploy path and the GitHub-managed Fly runtime configuration workflow.
-- Completed: review `.github/workflows/game-server-image.yml` vs Fly deploy and keep them as separate workflows; Fly staging deploys from source with `flyctl deploy --remote-only`.
-- Completed: add the required GitHub secrets and variables, and create a dedicated Fly deploy workflow for the game server.
-- Completed: document the exact GitHub secret, variables, and operational steps needed to keep the staging game server in sync with `main`.
-- Completed: re-test the published image pull path from GHCR and Docker Hub after the deploy workflow was finalized.
-- Completed: run a validation pass after a fresh push confirming both GitHub Actions workflows succeeded and the Fly endpoint remained healthy.
+- document a cleaner operator path for obtaining a JWT from the deployed auth
+  service for manual remote testing
+- decide whether a root local stack runner such as `docker-compose.yml` or an
+  equivalent documented command path is still worth adding
+- review whether any remaining baked-in/demo-era assets should be removed from
+  the public deliverable repo once the final client path is stable
