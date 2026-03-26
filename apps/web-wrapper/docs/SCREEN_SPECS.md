@@ -6,22 +6,37 @@ screen before UI implementation begins.
 ## 1. Landing
 
 Goal:
-- let the user immediately understand the two entry paths
+- let the user immediately understand the main product entrypoint and the
+  fallback recovery path
 
 Primary actions:
 - create room
-- join with invite
 
 Inputs:
 - optional `game_id` or referral parameters from URL
 
 Must communicate:
 - this is the online game entrypoint
-- users can create or join a specific room
+- users can create a room here
+- the game is a strategic online board game about building the strongest Bitcoin
+  mining operation
+
+Visual direction:
+- strong branded hero
+- premium, industrial tone
+- not a plain utility form
+- direct actions visible above the fold
 
 Fallback action:
 - manual room-code entry should exist, but should be visually secondary to the
-  invite-link path
+  main room-creation path
+- optional invite-link paste can live here as recovery, but it should not
+  compete with the primary create-room action
+
+Invite-first variant:
+- if `game_id` is present in the URL, this page can shift into an invitation-led
+  version of the hero instead of the generic landing state
+- if inviter identity is available later, personalize the invite copy
 
 Error states:
 - none beyond basic load failure
@@ -47,6 +62,10 @@ Presentation note:
 - it can be an inline state, modal, or focused full-page step inside create or
   join flow
 
+Visual direction:
+- same premium visual language as the rest of the wrapper
+- avoid dropping into a debug-wallet-tool look
+
 States:
 - wallet missing
 - wrong network
@@ -66,10 +85,13 @@ Primary actions:
 
 Inputs:
 - supported room options such as `player_count`
+- likely a creator callsign/company-name field if we decide to support it in the
+  first real wrapper flow
 
 Must communicate:
 - what kind of room will be created
 - what happens after creation
+- the player is setting up a match, not entering gameplay yet
 
 Success result:
 - returned `game_id`
@@ -89,6 +111,7 @@ Must communicate:
 - the room exists
 - this link is how another player joins the same game
 - any referrer context that should be preserved in the link
+- the creator can proceed through payment and launch after sharing
 
 ## 5. Join / Invite Confirmation
 
@@ -107,6 +130,7 @@ Must communicate:
 - this invite is valid
 - this is a join flow, not room creation
 - what must happen before launch
+- who invited the player, if that data becomes available later
 
 Error states:
 - missing `game_id`
@@ -134,6 +158,9 @@ Must communicate:
 - what room the payment applies to
 - that payment completion is required before entering the match
 
+Visual direction:
+- should feel like a high-stakes match-entry step, not a generic checkout screen
+
 Error states:
 - insufficient allowance
 - rejected transaction
@@ -156,6 +183,9 @@ Inputs handed off:
 - JWT
 - `game_id`
 - game-server endpoint
+
+Visual direction:
+- this should feel like final confirmation into the real game runtime
 
 ## 8. Invalid Room / Recovery
 

@@ -121,7 +121,10 @@ product flow, so the wrapper should treat it as a first-class entry step.
 The player lands on the wrapper and can clearly choose one of two paths:
 
 - create a room
-- join a room from an invite
+- recover into an existing room if they only have partial join context
+
+In the intended flow, this page is primarily the room-creation entrypoint.
+Invite-based joining should normally arrive on a dedicated invite-first page.
 
 This needs to feel like the real product entrypoint, not a debug screen.
 

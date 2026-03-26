@@ -8,19 +8,49 @@ They are here to help review screen structure, not to define visual style.
 
 ```text
 +---------------------------------------------------------------+
-| Evanopolis                                                    |
-| Play online with your wallet and invite link                  |
+| EVANOPOLIS                                                    |
+| Build the strongest Bitcoin mining operation on the board     |
 |                                                               |
-| [ Create a Room ]     [ Join with Invite ]                    |
+| A strategic online board game for competitive players.        |
+| Connect your wallet, create a room or open an invite,         |
+| complete entry payment, and launch into a live match.         |
 |                                                               |
-| If you already have an invite, open it here.                  |
-| [ paste game link or game_id __________________________ ]      |
+| [ Create a Room ]                                             |
+|                                                               |
+| How it works                                                  |
+| 1. Connect wallet                                             |
+| 2. Create room or open invite                                 |
+| 3. Complete payment                                           |
+| 4. Enter the game                                             |
+|                                                               |
+| Manual fallback                                               |
+| Have an invite link or only a room code? Recover here.        |
+| [ paste invite link or room code ________________________ ]   |
 | [ Continue ]                                                  |
 |                                                               |
-| Have only a room code? Use manual join.                       |
-| [ Enter game code instead ]                                   |
+| Browser wallet required on the supported network              |
++---------------------------------------------------------------+
+```
+
+## Invite-First Landing
+
+```text
++---------------------------------------------------------------+
+| EVANOPOLIS                                                    |
 |                                                               |
-| Small print: requires browser wallet on the supported network |
+| You have been invited to play Evanopolis.                     |
+|                                                               |
+| Compete in an online board game where players race to build   |
+| the strongest Bitcoin mining operation.                       |
+|                                                               |
+| Invited by: {creator alias if available later}                |
+| Room: 550e8400-e29b-41d4-a716-446655440000                    |
+| Entry fee: required                                           |
+|                                                               |
+| [ Accept Invite ]                                             |
+|                                                               |
+| Have only a code or broken link?                              |
+| [ Enter room code manually ]                                  |
 +---------------------------------------------------------------+
 ```
 
@@ -50,10 +80,15 @@ They are here to help review screen structure, not to define visual style.
 +---------------------------------------------------------------+
 | Create Room                                                   |
 |                                                               |
+| Your callsign / company name                                  |
+| [ _________________________________________________ ]         |
+|                                                               |
 | Players                                                       |
 | ( ) 2 players                                                 |
 | ( ) 3 players                                                 |
 | ( ) 4 players                                                 |
+|                                                               |
+| Entry fee required before match launch                        |
 |                                                               |
 | [ Create Room ]                                               |
 |                                                               |
