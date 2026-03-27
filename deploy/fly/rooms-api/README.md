@@ -10,6 +10,7 @@ This folder contains a Docker-first Fly.io staging path for the
 - the same runtime contract used locally:
   - required `AUTH_BASE_URL`
   - optional `AUTH_VERIFY_PATH` (defaults to `/whoami`)
+  - optional `ALLOWED_ORIGINS` for browser CORS allowlisting
   - optional `ROOMS_DATA_FILE` for JSON-file persistence
   - `PORT`, fixed to `3001` in Fly unless `internal_port` also changes
 
@@ -38,6 +39,7 @@ Repository settings expected by the deploy workflow:
 - variable `FLY_ROOMS_API_APP`
 - variable `AUTH_BASE_URL`
 - variable `AUTH_VERIFY_PATH`
+- variable `ALLOWED_ORIGINS`
 - variable `ROOMS_API_PORT`
 - variable `ROOMS_API_DATA_FILE`
 
@@ -57,6 +59,7 @@ For a one-time bootstrap or manual recovery, you can still set values directly:
 
 ```bash
 fly secrets set AUTH_BASE_URL=https://<auth-host> -a <app-name>
+fly secrets set ALLOWED_ORIGINS=https://<frontend-host> -a <app-name>
 fly secrets set ROOMS_DATA_FILE=/data/rooms.json -a <app-name>
 ```
 
@@ -64,6 +67,15 @@ Optional override:
 
 ```bash
 fly secrets set AUTH_VERIFY_PATH=/whoami -a <app-name>
+```
+
+`ALLOWED_ORIGINS` should be a comma-separated list of browser origins, for
+example:
+
+```bash
+fly secrets set \
+  ALLOWED_ORIGINS=http://localhost:5173,https://evanopolis-web-wrapper-staging.fly.dev \
+  -a <app-name>
 ```
 
 If you want room definitions to survive deploys or restarts, create and attach a

@@ -38,6 +38,7 @@ jobs:
           flyctl secrets set \
             AUTH_BASE_URL="${AUTH_BASE_URL}" \
             AUTH_VERIFY_PATH="${AUTH_VERIFY_PATH}" \
+            ALLOWED_ORIGINS="${ALLOWED_ORIGINS}" \
             PORT="${ROOMS_API_PORT}" \
             ROOMS_DATA_FILE="${ROOMS_API_DATA_FILE}" \
             -a "${FLY_APP}"
@@ -45,6 +46,7 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
           AUTH_BASE_URL: ${{ vars.AUTH_BASE_URL }}
           AUTH_VERIFY_PATH: ${{ vars.AUTH_VERIFY_PATH }}
+          ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
           ROOMS_API_PORT: ${{ vars.ROOMS_API_PORT }}
           ROOMS_API_DATA_FILE: ${{ vars.ROOMS_API_DATA_FILE }}
 

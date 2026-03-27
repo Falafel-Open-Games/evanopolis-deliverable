@@ -96,6 +96,10 @@ The intended staging path is:
 - Fly.io app config under `deploy/fly/rooms-api/`
 - GitHub Actions publish and deploy workflows triggered on `main`
 
+The Fly deploy workflow now treats `ALLOWED_ORIGINS` as part of the runtime
+contract, so staging browser callers should be managed through the repository
+variables alongside `AUTH_BASE_URL`.
+
 ## Relationship To `game-server`
 
 - `rooms-api` owns room definitions

@@ -8,6 +8,8 @@ export type RuntimeConfig = {
   paymentAdapterAddress: string;
 };
 
+type RuntimeConfigOverride = Partial<RuntimeConfig>;
+
 function getTunneledAuthBaseUrl(host: string): string | null {
   if (host.startsWith("tabletop-demo.")) {
     return `${window.location.protocol}//${host.replace(/^tabletop-demo\./, "tabletop-demo-auth.")}`;
@@ -59,24 +61,41 @@ function getDefaultPaymentAddresses(expectedChainId: string): {
 }
 
 export function getRuntimeConfig(): RuntimeConfig {
-  const expectedChainId = import.meta.env.VITE_EXPECTED_CHAIN_ID ?? "421614";
-  const defaultPaymentAddresses = getDefaultPaymentAddresses(expectedChainId);
+  const runtimeOverride: RuntimeConfigOverride =
+    window.__EVANOPOLIS_CONFIG__ ?? {};
+  const configuredExpectedChainId =
+    runtimeOverride.expectedChainId?.trim() ||
+    import.meta.env.VITE_EXPECTED_CHAIN_ID ||
+    "421614";
+  const defaultPaymentAddresses = getDefaultPaymentAddresses(
+    configuredExpectedChainId,
+  );
 
   return {
-    authBaseUrl: import.meta.env.VITE_AUTH_BASE_URL ?? getDefaultAuthBaseUrl(),
+    authBaseUrl:
+      runtimeOverride.authBaseUrl?.trim() ||
+      import.meta.env.VITE_AUTH_BASE_URL ||
+      getDefaultAuthBaseUrl(),
     roomsBaseUrl:
-      import.meta.env.VITE_ROOMS_BASE_URL ?? "http://127.0.0.1:3001",
-    expectedChainId,
+      runtimeOverride.roomsBaseUrl?.trim() ||
+      import.meta.env.VITE_ROOMS_BASE_URL ||
+      "http://127.0.0.1:3001",
+    expectedChainId: configuredExpectedChainId,
     gameServerUrl:
-      import.meta.env.VITE_GAME_SERVER_URL ?? "ws://127.0.0.1:9010",
+      runtimeOverride.gameServerUrl?.trim() ||
+      import.meta.env.VITE_GAME_SERVER_URL ||
+      "ws://127.0.0.1:9010",
     paymentTokenAddress:
-      import.meta.env.VITE_PAYMENT_TOKEN_ADDRESS ??
+      runtimeOverride.paymentTokenAddress?.trim() ||
+      import.meta.env.VITE_PAYMENT_TOKEN_ADDRESS ||
       defaultPaymentAddresses.paymentTokenAddress,
     paymentHandlerAddress:
-      import.meta.env.VITE_PAYMENT_HANDLER_ADDRESS ??
+      runtimeOverride.paymentHandlerAddress?.trim() ||
+      import.meta.env.VITE_PAYMENT_HANDLER_ADDRESS ||
       defaultPaymentAddresses.paymentHandlerAddress,
     paymentAdapterAddress:
-      import.meta.env.VITE_PAYMENT_ADAPTER_ADDRESS ??
+      runtimeOverride.paymentAdapterAddress?.trim() ||
+      import.meta.env.VITE_PAYMENT_ADAPTER_ADDRESS ||
       defaultPaymentAddresses.paymentAdapterAddress,
   };
 }

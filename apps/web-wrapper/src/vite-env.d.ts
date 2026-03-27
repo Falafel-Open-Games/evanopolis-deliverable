@@ -16,4 +16,13 @@ type EthereumProvider = {
 
 interface Window {
   ethereum?: EthereumProvider;
+  __EVANOPOLIS_CONFIG__?: {
+    authBaseUrl?: string;
+    roomsBaseUrl?: string;
+    expectedChainId?: string;
+    gameServerUrl?: string;
+    paymentTokenAddress?: string;
+    paymentHandlerAddress?: string;
+    paymentAdapterAddress?: string;
+  };
 }

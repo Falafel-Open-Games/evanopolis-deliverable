@@ -1,0 +1,60 @@
+name: Deploy Web Wrapper To Fly.io
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/web-wrapper-fly-deploy.yml
+      - apps/web-wrapper/**
+      - deploy/docker/web-wrapper/**
+      - deploy/fly/web-wrapper/**
+      - .dockerignore
+  workflow_dispatch:
+
+env:
+  FLY_APP: ${{ vars.FLY_WEB_WRAPPER_APP }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Sync Fly runtime configuration
+        run: |
+          flyctl secrets set \
+            AUTH_BASE_URL="${AUTH_BASE_URL}" \
+            ROOMS_BASE_URL="${ROOMS_BASE_URL}" \
+            EXPECTED_CHAIN_ID="${EXPECTED_CHAIN_ID}" \
+            GAME_SERVER_URL="${GAME_SERVER_URL}" \
+            PAYMENT_TOKEN_ADDRESS="${PAYMENT_TOKEN_ADDRESS}" \
+            PAYMENT_HANDLER_ADDRESS="${PAYMENT_HANDLER_ADDRESS}" \
+            PAYMENT_ADAPTER_ADDRESS="${PAYMENT_ADAPTER_ADDRESS}" \
+            -a "${FLY_APP}"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          AUTH_BASE_URL: ${{ vars.AUTH_BASE_URL }}
+          ROOMS_BASE_URL: ${{ vars.ROOMS_BASE_URL }}
+          EXPECTED_CHAIN_ID: ${{ vars.EXPECTED_CHAIN_ID }}
+          GAME_SERVER_URL: ${{ vars.GAME_SERVER_URL }}
+          PAYMENT_TOKEN_ADDRESS: ${{ vars.PAYMENT_TOKEN_ADDRESS }}
+          PAYMENT_HANDLER_ADDRESS: ${{ vars.PAYMENT_HANDLER_ADDRESS }}
+          PAYMENT_ADAPTER_ADDRESS: ${{ vars.PAYMENT_ADAPTER_ADDRESS }}
+
+      - name: Deploy web wrapper
+        run: flyctl deploy --remote-only --config deploy/fly/web-wrapper/fly.toml --app "${FLY_APP}"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Enforce single active machine in IAD
+        run: flyctl scale count 1 --region iad --max-per-region 1 --app "${FLY_APP}"
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

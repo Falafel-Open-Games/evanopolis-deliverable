@@ -148,11 +148,12 @@ For a final AWS-hosted version, the deployment will need at least:
 - TLS, DNS, and environment/secret management for all public endpoints
 - operator-facing smoke checks and staging validation before production rollout
 
-Today, the most complete checked-in deploy path is the Fly.io staging path for
-the game server:
+Today, the checked-in Fly.io staging paths cover:
 
 - [Deploy Overview](./deploy/README.md)
 - [Fly.io Game Server Runbook](./deploy/fly/game-server/README.md)
+- [Fly.io Rooms API Runbook](./deploy/fly/rooms-api/README.md)
+- [Fly.io Web Wrapper Runbook](./deploy/fly/web-wrapper/README.md)
 
 As the AWS path is defined, the detailed bootstrap and operations material
 should live under `deploy/` rather than being expanded inline here.
@@ -163,6 +164,13 @@ The headless game server image is published automatically on pushes to `main`:
 
 - `ghcr.io/falafel-open-games/evanopolis-game-server:latest`
 - `docker.io/fczuardi/evanopolis-game-server:latest`
+
+The rooms API and web wrapper image publishing workflows are also checked in:
+
+- `ghcr.io/falafel-open-games/evanopolis-rooms-api:latest`
+- `docker.io/fczuardi/evanopolis-rooms-api:latest`
+- `ghcr.io/falafel-open-games/evanopolis-web-wrapper:latest`
+- `docker.io/fczuardi/evanopolis-web-wrapper:latest`
 
 See [apps/game-server/README.md](./apps/game-server/README.md) and
 [deploy/README.md](./deploy/README.md) for current run and staging details.

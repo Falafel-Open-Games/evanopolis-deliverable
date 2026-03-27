@@ -90,6 +90,25 @@ Build the static app:
 npm run build
 ```
 
+## Container Runtime Config
+
+The checked-in wrapper Docker image is intended to stay reusable across
+environments.
+
+When served from the container path under `deploy/docker/web-wrapper/`, runtime
+configuration is injected into `/runtime-config.js` at container startup from:
+
+- `AUTH_BASE_URL`
+- `ROOMS_BASE_URL`
+- `EXPECTED_CHAIN_ID`
+- `GAME_SERVER_URL`
+- `PAYMENT_TOKEN_ADDRESS`
+- `PAYMENT_HANDLER_ADDRESS`
+- `PAYMENT_ADAPTER_ADDRESS`
+
+That means Fly.io and other container deploys do not need a staging-specific
+wrapper rebuild just to change service URLs or payment contract addresses.
+
 ## Testing Direction
 
 The first useful validation target for this app is not pixel polish. It is a
@@ -116,6 +135,15 @@ The launch handoff is still provisional:
   and opens its own internal `/launch.html` route
 - `/launch.html` already owns the embedded-client shell and is the place where
   the migrated Godot web client should be mounted
+
+## Staging Deploy
+
+The checked-in staging path for this app is now:
+
+- Docker image: `deploy/docker/web-wrapper/Dockerfile`
+- Fly app config: `deploy/fly/web-wrapper/fly.toml`
+- GitHub image workflow: `.github/workflows/web-wrapper-image.yml`
+- GitHub Fly deploy workflow: `.github/workflows/web-wrapper-fly-deploy.yml`
 
 ## Remaining Work
 
