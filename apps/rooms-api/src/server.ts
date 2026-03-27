@@ -12,6 +12,7 @@ import {
 } from "./config.js";
 import {
   createRoomRequestSchema,
+  entryFeeTierSchema,
   type RoomRecord,
 } from "./schemas/rooms.js";
 import { RoomsStore } from "./storage.js";
@@ -41,6 +42,12 @@ type AuthWhoamiResponse = {
 type PublicValidationDetail = {
   field: string;
   message: string;
+};
+
+const ENTRY_FEE_AMOUNTS: Record<(typeof entryFeeTierSchema)["_type"], string> = {
+  cheap: "100000000000000000",
+  average: "500000000000000000",
+  deluxe: "1000000000000000000",
 };
 
 async function verifyBearerToken(
@@ -204,6 +211,9 @@ export async function buildServer(
       const room: RoomRecord = {
         game_id: randomUUID(),
         created_by: authResult.subject,
+        creator_display_name: parsed.data.creator_display_name,
+        entry_fee_tier: parsed.data.entry_fee_tier,
+        entry_fee_amount: ENTRY_FEE_AMOUNTS[parsed.data.entry_fee_tier],
         player_count: parsed.data.player_count,
         ...(parsed.data.experimental === undefined
           ? {}

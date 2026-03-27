@@ -21,6 +21,23 @@ The current implementation provides:
 - public `GET /v0/rooms/:game_id`
 - `GET /healthz` for smoke checks
 
+The current room contract includes:
+
+- `creator_display_name` for player-facing invite identity, limited to 32
+  characters after trimming
+- `entry_fee_tier` and derived `entry_fee_amount` for room-level payment policy
+- `player_count` for the intended room size
+
+The public room lookup response currently returns:
+
+- `game_id`
+- `creator_display_name`
+- `entry_fee_tier`
+- `entry_fee_amount`
+- `player_count`
+- optional `experimental`
+- `created_at`
+
 ## Local Run
 
 Work from this directory:
@@ -52,6 +69,7 @@ Optional environment variables:
 
 - `PORT` defaults to `3001`
 - `AUTH_VERIFY_PATH` defaults to `/whoami`
+- `ALLOWED_ORIGINS` controls browser CORS allowlisting
 - `ROOMS_DATA_FILE` enables JSON-file persistence when set
 
 Example with local persistence:
@@ -90,4 +108,5 @@ The intended staging path is:
 
 - wire `apps/game-server` to fetch room definitions dynamically instead of
   relying only on preloaded TOML configs
-- connect `apps/web-wrapper` to room creation and invite lookup flows
+- implement admission and payment enforcement against the room definition,
+  including `entry_fee_amount`

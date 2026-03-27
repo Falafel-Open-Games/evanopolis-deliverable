@@ -46,6 +46,8 @@ describe("rooms-api", () => {
         authorization: "Bearer good-token",
       },
       payload: {
+        creator_display_name: "Falafel Host",
+        entry_fee_tier: "average",
         player_count: 4,
         experimental: {
           board_size: 30,
@@ -56,6 +58,9 @@ describe("rooms-api", () => {
     expect(response.statusCode).toBe(201);
     expect(response.json()).toMatchObject({
       created_by: "0xabc",
+      creator_display_name: "Falafel Host",
+      entry_fee_tier: "average",
+      entry_fee_amount: "500000000000000000",
       player_count: 4,
       experimental: {
         board_size: 30,
@@ -84,6 +89,8 @@ describe("rooms-api", () => {
       method: "POST",
       url: "/v0/rooms",
       payload: {
+        creator_display_name: "Falafel Host",
+        entry_fee_tier: "average",
         player_count: 4,
       },
     });
@@ -124,6 +131,8 @@ describe("rooms-api", () => {
         authorization: "Bearer good-token",
       },
       payload: {
+        creator_display_name: "Falafel Host",
+        entry_fee_tier: "average",
         player_count: 5,
       },
     });
@@ -140,11 +149,110 @@ describe("rooms-api", () => {
     });
   });
 
+  it("rejects blank creator display names", async () => {
+    const app = await buildServer(
+      {
+        PORT: 3001,
+        AUTH_BASE_URL: "http://auth.local",
+        AUTH_VERIFY_PATH: "/whoami",
+        ALLOWED_ORIGINS: "",
+        ROOMS_DATA_FILE: "",
+      },
+      {
+        logger: false,
+        store: new RoomsStore(),
+        fetchImpl: async () =>
+          new Response(JSON.stringify({ sub: "0xabc" }), {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+            },
+          }),
+      },
+    );
+    apps.push(app);
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/v0/rooms",
+      headers: {
+        authorization: "Bearer good-token",
+      },
+      payload: {
+        creator_display_name: "   ",
+        entry_fee_tier: "average",
+        player_count: 4,
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toEqual({
+      error: "bad_request",
+      details: [
+        {
+          field: "creator_display_name",
+          message: "String must contain at least 1 character(s)",
+        },
+      ],
+    });
+  });
+
+  it("rejects creator display names longer than 32 characters", async () => {
+    const app = await buildServer(
+      {
+        PORT: 3001,
+        AUTH_BASE_URL: "http://auth.local",
+        AUTH_VERIFY_PATH: "/whoami",
+        ALLOWED_ORIGINS: "",
+        ROOMS_DATA_FILE: "",
+      },
+      {
+        logger: false,
+        store: new RoomsStore(),
+        fetchImpl: async () =>
+          new Response(JSON.stringify({ sub: "0xabc" }), {
+            status: 200,
+            headers: {
+              "content-type": "application/json",
+            },
+          }),
+      },
+    );
+    apps.push(app);
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/v0/rooms",
+      headers: {
+        authorization: "Bearer good-token",
+      },
+      payload: {
+        creator_display_name: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        entry_fee_tier: "average",
+        player_count: 4,
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toEqual({
+      error: "bad_request",
+      details: [
+        {
+          field: "creator_display_name",
+          message: "String must contain at most 32 character(s)",
+        },
+      ],
+    });
+  });
+
   it("returns the public room definition without created_by", async () => {
     const store = new RoomsStore();
     await store.createRoom({
       game_id: "550e8400-e29b-41d4-a716-446655440000",
       created_by: "0xabc",
+      creator_display_name: "Falafel Host",
+      entry_fee_tier: "cheap",
+      entry_fee_amount: "100000000000000000",
       player_count: 3,
       experimental: {
         turn_duration_seconds: 60,
@@ -174,6 +282,9 @@ describe("rooms-api", () => {
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({
       game_id: "550e8400-e29b-41d4-a716-446655440000",
+      creator_display_name: "Falafel Host",
+      entry_fee_tier: "cheap",
+      entry_fee_amount: "100000000000000000",
       player_count: 3,
       experimental: {
         turn_duration_seconds: 60,
@@ -241,6 +352,8 @@ describe("rooms-api", () => {
           "x-forwarded-for": "203.0.113.10",
         },
         payload: {
+          creator_display_name: "Falafel Host",
+          entry_fee_tier: "average",
           player_count: 2,
         },
       });
@@ -255,6 +368,8 @@ describe("rooms-api", () => {
         "x-forwarded-for": "203.0.113.10",
       },
       payload: {
+        creator_display_name: "Falafel Host",
+        entry_fee_tier: "average",
         player_count: 2,
       },
     });

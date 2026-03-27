@@ -1,0 +1,293 @@
+:root {
+  color-scheme: light;
+  font-family:
+    "IBM Plex Sans",
+    "Segoe UI",
+    sans-serif;
+  background:
+    radial-gradient(circle at top, #f5f5f2 0, #ece9e1 38%, #e3dfd7 100%);
+  color: #1f1f1a;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  border: 1px solid #161612;
+  background: #161612;
+  color: #f7f4ec;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.button-secondary {
+  background: transparent;
+  color: #161612;
+}
+
+input,
+select {
+  width: 100%;
+  border: 1px solid #beb7a8;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 0.8rem 0.9rem;
+  color: #1f1f1a;
+}
+
+input:disabled,
+select:disabled {
+  background: rgba(231, 228, 220, 0.85);
+  color: #7d786c;
+  cursor: not-allowed;
+}
+
+code,
+pre {
+  font-family:
+    "IBM Plex Mono",
+    "SFMono-Regular",
+    monospace;
+  overflow-wrap: anywhere;
+}
+
+#root {
+  width: 100%;
+}
+
+.app-shell {
+  width: min(1180px, calc(100vw - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0 4rem;
+}
+
+.hero {
+  padding: 2rem 0 2.5rem;
+  border-bottom: 1px solid rgba(31, 31, 26, 0.16);
+}
+
+.eyebrow {
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #625e54;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2.4rem, 6vw, 4.8rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  overflow-wrap: anywhere;
+}
+
+.hero-copy {
+  width: min(58rem, 100%);
+  margin: 1rem 0 0;
+  font-size: 1.05rem;
+  color: #47443c;
+  overflow-wrap: anywhere;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid #161612;
+  background: #161612;
+  color: #f7f4ec;
+  text-decoration: none;
+}
+
+.button-link-secondary {
+  background: transparent;
+  color: #161612;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1rem;
+  padding-top: 1.5rem;
+}
+
+.panel-column-sign-in {
+  grid-column: span 4;
+}
+
+.panel-column-create-room {
+  grid-column: span 8;
+}
+
+.panel {
+  grid-column: span 6;
+  padding: 1.25rem;
+  border: 1px solid rgba(31, 31, 26, 0.14);
+  background: rgba(249, 247, 241, 0.74);
+  backdrop-filter: blur(10px);
+}
+
+.panel-wide {
+  grid-column: span 12;
+}
+
+.panel-heading {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1rem;
+}
+
+.panel-heading h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: -0.03em;
+}
+
+.panel-heading span {
+  color: #625e54;
+  font-size: 0.92rem;
+}
+
+.result-block p,
+.status-block p {
+  margin: 0 0 0.5rem;
+}
+
+.status-block p:last-child,
+.result-block p:last-child {
+  margin-bottom: 0;
+}
+
+.form-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+label,
+.status-block,
+.result-block {
+  display: grid;
+  gap: 0.45rem;
+}
+
+label span {
+  font-size: 0.88rem;
+  color: #625e54;
+}
+
+.inline-note {
+  margin: 0.85rem 0 0;
+  color: #625e54;
+  font-size: 0.92rem;
+}
+
+.field-note {
+  margin: -0.2rem 0 0;
+  color: #625e54;
+  font-size: 0.88rem;
+}
+
+.copy-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.button-row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+
+.result-block,
+.status-block {
+  margin: 0;
+  padding: 0.95rem;
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(31, 31, 26, 0.12);
+}
+
+.success-banner {
+  padding: 1rem;
+  border: 1px solid rgba(31, 31, 26, 0.18);
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.success-title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.success-copy {
+  margin: 0;
+  color: #47443c;
+}
+
+.next-step-block {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(31, 31, 26, 0.18);
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.next-step-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.88rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #625e54;
+}
+
+.next-step-copy {
+  margin: 0;
+}
+
+.launch-payload {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 900px) {
+  .panel-column-sign-in,
+  .panel-column-create-room,
+  .panel,
+  .panel-wide {
+    grid-column: span 12;
+  }
+
+  .panel-heading {
+    display: grid;
+  }
+}

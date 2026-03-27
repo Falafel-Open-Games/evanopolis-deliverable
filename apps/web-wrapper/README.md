@@ -14,11 +14,17 @@ It is intended to become the real end-user entrypoint for:
 
 ## Status
 
-There is no implementation in this folder yet beyond documentation.
+The wrapper now has a minimal `Vite + React + TypeScript` runtime.
 
-The current work here is to define the entry flow carefully enough that the
-first HTML implementation already points toward the final product instead of
-becoming a throwaway staging shell.
+The current implementation is intentionally a live wireframe:
+
+- neutral visual styling
+- product-facing first-page structure for auth, room creation, invite recovery,
+  payment, and launch
+- code-level runtime defaults while the real integrations are added
+
+The roadmap for this phase lives in
+[docs/LIVE_WIREFRAME_ROADMAP.md](./docs/LIVE_WIREFRAME_ROADMAP.md).
 
 ## Responsibilities
 
@@ -43,10 +49,46 @@ That plan is intentionally tied to the current backend contracts in:
 
 ## Local Run
 
-No app runtime exists here yet.
+Work from this directory:
 
-When implementation starts, this README should be updated with one documented
-local run path and one documented staging validation path.
+```bash
+cd apps/web-wrapper
+```
+
+Install dependencies once:
+
+```bash
+npm install
+```
+
+Run the local dev server:
+
+```bash
+npm run dev
+```
+
+To point the wrapper at a non-default environment, use Vite env vars. For
+local overrides, create `.env.local` in this folder. Example:
+
+```bash
+cp .env.example .env.local
+```
+
+The wrapper currently reads these Vite env vars:
+
+- `VITE_AUTH_BASE_URL`
+- `VITE_ROOMS_BASE_URL`
+- `VITE_EXPECTED_CHAIN_ID`
+- `VITE_GAME_SERVER_URL`
+- `VITE_PAYMENT_TOKEN_ADDRESS`
+- `VITE_PAYMENT_HANDLER_ADDRESS`
+- `VITE_PAYMENT_ADAPTER_ADDRESS`
+
+Build the static app:
+
+```bash
+npm run build
+```
 
 ## Testing Direction
 
@@ -56,10 +98,37 @@ real browser flow that can:
 - authenticate with the deployed auth service
 - create a room through `rooms-api`
 - open or share an invite link carrying `game_id`
+- complete the payment step through the live payment contracts
 - hand the player into the real online game flow
+
+The wrapper now has real auth, room creation, invite lookup, payment, and a
+provisional launch handoff.
+
+Current invite links also carry `potential_referrer` when the creator wallet is
+known, so invite-first joins can use the creator wallet as the payment referral
+hint.
+
+The launch handoff is still provisional:
+
+- the wrapper builds a launch payload containing `token`, `game_id`,
+  `game_server_url`, and `player_address`
+- after payment verification, the wrapper stores that payload in session state
+  and opens its own internal `/launch.html` route
+- `/launch.html` already owns the embedded-client shell and is the place where
+  the migrated Godot web client should be mounted
+
+## Remaining Work
+
+- connect the auth panel to the real wallet + SIWE flow
+- add manual and staging validation for approve, play, and verify flows
+- decide the recovery path for joins when the invite URL and its
+  `potential_referrer` were both lost
+- migrate the graphical client into the internal launch iframe surface
+- add automated coverage for pure helper logic
 
 ## Scope Note
 
 This is distinct from the graphical client itself.
 
-The wrapper owns the surrounding browser product flow; the graphical client owns the actual in-game experience.
+The wrapper owns the surrounding browser product flow; the graphical client
+owns the actual in-game experience.

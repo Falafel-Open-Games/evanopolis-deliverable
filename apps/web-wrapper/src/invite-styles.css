@@ -1,0 +1,7 @@
+.invite-shell {
+  width: min(920px, calc(100vw - 2rem));
+}
+
+.invite-grid {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}

@@ -1,0 +1,24 @@
+.launch-shell {
+  width: 100vw;
+  min-height: 100vh;
+  padding: 0;
+}
+
+.launch-frame {
+  width: 100%;
+  min-height: 100vh;
+  border: 0;
+  background: #0c1218;
+}
+
+.launch-fallback {
+  width: min(720px, calc(100vw - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.launch-frame-empty,
+.launch-fallback {
+  display: grid;
+  place-items: center;
+}

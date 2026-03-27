@@ -38,9 +38,9 @@ to a final visual system.
    Generate a shareable invite URL carrying `game_id`, support manual invite
    URL or room-code entry, and validate rooms through `GET /v0/rooms/:game_id`.
 
-8. Add a launch-handoff placeholder without hardening the final contract yet.
-   Show the launch payload and optional target URL shape needed for the future
-   graphical client handoff, but keep this layer explicitly provisional.
+8. Add an internal launch route without hardening the final client yet.
+   The wrapper should own `/launch.html` and reserve its main embed surface for
+   the future graphical client, while keeping the current placeholder explicit.
 
 9. Add lightweight automated coverage for pure helper logic.
    Cover invite parsing, URL generation, and runtime-config normalization so the

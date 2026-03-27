@@ -1,0 +1,68 @@
+Web Wrapper Handoff
+2026-03-27
+
+Current state
+
+- The wrapper is a minimal Vite + React + TypeScript app with neutral styling.
+- Wallet sign-in is wired to the auth flow from ../tabletop-auth.
+- Room creation is wired to rooms-api.
+- Invite page lookup is wired to GET /v0/rooms/:game_id.
+- Generated invite links now carry `potential_referrer` with the creator wallet
+  address when the room was created through the wrapper.
+- The invite page reuses the shared Sign In panel and the shared Join Game panel.
+- Invalid invite links now render a proper not-found state with a Back action.
+- The shared Join Game panel now runs the real payment flow:
+  - refresh allowance
+  - approve entry fee
+  - submit `play(...)`
+  - verify through `POST /payments/verify`
+  - persist the payment tx hash locally per room and wallet
+- The wrapper now builds a provisional launch payload with:
+  - `token`
+  - `game_id`
+  - `game_server_url`
+  - `player_address`
+- After payment verification, the wrapper stores that launch payload in
+  session state and opens its own `/launch.html` route.
+- `/launch.html` now owns an internal embedded-client shell so the future Godot
+  web client can take over the launch surface without changing the wrapper flow.
+
+Important dependency before payment work
+
+- Invite-first joins created from the wrapper now use the first option above:
+  the creator wallet address is included in the invite URL.
+- Manual recovery by room code still does not know the creator wallet address,
+  so that path currently pays without a referral hint unless the user still has
+  the original invite URL.
+
+Next steps
+
+1. Validate the full approve → play → verify flow against local or staging auth and payment services.
+2. Decide whether room-code recovery needs another public metadata source for the creator wallet address, or whether invite URLs are the only supported referral path.
+3. Migrate the graphical client into the wrapper-owned launch iframe surface.
+4. Set up a Fly.io app for hosting the wrapper online for staging tests.
+5. Decide the runtime packaging approach for Fly.io:
+   - static dist served by a small web server in Docker, or
+   - another simple Fly-compatible static hosting path
+6. Document and configure the GitHub repository variables and secrets required by this wrapper deployment.
+7. Add CI/CD to build and deploy the staging wrapper on pushes to main.
+
+Suggested deployment/config items to prepare
+
+- Fly app name for staging
+- Fly API token secret in GitHub
+- Wrapper runtime env vars:
+  - VITE_AUTH_BASE_URL
+  - VITE_ROOMS_BASE_URL
+  - VITE_EXPECTED_CHAIN_ID
+  - VITE_GAME_SERVER_URL
+
+Useful local validation targets for tomorrow
+
+- Create room on local or staging services
+- Open the generated invite URL in a fresh browser profile
+- Confirm the invite page shows creator display name, room size, and entry fee
+- Confirm the invite URL includes `potential_referrer`
+- Confirm Join Game can approve, play, and verify with the real auth/payment stack
+- Confirm the wrapper preserves the payment tx hash across reload for the same wallet and room
+- Confirm verified payment now enters `/launch.html` with the expected room and server values

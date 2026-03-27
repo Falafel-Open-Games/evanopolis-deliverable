@@ -71,6 +71,8 @@ Content-Type: application/json
 
 ```json
 {
+  "creator_display_name": "Falafel Host",
+  "entry_fee_tier": "average",
   "player_count": 4,
   "experimental": {
     "board_size": 30,
@@ -80,6 +82,16 @@ Content-Type: application/json
 ```
 
 Notes:
+- `creator_display_name` is the player-facing inviter name supplied by the
+  wrapper for later invite and join messaging. It must be between 1 and 32
+  characters after trimming.
+- `entry_fee_tier` selects one of the fixed room fee presets:
+  - `cheap` = `0.10 TRT` = `100000000000000000`
+  - `average` = `0.50 TRT` = `500000000000000000`
+  - `deluxe` = `1.00 TRT` = `1000000000000000000`
+- `entry_fee_amount` is derived server-side from the selected fee tier and
+  should be treated as the canonical raw token amount for later payment
+  verification.
 - `player_count` should stay constrained to valid game values.
 - `experimental` is optional and should remain disabled or ignored in
   production unless explicitly enabled for testing.
@@ -92,6 +104,9 @@ Response:
 {
   "game_id": "550e8400-e29b-41d4-a716-446655440000",
   "created_by": "0x0000000000000000000000000000000000000000",
+  "creator_display_name": "Falafel Host",
+  "entry_fee_tier": "average",
+  "entry_fee_amount": "500000000000000000",
   "player_count": 4,
   "experimental": {
     "board_size": 30,
@@ -118,6 +133,9 @@ Response:
 ```json
 {
   "game_id": "550e8400-e29b-41d4-a716-446655440000",
+  "creator_display_name": "Falafel Host",
+  "entry_fee_tier": "average",
+  "entry_fee_amount": "500000000000000000",
   "player_count": 4,
   "experimental": {
     "board_size": 30,
@@ -130,7 +148,8 @@ Response:
 Notes:
 - `GET` should stay intentionally dumb in `v0`.
 - Do not return live match status here.
-- Omit `created_by` from `GET` unless the wrapper later proves it needs it.
+- Omit `created_by` from `GET`; the public join flow should use
+  `creator_display_name` instead of exposing the creator wallet address.
 - `game_id` should be generated as a UUID v4.
 
 ## Initial Implementation Baseline
@@ -139,10 +158,13 @@ The first implementation pass should assume:
 
 - `POST /v0/rooms` and `GET /v0/rooms/:game_id` are the only required
   endpoints.
-- `player_count` is the only stable room-creation field.
+- `creator_display_name`, `entry_fee_tier`, and `player_count` are the stable
+  room-creation fields.
 - `experimental` is optional and may be ignored unless explicitly enabled in
   non-production environments.
 - `created_at` is part of the canonical room definition.
+- `entry_fee_amount` is part of the canonical room definition and is derived
+  from the selected fee tier for downstream payment enforcement.
 - `GET /v0/rooms/:game_id` returns only room-definition data, not runtime
   status.
 - The game server creates the live in-memory match lazily from the room

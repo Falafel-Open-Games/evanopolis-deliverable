@@ -15,9 +15,6 @@ here.
   can be done without weakening current coverage
 - define the `rooms-api` room-lifecycle policy for expiration and cleanup,
   including unused rooms and rooms whose matches have already finished
-- explore whether `rooms-api` should accept and return a creator alias/display
-  name so invite flows can say who invited the player without depending on raw
-  wallet addresses
 - decide whether the repo still needs `docs/migration/` planning artifacts in
   their current form or whether they should be reduced to durable runbooks only
 - keep the staging validation path re-runnable after deploy/config changes,
