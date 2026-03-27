@@ -3,8 +3,6 @@ import { dirname } from "node:path";
 
 import { roomRecordSchema, type RoomRecord } from "./schemas/rooms.js";
 
-const roomsFileSchema = roomRecordSchema.array();
-
 export class RoomsStore {
   #rooms = new Map<string, RoomRecord>();
   #roomsDataFile: string;
@@ -20,8 +18,21 @@ export class RoomsStore {
 
     try {
       const raw = await readFile(this.#roomsDataFile, "utf8");
-      const parsed = roomsFileSchema.parse(JSON.parse(raw));
-      for (const room of parsed) {
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) {
+        throw new Error("rooms_data_file_must_contain_an_array");
+      }
+
+      for (const [index, roomValue] of parsed.entries()) {
+        const roomResult = roomRecordSchema.safeParse(roomValue);
+        if (!roomResult.success) {
+          console.warn(
+            `Skipping incompatible room record at index ${index} in ${this.#roomsDataFile}: ${roomResult.error.message}`,
+          );
+          continue;
+        }
+
+        const room = roomResult.data;
         this.#rooms.set(room.game_id, room);
       }
     } catch (error) {

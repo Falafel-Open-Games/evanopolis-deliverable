@@ -1,3 +1,7 @@
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+
 import { afterEach, describe, expect, it } from "vitest";
 
 import { buildServer } from "../src/server.js";
@@ -5,12 +9,20 @@ import { RoomsStore } from "../src/storage.js";
 
 describe("rooms-api", () => {
   const apps: Array<{ close: () => Promise<void> }> = [];
+  const tempDirectories: string[] = [];
 
   afterEach(async () => {
     while (apps.length > 0) {
       const app = apps.pop();
       if (app) {
         await app.close();
+      }
+    }
+
+    while (tempDirectories.length > 0) {
+      const directory = tempDirectories.pop();
+      if (directory) {
+        await rm(directory, { recursive: true, force: true });
       }
     }
   });
@@ -290,6 +302,43 @@ describe("rooms-api", () => {
         turn_duration_seconds: 60,
       },
       created_at: "2026-03-17T12:00:00.000Z",
+    });
+  });
+
+  it("skips incompatible legacy room records from persisted storage", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "rooms-api-"));
+    tempDirectories.push(directory);
+    const roomsDataFile = join(directory, "rooms.json");
+
+    await writeFile(
+      roomsDataFile,
+      JSON.stringify([
+        {
+          game_id: "11111111-1111-4111-8111-111111111111",
+          created_by: "0xlegacy",
+          player_count: 2,
+          created_at: "2026-03-17T11:00:00.000Z",
+        },
+        {
+          game_id: "550e8400-e29b-41d4-a716-446655440000",
+          created_by: "0xabc",
+          creator_display_name: "Falafel Host",
+          entry_fee_tier: "cheap",
+          entry_fee_amount: "100000000000000000",
+          player_count: 3,
+          created_at: "2026-03-17T12:00:00.000Z",
+        },
+      ]),
+    );
+
+    const store = new RoomsStore(roomsDataFile);
+
+    await expect(store.initialize()).resolves.toBeUndefined();
+    expect(store.getRoom("11111111-1111-4111-8111-111111111111")).toBeNull();
+    expect(store.getRoom("550e8400-e29b-41d4-a716-446655440000")).toMatchObject({
+      creator_display_name: "Falafel Host",
+      entry_fee_tier: "cheap",
+      entry_fee_amount: "100000000000000000",
     });
   });
 
