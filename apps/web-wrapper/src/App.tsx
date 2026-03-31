@@ -206,6 +206,20 @@ export function App() {
               characters.
             </p>
             <label>
+              <span>Room Size</span>
+              <select
+                disabled={!isSignedIn}
+                value={roomDraft.playerCount}
+                onChange={(event) =>
+                  updateRoomDraft("playerCount", event.target.value)
+                }
+              >
+                <option value="2">2 players</option>
+                <option value="3">3 players</option>
+                <option value="4">4 players</option>
+              </select>
+            </label>
+            <label>
               <span>Entry Fee</span>
               <select
                 disabled={!isSignedIn}
@@ -222,20 +236,10 @@ export function App() {
                 <option value="deluxe">Deluxe · 1.00 TRT</option>
               </select>
             </label>
-            <label>
-              <span>Room Size</span>
-              <select
-                disabled={!isSignedIn}
-                value={roomDraft.playerCount}
-                onChange={(event) =>
-                  updateRoomDraft("playerCount", event.target.value)
-                }
-              >
-                <option value="2">2 players</option>
-                <option value="3">3 players</option>
-                <option value="4">4 players</option>
-              </select>
-            </label>
+            <p className="field-note">
+              Higher entry fees raise the winner payout and improve the creator
+              commission when invited players join through your room.
+            </p>
           </div>
           {!isSignedIn ? (
             <p className="inline-note">
