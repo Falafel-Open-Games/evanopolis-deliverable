@@ -114,3 +114,6 @@ variables alongside `AUTH_BASE_URL`.
   relying only on preloaded TOML configs
 - implement admission and payment enforcement against the room definition,
   including `entry_fee_amount`
+
+For the current repo-level local path, see
+[docs/runbooks/local-stack.md](../../docs/runbooks/local-stack.md).

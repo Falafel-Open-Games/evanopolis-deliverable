@@ -10,6 +10,10 @@ export type RuntimeConfig = {
 
 type RuntimeConfigOverride = Partial<RuntimeConfig>;
 
+function getDevProxyBaseUrl(proxyPath: string): string {
+  return `${window.location.origin}${proxyPath}`;
+}
+
 function getTunneledAuthBaseUrl(host: string): string | null {
   if (host.startsWith("tabletop-demo.")) {
     return `${window.location.protocol}//${host.replace(/^tabletop-demo\./, "tabletop-demo-auth.")}`;
@@ -28,6 +32,10 @@ function getTunneledAuthBaseUrl(host: string): string | null {
 function getDefaultAuthBaseUrl(): string {
   const host = window.location.hostname;
   const tunneledAuthBase = getTunneledAuthBaseUrl(host);
+
+  if (import.meta.env.DEV) {
+    return getDevProxyBaseUrl("/__auth_proxy__");
+  }
 
   if (host === "localhost" || host === "127.0.0.1") {
     return "http://localhost:3000";
@@ -79,7 +87,9 @@ export function getRuntimeConfig(): RuntimeConfig {
     roomsBaseUrl:
       runtimeOverride.roomsBaseUrl?.trim() ||
       import.meta.env.VITE_ROOMS_BASE_URL ||
-      "http://127.0.0.1:3001",
+      (import.meta.env.DEV
+        ? getDevProxyBaseUrl("/__rooms_proxy__")
+        : "http://127.0.0.1:3001"),
     expectedChainId: configuredExpectedChainId,
     gameServerUrl:
       runtimeOverride.gameServerUrl?.trim() ||

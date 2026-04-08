@@ -129,6 +129,8 @@ quickly:
    current server-side contracts.
 7. Read [Deploy README](./deploy/README.md) for local and staging deployment
    context.
+8. Read [Local Stack Runbook](./docs/runbooks/local-stack.md) for the current
+   terminal-by-terminal development path against the sibling private auth repo.
 
 ## Deploying The Final Stack
 

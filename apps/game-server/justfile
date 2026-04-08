@@ -19,4 +19,4 @@ docker-run:
     evanopolis-game-server
 
 test:
-  godot --headless --path . -s addons/gut/gut_cmdln.gd -gconfig=res://.gutconfig.json -gexit
+  godot --headless --path . --log-file /tmp/evanopolis-game-server-gut.log -s addons/gut/gut_cmdln.gd -gconfig=res://.gutconfig.json -gexit

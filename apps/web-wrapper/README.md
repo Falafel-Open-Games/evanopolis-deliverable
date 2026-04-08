@@ -74,6 +74,9 @@ local overrides, create `.env.local` in this folder. Example:
 cp .env.example .env.local
 ```
 
+The checked-in example now matches the current sibling `tabletop-auth` auth API
+path on `http://127.0.0.1:3000`.
+
 The wrapper currently reads these Vite env vars:
 
 - `VITE_AUTH_BASE_URL`
@@ -83,6 +86,9 @@ The wrapper currently reads these Vite env vars:
 - `VITE_PAYMENT_TOKEN_ADDRESS`
 - `VITE_PAYMENT_HANDLER_ADDRESS`
 - `VITE_PAYMENT_ADAPTER_ADDRESS`
+
+For the current repo-level local path, see
+[docs/runbooks/local-stack.md](../../docs/runbooks/local-stack.md).
 
 Build the static app:
 

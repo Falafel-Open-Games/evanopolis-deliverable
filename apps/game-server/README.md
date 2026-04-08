@@ -165,3 +165,6 @@ These docs should stay aligned with:
 
 - add a documented local stack path with the private auth service
 - trim or separate non-essential support code once server coverage is preserved
+
+For the current repo-level local path, see
+[docs/runbooks/local-stack.md](../../docs/runbooks/local-stack.md).
