@@ -3,6 +3,7 @@ export type RuntimeConfig = {
   roomsBaseUrl: string;
   expectedChainId: string;
   gameServerUrl: string;
+  graphicalClientUrl: string;
   paymentTokenAddress: string;
   paymentHandlerAddress: string;
   paymentAdapterAddress: string;
@@ -95,6 +96,10 @@ export function getRuntimeConfig(): RuntimeConfig {
       runtimeOverride.gameServerUrl?.trim() ||
       import.meta.env.VITE_GAME_SERVER_URL ||
       "ws://127.0.0.1:9010",
+    graphicalClientUrl:
+      runtimeOverride.graphicalClientUrl?.trim() ||
+      import.meta.env.VITE_GRAPHICAL_CLIENT_URL ||
+      "/graphical-client/index.html",
     paymentTokenAddress:
       runtimeOverride.paymentTokenAddress?.trim() ||
       import.meta.env.VITE_PAYMENT_TOKEN_ADDRESS ||

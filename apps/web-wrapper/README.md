@@ -78,6 +78,7 @@ The wrapper currently reads these Vite env vars:
 - `VITE_ROOMS_BASE_URL`
 - `VITE_EXPECTED_CHAIN_ID`
 - `VITE_GAME_SERVER_URL`
+- `VITE_GRAPHICAL_CLIENT_URL`
 - `VITE_PAYMENT_TOKEN_ADDRESS`
 - `VITE_PAYMENT_HANDLER_ADDRESS`
 - `VITE_PAYMENT_ADAPTER_ADDRESS`
@@ -103,6 +104,7 @@ configuration is injected into `/runtime-config.js` at container startup from:
 - `ROOMS_BASE_URL`
 - `EXPECTED_CHAIN_ID`
 - `GAME_SERVER_URL`
+- `GRAPHICAL_CLIENT_URL`
 - `PAYMENT_TOKEN_ADDRESS`
 - `PAYMENT_HANDLER_ADDRESS`
 - `PAYMENT_ADAPTER_ADDRESS`
@@ -134,8 +136,9 @@ The launch handoff is still provisional:
   `game_server_url`, and `player_address`
 - after payment verification, the wrapper stores that payload in session state
   and opens its own internal `/launch.html` route
-- `/launch.html` already owns the embedded-client shell and is the place where
-  the migrated Godot web client should be mounted
+- `/launch.html` embeds the configured graphical client URL, then hands the
+  launch payload to the iframe over the `open-game-host` `postMessage`
+  protocol once the child sends `client_ready`
 
 ## Staging Deploy
 

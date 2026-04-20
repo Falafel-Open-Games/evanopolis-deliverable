@@ -21,6 +21,7 @@ interface Window {
     roomsBaseUrl?: string;
     expectedChainId?: string;
     gameServerUrl?: string;
+    graphicalClientUrl?: string;
     paymentTokenAddress?: string;
     paymentHandlerAddress?: string;
     paymentAdapterAddress?: string;

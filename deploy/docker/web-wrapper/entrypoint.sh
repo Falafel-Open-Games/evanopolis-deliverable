@@ -13,6 +13,7 @@ window.__EVANOPOLIS_CONFIG__ = {
   roomsBaseUrl: "$(js_escape "${ROOMS_BASE_URL:-}")",
   expectedChainId: "$(js_escape "${EXPECTED_CHAIN_ID:-}")",
   gameServerUrl: "$(js_escape "${GAME_SERVER_URL:-}")",
+  graphicalClientUrl: "$(js_escape "${GRAPHICAL_CLIENT_URL:-}")",
   paymentTokenAddress: "$(js_escape "${PAYMENT_TOKEN_ADDRESS:-}")",
   paymentHandlerAddress: "$(js_escape "${PAYMENT_HANDLER_ADDRESS:-}")",
   paymentAdapterAddress: "$(js_escape "${PAYMENT_ADAPTER_ADDRESS:-}")"
