@@ -1,39 +1,31 @@
-import { Interface, getAddress, keccak256, toUtf8Bytes } from "ethers";
+import { Interface, formatUnits, getAddress, keccak256, toUtf8Bytes } from "ethers";
 
 import { ensureWalletOnExpectedChain } from "./auth";
 import type { RuntimeConfig } from "./runtime-config";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-const GAS_LIMIT_BUFFER_BPS = 12000n;
-const BASIS_POINTS_DIVISOR = 10000n;
-
-type FeeHintDefaults = {
-  minMaxFeePerGas: bigint;
-  minMaxPriorityFeePerGas: bigint;
-};
 
 type TransactionRequest = {
   from: string;
   to: string;
   data: string;
-  gas?: string;
-  gasPrice?: string;
-  maxFeePerGas?: string;
-  maxPriorityFeePerGas?: string;
-};
-
-type BlockFeeData = {
-  baseFeePerGas?: string;
 };
 
 const allowanceInterface = new Interface([
   "function allowance(address owner, address spender) view returns (uint256)",
+]);
+const balanceInterface = new Interface([
+  "function balanceOf(address owner) view returns (uint256)",
 ]);
 const approveInterface = new Interface([
   "function approve(address spender, uint256 amount)",
 ]);
 const playInterface = new Interface([
   "function play(uint256 amount, address potentialReferrer, bytes32 gameId)",
+]);
+const revertInterface = new Interface([
+  "error Error(string)",
+  "error Panic(uint256)",
 ]);
 
 export type VerifiedPayment = {
@@ -63,172 +55,25 @@ function getEthereumProvider(): EthereumProvider {
   return window.ethereum;
 }
 
-function getFeeHintDefaults(expectedChainId: string): FeeHintDefaults {
-  if (expectedChainId === "421614") {
-    return {
-      minMaxFeePerGas: 100000000n,
-      minMaxPriorityFeePerGas: 10000000n,
-    };
-  }
-
-  return {
-    minMaxFeePerGas: 0n,
-    minMaxPriorityFeePerGas: 0n,
-  };
-}
-
 function normalizeBaseUrl(url: string): string {
   return url.trim().replace(/\/$/, "");
-}
-
-function toRpcHex(value: bigint): string {
-  return `0x${value.toString(16)}`;
-}
-
-function multiplyByBps(value: bigint, basisPoints: bigint): bigint {
-  return (value * basisPoints) / BASIS_POINTS_DIVISOR;
-}
-
-function maxBigInt(...values: Array<bigint | null>): bigint | null {
-  let currentMax: bigint | null = null;
-
-  for (const value of values) {
-    if (value === null) {
-      continue;
-    }
-
-    if (currentMax === null || value > currentMax) {
-      currentMax = value;
-    }
-  }
-
-  return currentMax;
-}
-
-async function getEstimatedGas(
-  provider: EthereumProvider,
-  transaction: TransactionRequest,
-): Promise<bigint | null> {
-  try {
-    const result = await provider.request<string>({
-      method: "eth_estimateGas",
-      params: [transaction],
-    });
-    return BigInt(result);
-  } catch {
-    return null;
-  }
-}
-
-async function getLatestBaseFeePerGas(
-  provider: EthereumProvider,
-): Promise<bigint | null> {
-  try {
-    const block = await provider.request<BlockFeeData>({
-      method: "eth_getBlockByNumber",
-      params: ["latest", false],
-    });
-    if (typeof block.baseFeePerGas !== "string") {
-      return null;
-    }
-
-    return BigInt(block.baseFeePerGas);
-  } catch {
-    return null;
-  }
-}
-
-async function getGasPrice(provider: EthereumProvider): Promise<bigint | null> {
-  try {
-    const result = await provider.request<string>({
-      method: "eth_gasPrice",
-    });
-    return BigInt(result);
-  } catch {
-    return null;
-  }
-}
-
-async function getMaxPriorityFeePerGas(
-  provider: EthereumProvider,
-): Promise<bigint | null> {
-  try {
-    const result = await provider.request<string>({
-      method: "eth_maxPriorityFeePerGas",
-    });
-    return BigInt(result);
-  } catch {
-    return null;
-  }
-}
-
-async function buildBufferedTransactionRequest(args: {
-  provider: EthereumProvider;
-  runtimeConfig: RuntimeConfig;
-  from: string;
-  to: string;
-  data: string;
-}): Promise<TransactionRequest> {
-  const transaction: TransactionRequest = {
-    from: args.from,
-    to: args.to,
-    data: args.data,
-  };
-  const feeHintDefaults = getFeeHintDefaults(args.runtimeConfig.expectedChainId);
-  const [estimatedGas, latestBaseFeePerGas, gasPrice, maxPriorityFeePerGas] =
-    await Promise.all([
-      getEstimatedGas(args.provider, transaction),
-      getLatestBaseFeePerGas(args.provider),
-      getGasPrice(args.provider),
-      getMaxPriorityFeePerGas(args.provider),
-    ]);
-
-  if (estimatedGas !== null) {
-    transaction.gas = toRpcHex(
-      multiplyByBps(estimatedGas, GAS_LIMIT_BUFFER_BPS),
-    );
-  }
-
-  if (latestBaseFeePerGas !== null) {
-    const effectivePriorityFeePerGas = maxBigInt(
-      maxPriorityFeePerGas,
-      feeHintDefaults.minMaxPriorityFeePerGas,
-    );
-    const bufferedMaxFeePerGas = maxBigInt(
-      latestBaseFeePerGas * 5n +
-        (effectivePriorityFeePerGas ?? feeHintDefaults.minMaxPriorityFeePerGas),
-      gasPrice === null ? null : gasPrice * 2n,
-      feeHintDefaults.minMaxFeePerGas,
-    );
-
-    if (bufferedMaxFeePerGas !== null && bufferedMaxFeePerGas > 0n) {
-      transaction.maxFeePerGas = toRpcHex(bufferedMaxFeePerGas);
-    }
-
-    if (
-      effectivePriorityFeePerGas !== null &&
-      effectivePriorityFeePerGas > 0n
-    ) {
-      transaction.maxPriorityFeePerGas = toRpcHex(effectivePriorityFeePerGas);
-    }
-
-    return transaction;
-  }
-
-  const bufferedGasPrice = maxBigInt(
-    gasPrice === null ? null : gasPrice * 2n,
-    feeHintDefaults.minMaxFeePerGas,
-  );
-  if (bufferedGasPrice !== null && bufferedGasPrice > 0n) {
-    transaction.gasPrice = toRpcHex(bufferedGasPrice);
-  }
-
-  return transaction;
 }
 
 function getWalletErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
+  }
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "data" in error &&
+    typeof error.data === "object" &&
+    error.data !== null &&
+    "message" in error.data &&
+    typeof error.data.message === "string"
+  ) {
+    return error.data.message;
   }
 
   if (
@@ -241,6 +86,55 @@ function getWalletErrorMessage(error: unknown): string {
   }
 
   return String(error);
+}
+
+function getWalletErrorData(error: unknown): string | null {
+  if (typeof error !== "object" || error === null) {
+    return null;
+  }
+
+  const walletError = error as {
+    data?: unknown;
+    error?: { data?: unknown };
+  };
+  const directNestedData =
+    typeof walletError.data === "object" &&
+    walletError.data !== null &&
+    "data" in walletError.data
+      ? walletError.data.data
+      : undefined;
+  const nestedData =
+    typeof walletError.error === "object" &&
+    walletError.error !== null &&
+    "data" in walletError.error
+      ? walletError.error.data
+      : undefined;
+  const data = directNestedData ?? walletError.data ?? nestedData;
+  return typeof data === "string" ? data : null;
+}
+
+function getPreflightErrorMessage(error: unknown): string {
+  const revertData = getWalletErrorData(error);
+  if (revertData !== null) {
+    try {
+      const parsed = revertInterface.parseError(revertData);
+      if (parsed?.name === "Error") {
+        const reason = parsed.args[0];
+        if (typeof reason === "string" && reason.length > 0) {
+          return reason;
+        }
+      }
+
+      if (parsed?.name === "Panic") {
+        return `Contract panic (${parsed.args[0].toString()}).`;
+      }
+    } catch {
+      // Fall through to the wallet error message when the revert payload is
+      // not one of the standard Solidity error encodings.
+    }
+  }
+
+  return getWalletErrorMessage(error);
 }
 
 function getPaymentSpecificErrorMessage(error: unknown): string | null {
@@ -274,6 +168,38 @@ export function getPotentialReferrerAddress(referrerAddress: string): string {
   return normalizeWalletAddress(referrerAddress) ?? ZERO_ADDRESS;
 }
 
+export function getEffectivePotentialReferrerAddress(args: {
+  playerAddress: string;
+  referrerAddress: string;
+}): string {
+  const playerAddress = normalizeWalletAddress(args.playerAddress);
+  const referrerAddress = normalizeWalletAddress(args.referrerAddress);
+
+  if (playerAddress === null || referrerAddress === null) {
+    return ZERO_ADDRESS;
+  }
+
+  if (playerAddress.toLowerCase() === referrerAddress.toLowerCase()) {
+    return ZERO_ADDRESS;
+  }
+
+  return referrerAddress;
+}
+
+async function assertTransactionWillSucceed(
+  provider: EthereumProvider,
+  transaction: TransactionRequest,
+): Promise<void> {
+  try {
+    await provider.request<string>({
+      method: "eth_call",
+      params: [transaction, "latest"],
+    });
+  } catch (error) {
+    throw new Error(getPreflightErrorMessage(error));
+  }
+}
+
 async function sendTransaction(args: {
   runtimeConfig: RuntimeConfig;
   to: string;
@@ -290,13 +216,16 @@ async function sendTransaction(args: {
     throw new Error("The wallet did not return an account.");
   }
 
-  const transaction = await buildBufferedTransactionRequest({
-    provider,
-    runtimeConfig: args.runtimeConfig,
+  // Let the injected wallet own gas and fee estimation. Preloading gas fields
+  // here can produce unusable values when the wallet's active RPC is stale or
+  // otherwise disagrees with the network.
+  const transaction: TransactionRequest = {
     from,
     to: args.to,
     data: args.data,
-  });
+  };
+
+  await assertTransactionWillSucceed(provider, transaction);
 
   return provider.request<string>({
     method: "eth_sendTransaction",
@@ -324,6 +253,20 @@ export async function getAllowance(
   return BigInt(allowance.toString());
 }
 
+export async function getTokenBalance(
+  runtimeConfig: RuntimeConfig,
+  ownerAddress: string,
+): Promise<bigint> {
+  const provider = getEthereumProvider();
+  const data = balanceInterface.encodeFunctionData("balanceOf", [ownerAddress]);
+  const result = await provider.request<string>({
+    method: "eth_call",
+    params: [{ to: runtimeConfig.paymentTokenAddress, data }, "latest"],
+  });
+  const [balance] = balanceInterface.decodeFunctionResult("balanceOf", result);
+  return BigInt(balance.toString());
+}
+
 export async function approveEntryFee(
   runtimeConfig: RuntimeConfig,
   amount: string,
@@ -344,10 +287,14 @@ export async function payEntryFee(args: {
   amount: string;
   gameId: string;
   potentialReferrer: string;
+  playerAddress: string;
 }): Promise<string> {
   const data = playInterface.encodeFunctionData("play", [
     BigInt(args.amount),
-    getPotentialReferrerAddress(args.potentialReferrer),
+    getEffectivePotentialReferrerAddress({
+      playerAddress: args.playerAddress,
+      referrerAddress: args.potentialReferrer,
+    }),
     deriveGameIdBytes32(args.gameId),
   ]);
   return sendTransaction({
@@ -435,6 +382,15 @@ export function formatAllowanceStatus(
   }
 
   return `Allowance too low: ${allowance.toString()} approved for ${requiredAmount} required.`;
+}
+
+export function formatTokenAmount(amount: bigint, decimals: number = 18): string {
+  const formatted = formatUnits(amount, decimals);
+  if (!formatted.includes(".")) {
+    return formatted;
+  }
+
+  return formatted.replace(/\.?0+$/, "");
 }
 
 export function getPaymentActionErrorMessage(error: unknown): string {

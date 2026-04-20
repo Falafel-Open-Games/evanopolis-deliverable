@@ -13,9 +13,11 @@ import {
 } from "../lib/launch";
 import {
   approveEntryFee,
+  formatTokenAmount,
   getAllowance,
   getPaymentActionErrorMessage,
   getPotentialReferrerAddress,
+  getTokenBalance,
   normalizeWalletAddress,
   payEntryFee,
   type VerifiedPayment,
@@ -67,7 +69,12 @@ function getInitialStatusMessage(args: {
 function getAllowanceSummary(
   allowance: bigint | null,
   requiredEntryFee: bigint,
+  balance: bigint | null,
 ): string {
+  if (balance !== null && balance < requiredEntryFee) {
+    return "Wallet TRT balance is below the entry fee.";
+  }
+
   if (allowance === null) {
     return "Check approval status when you are ready to continue.";
   }
@@ -102,6 +109,7 @@ export function JoinGamePanel({
     runtimeConfig.paymentAdapterAddress.trim().length > 0;
   const requiredEntryFee = BigInt(entryFeeAmount);
   const [allowance, setAllowance] = useState<bigint | null>(null);
+  const [tokenBalance, setTokenBalance] = useState<bigint | null>(null);
   const [paymentTxHash, setPaymentTxHash] = useState<string>("");
   const [verifiedPayment, setVerifiedPayment] = useState<VerifiedPayment | null>(
     null,
@@ -118,7 +126,10 @@ export function JoinGamePanel({
   const [isApproving, setIsApproving] = useState<boolean>(false);
   const [isPaying, setIsPaying] = useState<boolean>(false);
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
-  const canPay = allowance !== null && allowance >= requiredEntryFee;
+  const hasEnoughBalance =
+    tokenBalance !== null && tokenBalance >= requiredEntryFee;
+  const canPay =
+    allowance !== null && allowance >= requiredEntryFee && hasEnoughBalance;
   const launchPayload =
     authSession === null
       ? null
@@ -138,6 +149,7 @@ export function JoinGamePanel({
   useEffect(() => {
     if (authSession === null) {
       setAllowance(null);
+      setTokenBalance(null);
       setPaymentTxHash("");
       setVerifiedPayment(null);
       setStatusMessage(
@@ -190,13 +202,21 @@ export function JoinGamePanel({
     let cancelled = false;
     setIsRefreshingAllowance(true);
 
-    void getAllowance(runtimeConfig, authSession.address)
-      .then((nextAllowance) => {
+    void Promise.allSettled([
+      getAllowance(runtimeConfig, authSession.address),
+      getTokenBalance(runtimeConfig, authSession.address),
+    ])
+      .then(([allowanceResult, balanceResult]) => {
         if (cancelled) {
           return;
         }
 
-        setAllowance(nextAllowance);
+        setAllowance(
+          allowanceResult.status === "fulfilled" ? allowanceResult.value : null,
+        );
+        setTokenBalance(
+          balanceResult.status === "fulfilled" ? balanceResult.value : null,
+        );
       })
       .catch(() => {
         if (cancelled) {
@@ -204,6 +224,7 @@ export function JoinGamePanel({
         }
 
         setAllowance(null);
+        setTokenBalance(null);
       })
       .finally(() => {
         if (cancelled) {
@@ -224,14 +245,21 @@ export function JoinGamePanel({
     }
 
     setIsRefreshingAllowance(true);
-    setStatusMessage("Checking token allowance...");
+    setStatusMessage("Checking token allowance and TRT balance...");
 
     try {
-      const nextAllowance = await getAllowance(runtimeConfig, authSession.address);
+      const [nextAllowance, nextBalance] = await Promise.all([
+        getAllowance(runtimeConfig, authSession.address),
+        getTokenBalance(runtimeConfig, authSession.address),
+      ]);
       setAllowance(nextAllowance);
-      setStatusMessage(getAllowanceSummary(nextAllowance, requiredEntryFee));
+      setTokenBalance(nextBalance);
+      setStatusMessage(
+        getAllowanceSummary(nextAllowance, requiredEntryFee, nextBalance),
+      );
     } catch (error) {
       setAllowance(null);
+      setTokenBalance(null);
       setStatusMessage(getPaymentActionErrorMessage(error));
     } finally {
       setIsRefreshingAllowance(false);
@@ -273,6 +301,7 @@ export function JoinGamePanel({
         runtimeConfig,
         amount: entryFeeAmount,
         gameId,
+        playerAddress: authSession.address,
         potentialReferrer: getPotentialReferrerAddress(
           normalizedReferrerAddress ?? "",
         ),
@@ -349,7 +378,13 @@ export function JoinGamePanel({
       </div>
       <div className="result-block">
         <p>Payment Status</p>
-        <code>{getAllowanceSummary(allowance, requiredEntryFee)}</code>
+        <code>{getAllowanceSummary(allowance, requiredEntryFee, tokenBalance)}</code>
+        <p className="field-note">
+          Wallet TRT balance:{" "}
+          <code>
+            {tokenBalance === null ? "Unavailable" : `${formatTokenAmount(tokenBalance)} TRT`}
+          </code>
+        </p>
       </div>
       {paymentTxHash.length > 0 ? (
         <p className="field-note">Payment submitted and ready to verify.</p>
@@ -381,7 +416,7 @@ export function JoinGamePanel({
           disabled={authSession === null || !hasPaymentConfig || isRefreshingAllowance}
           onClick={() => void handleRefreshAllowance()}
         >
-          {isRefreshingAllowance ? "Checking..." : "Refresh Allowance"}
+          {isRefreshingAllowance ? "Checking..." : "Refresh Payment State"}
         </button>
         <button
           type="button"
