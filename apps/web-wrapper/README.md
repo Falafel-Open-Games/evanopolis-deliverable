@@ -68,14 +68,9 @@ npm run dev
 ```
 
 To point the wrapper at a non-default environment, use Vite env vars. For
-local overrides, create `.env.local` in this folder. Example:
-
-```bash
-cp .env.example .env.local
-```
-
-The checked-in example now matches the current sibling `tabletop-auth` auth API
-path on `http://127.0.0.1:3000`.
+local overrides, create `.env.local` in this folder. The default local values
+already match the repo-level runbook, so `.env.local` is only needed when you
+want to override them.
 
 The wrapper currently reads these Vite env vars:
 

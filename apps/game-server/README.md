@@ -29,6 +29,10 @@ On a fresh clone, import the project once:
 just import
 ```
 
+That headless import primes Godot's imported resources and `class_name`
+metadata so the server and GUT can resolve project classes cleanly on a fresh
+checkout.
+
 Run the headless server:
 
 ```bash
@@ -93,6 +97,14 @@ AUTH_BASE_URL=http://127.0.0.1:3000 just docker-run
 
 The `docker-run` recipe uses `--network host`, which keeps local auth lookups
 simple and avoids `host.docker.internal` issues on Linux.
+
+If you want Dockerized room hydration as well, pass `ROOMS_API_BASE_URL`:
+
+```bash
+AUTH_BASE_URL=http://127.0.0.1:3000 \
+ROOMS_API_BASE_URL=http://127.0.0.1:3001 \
+just docker-run
+```
 
 ## Fly.io Staging Deploy
 
@@ -163,7 +175,8 @@ These docs should stay aligned with:
 
 ## Remaining Work
 
-- add a documented local stack path with the private auth service
+- keep the repo-level local stack path aligned with the current private auth
+  service workflow
 - trim or separate non-essential support code once server coverage is preserved
 
 For the current repo-level local path, see

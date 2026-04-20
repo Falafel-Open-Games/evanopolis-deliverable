@@ -12,9 +12,11 @@ docker-build:
 
 docker-run:
   test -n "${AUTH_BASE_URL:-}" || (echo "AUTH_BASE_URL is required"; exit 1)
-  docker run --rm -it --init --network host \
+  docker run --rm --init --network host \
     -e AUTH_BASE_URL="${AUTH_BASE_URL}" \
     -e AUTH_VERIFY_PATH="${AUTH_VERIFY_PATH:-}" \
+    -e ROOMS_API_BASE_URL="${ROOMS_API_BASE_URL:-}" \
+    -e ROOMS_API_LOOKUP_TEMPLATE="${ROOMS_API_LOOKUP_TEMPLATE:-}" \
     -e GAME_SERVER_PORT="${GAME_SERVER_PORT:-9010}" \
     evanopolis-game-server
 

@@ -1,5 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+function normalizeBaseUrl(url, fallback) {
+    return (url ?? fallback).trim().replace(/\/$/, "");
+}
+const authProxyTarget = normalizeBaseUrl(process.env.AUTH_BASE_URL ?? process.env.VITE_AUTH_BASE_URL, "http://127.0.0.1:3000");
+const roomsProxyTarget = normalizeBaseUrl(process.env.ROOMS_BASE_URL ??
+    process.env.ROOMS_API_BASE_URL ??
+    process.env.VITE_ROOMS_BASE_URL, "http://127.0.0.1:3001");
 export default defineConfig({
     plugins: [react()],
     server: {
@@ -7,12 +14,12 @@ export default defineConfig({
         allowedHosts: [".falafel.com.br"],
         proxy: {
             "/__auth_proxy__": {
-                target: "http://127.0.0.1:3000",
+                target: authProxyTarget,
                 changeOrigin: true,
                 rewrite: function (path) { return path.replace(/^\/__auth_proxy__/, ""); },
             },
             "/__rooms_proxy__": {
-                target: "http://127.0.0.1:3001",
+                target: roomsProxyTarget,
                 changeOrigin: true,
                 rewrite: function (path) { return path.replace(/^\/__rooms_proxy__/, ""); },
             },
