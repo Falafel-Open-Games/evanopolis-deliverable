@@ -102,10 +102,12 @@ The current intended flow is:
   Final player-facing client target.
 - [apps/text-client/](./apps/text-client/README.md)
   Debugging and testing client, not the main deliverable surface.
+- [TODO.md](./TODO.md)
+  Active delivery source of truth for launch blockers, sequencing, and parking lot items.
 - [deploy/](./deploy/README.md)
   Deployment assets, Dockerfiles, and staging/cloud notes.
 - [docs/migration/](./docs/migration/server-first-roadmap.md)
-  Migration sequence and consolidation plan.
+  Historical migration context. Active delivery planning now lives in `TODO.md`.
 - [tests/](./tests)
   Cross-app integration and environment validation assets.
 
@@ -115,8 +117,8 @@ If you are new to the codebase, this reading order should get you productive
 quickly:
 
 1. Read [this README](./README.md) for the product and repo overview.
-2. Read [Server-First Migration Roadmap](./docs/migration/server-first-roadmap.md)
-   for the delivery sequence.
+2. Read [TODO.md](./TODO.md) for the active delivery sequence and current
+   launch blockers.
 3. Read [Game Server README](./apps/game-server/README.md) for the current
    runnable core of the stack.
 4. Read [Rooms API README](./apps/rooms-api/README.md) and
@@ -131,6 +133,8 @@ quickly:
    context.
 8. Read [Local Stack Runbook](./docs/runbooks/local-stack.md) for the current
    terminal-by-terminal development path against the sibling private auth repo.
+9. Use [Server-First Migration Roadmap](./docs/migration/server-first-roadmap.md)
+   only as historical context, not as the active backlog.
 
 ## Deploying The Final Stack
 

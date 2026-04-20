@@ -1,5 +1,10 @@
 # Two-Week Wrap-Up Plan
 
+This document is a historical execution sketch from an earlier planning pass.
+
+It is not the active backlog. The current source of truth for delivery-week
+work is the repo root [TODO.md](../../TODO.md).
+
 This plan is intentionally narrow. The goal is not to build more. The goal is to consolidate, deploy, and validate what already exists in real environments.
 
 ## Week 1

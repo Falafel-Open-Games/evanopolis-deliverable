@@ -1,5 +1,12 @@
 # Server-First Migration Roadmap
 
+This document is historical planning context from the initial consolidation
+phase.
+
+It is not the active delivery backlog anymore. The current source of truth for
+launch blockers, sequencing, and parking-lot items is the repo root
+[TODO.md](../../TODO.md).
+
 ## Goal
 
 Create a production-readable monorepo that prioritizes:
@@ -45,12 +52,7 @@ before client polish.
 - do not preserve old repo layout just because it already exists
 - do not optimize for completeness over clarity
 
-## Immediate Next Actions
+## Current Use
 
-1. define and document the auth contract against the private `tabletop-auth` repo
-2. copy `godot2` server into `apps/game-server/`
-3. add root compose file for game + backing services + private auth integration points
-4. add one staging deployment workflow
-5. add the main web wrapper for room creation, invitation acceptance, and game launch
-6. adapt the approved offline-demo UI into the final graphical client using multiplayer RPCs
-7. execute the wrap-up test plan in real environments
+Use this file only to understand the original migration direction and
+non-goals. Do not use it as the active task list during delivery week.

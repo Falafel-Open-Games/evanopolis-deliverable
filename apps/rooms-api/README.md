@@ -110,10 +110,12 @@ variables alongside `AUTH_BASE_URL`.
 
 ## Remaining Work
 
-- wire `apps/game-server` to fetch room definitions dynamically instead of
-  relying only on preloaded TOML configs
-- implement admission and payment enforcement against the room definition,
-  including `entry_fee_amount`
+Active delivery tracking now lives in the repo root
+[TODO.md](../../TODO.md).
+
+For this app, the live open item is keeping room policy and `entry_fee_amount`
+aligned with authoritative server-side admission enforcement and any final room
+lifecycle decision.
 
 For the current repo-level local path, see
 [docs/runbooks/local-stack.md](../../docs/runbooks/local-stack.md).

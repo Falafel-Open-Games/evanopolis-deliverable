@@ -175,9 +175,12 @@ These docs should stay aligned with:
 
 ## Remaining Work
 
-- keep the repo-level local stack path aligned with the current private auth
-  service workflow
-- trim or separate non-essential support code once server coverage is preserved
+Active delivery tracking now lives in the repo root
+[TODO.md](../../TODO.md).
+
+For this app, the main live launch blocker is authoritative admission and
+payment enforcement at join time. Support-code trimming stays out of the
+critical path unless it directly reduces delivery risk.
 
 For the current repo-level local path, see
 [docs/runbooks/local-stack.md](../../docs/runbooks/local-stack.md).

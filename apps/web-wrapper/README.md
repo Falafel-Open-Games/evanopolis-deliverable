@@ -148,12 +148,12 @@ The checked-in staging path for this app is now:
 
 ## Remaining Work
 
-- connect the auth panel to the real wallet + SIWE flow
-- add manual and staging validation for approve, play, and verify flows
-- decide the recovery path for joins when the invite URL and its
-  `potential_referrer` were both lost
-- migrate the graphical client into the internal launch iframe surface
-- add automated coverage for pure helper logic
+Active delivery tracking now lives in the repo root
+[TODO.md](../../TODO.md).
+
+For this app, the main live launch blocker is replacing the current
+`/launch.html` placeholder with the real client and rerunning the full local
+and staging browser validation path.
 
 ## Scope Note
 

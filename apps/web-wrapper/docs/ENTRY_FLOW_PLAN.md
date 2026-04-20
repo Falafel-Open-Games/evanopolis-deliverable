@@ -1,5 +1,10 @@
 # Web Wrapper Entry Flow Plan
 
+This document is product and integration reference only.
+
+It is not the active backlog. The current source of truth for delivery-week
+priorities is the repo root [TODO.md](../../../TODO.md).
+
 This document defines the intended job of `apps/web-wrapper/` before the HTML
 surface is built.
 

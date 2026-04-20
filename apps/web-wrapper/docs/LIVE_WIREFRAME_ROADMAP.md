@@ -1,5 +1,10 @@
 # Live Wireframe Roadmap
 
+This document is now design and implementation reference only.
+
+It is not the active backlog. The current source of truth for delivery-week
+priorities is the repo root [TODO.md](../../../TODO.md).
+
 This roadmap captures the immediate pivot for `apps/web-wrapper/`:
 ship a minimal live browser flow for real invitation testing before committing
 to a final visual system.
