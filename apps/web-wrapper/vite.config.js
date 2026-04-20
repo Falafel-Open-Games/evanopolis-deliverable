@@ -1,12 +1,12 @@
+var _a, _b, _c, _d, _e;
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+var processEnv = (_b = (_a = globalThis.process) === null || _a === void 0 ? void 0 : _a.env) !== null && _b !== void 0 ? _b : {};
 function normalizeBaseUrl(url, fallback) {
-    return (url ?? fallback).trim().replace(/\/$/, "");
+    return (url !== null && url !== void 0 ? url : fallback).trim().replace(/\/$/, "");
 }
-const authProxyTarget = normalizeBaseUrl(process.env.AUTH_BASE_URL ?? process.env.VITE_AUTH_BASE_URL, "http://127.0.0.1:3000");
-const roomsProxyTarget = normalizeBaseUrl(process.env.ROOMS_BASE_URL ??
-    process.env.ROOMS_API_BASE_URL ??
-    process.env.VITE_ROOMS_BASE_URL, "http://127.0.0.1:3001");
+var authProxyTarget = normalizeBaseUrl((_c = processEnv.AUTH_BASE_URL) !== null && _c !== void 0 ? _c : processEnv.VITE_AUTH_BASE_URL, "http://127.0.0.1:3000");
+var roomsProxyTarget = normalizeBaseUrl((_e = (_d = processEnv.ROOMS_BASE_URL) !== null && _d !== void 0 ? _d : processEnv.ROOMS_API_BASE_URL) !== null && _e !== void 0 ? _e : processEnv.VITE_ROOMS_BASE_URL, "http://127.0.0.1:3001");
 export default defineConfig({
     plugins: [react()],
     server: {

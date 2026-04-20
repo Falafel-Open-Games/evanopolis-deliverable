@@ -1,19 +1,26 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+const processEnv =
+  (
+    globalThis as typeof globalThis & {
+      process?: { env?: Record<string, string | undefined> };
+    }
+  ).process?.env ?? {};
+
 function normalizeBaseUrl(url: string | undefined, fallback: string): string {
   return (url ?? fallback).trim().replace(/\/$/, "");
 }
 
 const authProxyTarget = normalizeBaseUrl(
-  process.env.AUTH_BASE_URL ?? process.env.VITE_AUTH_BASE_URL,
+  processEnv.AUTH_BASE_URL ?? processEnv.VITE_AUTH_BASE_URL,
   "http://127.0.0.1:3000",
 );
 
 const roomsProxyTarget = normalizeBaseUrl(
-  process.env.ROOMS_BASE_URL ??
-    process.env.ROOMS_API_BASE_URL ??
-    process.env.VITE_ROOMS_BASE_URL,
+  processEnv.ROOMS_BASE_URL ??
+    processEnv.ROOMS_API_BASE_URL ??
+    processEnv.VITE_ROOMS_BASE_URL,
   "http://127.0.0.1:3001",
 );
 
