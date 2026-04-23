@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://cwhq6s8tpo1fw"]
+
+[ext_resource type="Script" uid="uid://cjvsqspi84ux" path="res://scripts/app/session_check.gd" id="1_session"]
+[ext_resource type="PackedScene" uid="uid://dvp2w6127neee" path="res://scenes/app/app_boot.tscn" id="2_boot"]
+[ext_resource type="PackedScene" path="res://scenes/app/session_check_status.tscn" id="3_session_view"]
+
+[node name="HeadlessRpc" type="Node" unique_id=1513789639 node_paths=PackedStringArray("boot_node")]
+script = ExtResource("1_session")
+boot_node = NodePath("AppBoot")
+
+[node name="AppBoot" parent="." unique_id=920493591 instance=ExtResource("2_boot")]
+
+[node name="SessionCheckStatus" parent="." unique_id=1586041027 instance=ExtResource("3_session_view")]

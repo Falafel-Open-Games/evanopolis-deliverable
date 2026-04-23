@@ -1,4 +1,5 @@
 extends Node
+class_name AppBoot
 
 ## Boot entrypoint for the web client.
 ##
@@ -27,24 +28,25 @@ extends Node
 ## - `gameServerUrl`
 ## - `playerAddress`
 
-const BootStateModel = preload("res://scripts/app/models/boot_state.gd")
+const StatusCardState = preload("res://scripts/app/models/status_view_state.gd")
 const LaunchPayloadModel = preload("res://scripts/app/models/launch_payload.gd")
 const CommandLineLaunch = preload("res://scripts/app/command_line_launch.gd")
 const WebBridge = preload("res://scripts/app/web_bridge.gd")
 
-signal boot_state_changed(state: BootStateModel)
+signal boot_state_changed(state: StatusCardState)
 signal launch_payload_received(payload: LaunchPayloadModel)
 const BRIDGE_TIMEOUT_SECONDS: float = 8.0
 
 var _web_bridge: WebBridge
 var _command_line_launch: CommandLineLaunch
 var _launch_payload: LaunchPayloadModel
-var _boot_state: BootStateModel = BootStateModel.new(
+var _boot_state: StatusCardState = StatusCardState.new(
     "Booting",
     "Preparing boot scene...",
     "This scene documents the launch bridge and will become the first boot handoff into match flow."
 )
 var _launch_payload_received: bool = false
+var _pending_launch_payload_emit: bool = false
 
 @onready var bridge_timeout_timer: Timer = %BridgeTimeoutTimer
 
@@ -65,7 +67,7 @@ func _exit_tree() -> void:
         return
     _web_bridge.stop()
 
-func get_boot_state() -> BootStateModel:
+func get_boot_state() -> StatusCardState:
     return _boot_state.clone()
 
 func get_launch_payload() -> LaunchPayloadModel:
@@ -114,9 +116,15 @@ func _accept_launch_payload(
     _launch_payload_received = true
     _launch_payload = payload
     bridge_timeout_timer.stop()
-    launch_payload_received.emit(get_launch_payload())
+    _pending_launch_payload_emit = true
+    call_deferred("_emit_launch_payload_received")
 
     _set_boot_state(status_text, payload.build_summary(), note_text)
+
+func _emit_launch_payload_received() -> void:
+    assert(_pending_launch_payload_emit)
+    _pending_launch_payload_emit = false
+    launch_payload_received.emit(get_launch_payload())
 
 func _on_web_bridge_error(message: String) -> void:
     _show_error_state("Invalid launch payload", message)
@@ -149,5 +157,5 @@ func _set_boot_state(
     detail_text: String,
     note_text: String
 ) -> void:
-    _boot_state = BootStateModel.new(status_text, detail_text, note_text)
+    _boot_state = StatusCardState.new(status_text, detail_text, note_text)
     boot_state_changed.emit(get_boot_state())

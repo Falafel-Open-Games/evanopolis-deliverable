@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Evanopolis Deliverable"
-run/main_scene="uid://dvp2w6127neee"
+run/main_scene="uid://cwhq6s8tpo1fw"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 boot_splash/show_image=false
 config/icon="res://icon.svg"

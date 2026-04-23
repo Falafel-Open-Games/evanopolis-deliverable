@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://dvp2w6127neee"]
 
 [ext_resource type="Script" uid="uid://o3sbn02exjjd" path="res://scripts/app/app_boot.gd" id="1_uug87"]
-[ext_resource type="Script" uid="uid://by27rxp5m52rd" path="res://scripts/app/app_boot_status_view.gd" id="2_ny5nk"]
 
 [node name="AppBoot" type="Node" unique_id=724933990]
 script = ExtResource("1_uug87")
@@ -9,61 +8,3 @@ script = ExtResource("1_uug87")
 [node name="BridgeTimeoutTimer" type="Timer" parent="." unique_id=1523775714]
 unique_name_in_owner = true
 one_shot = true
-
-[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=464702900]
-
-[node name="Root" type="Control" parent="CanvasLayer" unique_id=2133063345]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("2_ny5nk")
-
-[node name="Background" type="ColorRect" parent="CanvasLayer/Root" unique_id=899202617]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-color = Color(0.054902, 0.0784314, 0.121569, 1)
-
-[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer/Root" unique_id=1401031135]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-
-[node name="Panel" type="PanelContainer" parent="CanvasLayer/Root/CenterContainer" unique_id=694635272]
-custom_minimum_size = Vector2(520, 220)
-layout_mode = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Root/CenterContainer/Panel" unique_id=120467848]
-layout_mode = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 18
-
-[node name="VBox" type="VBoxContainer" parent="CanvasLayer/Root/CenterContainer/Panel/MarginContainer" unique_id=1405529592]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="StatusLabel" type="Label" parent="CanvasLayer/Root/CenterContainer/Panel/MarginContainer/VBox" unique_id=28777475]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8147126, 0.5055999, 0.23216808, 1)
-text = "Booting"
-
-[node name="DetailLabel" type="Label" parent="CanvasLayer/Root/CenterContainer/Panel/MarginContainer/VBox" unique_id=370228626]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-text = "Preparing boot scene..."
-autowrap_mode = 2
-
-[node name="NoteLabel" type="Label" parent="CanvasLayer/Root/CenterContainer/Panel/MarginContainer/VBox" unique_id=167778594]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.63375676, 0.6337568, 0.63375676, 1)
-text = "This scene documents the launch bridge and will become the first boot handoff into match flow."
-autowrap_mode = 2
