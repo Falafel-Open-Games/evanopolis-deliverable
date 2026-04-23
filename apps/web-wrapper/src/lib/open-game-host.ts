@@ -16,17 +16,9 @@ export type OpenGameHostLaunchPayloadMessage = {
   payload: LaunchPayload;
 };
 
-export type OpenGameHostLaunchMissingMessage = {
-  protocol: typeof OPEN_GAME_HOST_PROTOCOL;
-  version: typeof OPEN_GAME_HOST_VERSION;
-  type: "launch_missing";
-  reason: string;
-};
-
 export type OpenGameHostMessage =
   | OpenGameHostClientReadyMessage
-  | OpenGameHostLaunchPayloadMessage
-  | OpenGameHostLaunchMissingMessage;
+  | OpenGameHostLaunchPayloadMessage;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -66,19 +58,6 @@ export function parseOpenGameHostMessage(
       protocol: OPEN_GAME_HOST_PROTOCOL,
       version: OPEN_GAME_HOST_VERSION,
       type,
-    };
-  }
-
-  if (type === "launch_missing") {
-    const reason =
-      typeof parsed.reason === "string" && parsed.reason.trim().length > 0
-        ? parsed.reason
-        : "missing_launch_payload";
-    return {
-      protocol: OPEN_GAME_HOST_PROTOCOL,
-      version: OPEN_GAME_HOST_VERSION,
-      type,
-      reason,
     };
   }
 
@@ -125,16 +104,5 @@ export function buildLaunchPayloadMessage(
     version: OPEN_GAME_HOST_VERSION,
     type: "launch_payload",
     payload,
-  };
-}
-
-export function buildLaunchMissingMessage(
-  reason: string,
-): OpenGameHostLaunchMissingMessage {
-  return {
-    protocol: OPEN_GAME_HOST_PROTOCOL,
-    version: OPEN_GAME_HOST_VERSION,
-    type: "launch_missing",
-    reason,
   };
 }
