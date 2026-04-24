@@ -1,5 +1,25 @@
 extends "res://scripts/app/headless_rpc_client.gd"
 
+## Session admission controller for the graphical client.
+##
+## This module sits between `AppBoot` and the first player-facing session UI.
+## It does not render the waiting room or gameplay. Its job is to take a valid
+## launch payload, perform the minimum server-backed handshake, and publish a
+## small status-card state for the current connection phase.
+##
+## Current responsibilities:
+## - wait for `AppBoot` to publish a `LaunchPayload`
+## - connect to the game server transport
+## - send `rpc_auth(token)`
+## - send `rpc_join(game_id, player_id)` after auth success
+## - request `rpc_sync_request(...)` after join success
+## - publish readable states such as connecting, authenticating, syncing, ready,
+##   or failed
+##
+## This controller is intentionally narrow. Later stages such as the waiting
+## room and gameplay should consume the successful connected state it produces,
+## rather than expanding this file into a general-purpose match-state module.
+
 const StatusCardState = preload("res://scripts/app/models/status_view_state.gd")
 const LaunchPayloadModel = preload("res://scripts/app/models/launch_payload.gd")
 const SessionTransport = preload("res://scripts/app/session_transport.gd")
