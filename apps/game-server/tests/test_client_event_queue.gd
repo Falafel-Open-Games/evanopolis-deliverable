@@ -189,6 +189,9 @@ func test_state_snapshot_logs_with_players_present() -> void:
             "players": [
                 {
                     "player_index": 0,
+                    "player_id": "p0",
+                    "joined": true,
+                    "ready": false,
                     "position": 6,
                     "laps": 0,
                     "fiat_balance": 20.0,
@@ -197,6 +200,9 @@ func test_state_snapshot_logs_with_players_present() -> void:
                 },
                 {
                     "player_index": 1,
+                    "player_id": "p1",
+                    "joined": true,
+                    "ready": false,
                     "position": 3,
                     "laps": 1,
                     "fiat_balance": 16.0,
@@ -277,6 +283,9 @@ func test_turn_started_logs_connected_players_balances_and_holdings() -> void:
             "players": [
                 {
                     "player_index": 0,
+                    "player_id": "p0",
+                    "joined": true,
+                    "ready": false,
                     "position": 6,
                     "laps": 0,
                     "fiat_balance": 20.0,
@@ -285,6 +294,9 @@ func test_turn_started_logs_connected_players_balances_and_holdings() -> void:
                 },
                 {
                     "player_index": 1,
+                    "player_id": "p1",
+                    "joined": true,
+                    "ready": false,
                     "position": 3,
                     "laps": 1,
                     "fiat_balance": 16.0,
@@ -326,6 +338,9 @@ func test_turn_started_logs_ansi_formatting_for_negative_fiat_and_large_btc() ->
             "players": [
                 {
                     "player_index": 0,
+                    "player_id": "p0",
+                    "joined": true,
+                    "ready": false,
                     "position": 9,
                     "laps": 0,
                     "fiat_balance": -1.25,
@@ -334,6 +349,9 @@ func test_turn_started_logs_ansi_formatting_for_negative_fiat_and_large_btc() ->
                 },
                 {
                     "player_index": 1,
+                    "player_id": "p1",
+                    "joined": true,
+                    "ready": false,
                     "position": 14,
                     "laps": 1,
                     "fiat_balance": 999.99,
@@ -398,6 +416,9 @@ func test_turn_started_logs_purchase_balance_after_property_acquired() -> void:
             "players": [
                 {
                     "player_index": 0,
+                    "player_id": "p0",
+                    "joined": true,
+                    "ready": false,
                     "position": 6,
                     "laps": 0,
                     "fiat_balance": 20.0,
@@ -406,6 +427,9 @@ func test_turn_started_logs_purchase_balance_after_property_acquired() -> void:
                 },
                 {
                     "player_index": 1,
+                    "player_id": "p1",
+                    "joined": true,
+                    "ready": false,
                     "position": 0,
                     "laps": 0,
                     "fiat_balance": 20.0,
@@ -709,6 +733,9 @@ func test_sync_complete_logs_turn_summary_for_non_current_player() -> void:
             "players": [
                 {
                     "player_index": 0,
+                    "player_id": "p0",
+                    "joined": true,
+                    "ready": false,
                     "position": 0,
                     "laps": 0,
                     "fiat_balance": 120.0,
@@ -718,6 +745,9 @@ func test_sync_complete_logs_turn_summary_for_non_current_player() -> void:
                 },
                 {
                     "player_index": 1,
+                    "player_id": "p1",
+                    "joined": true,
+                    "ready": false,
                     "position": 0,
                     "laps": 0,
                     "fiat_balance": 120.0,
@@ -823,6 +853,9 @@ func test_sync_complete_resumes_inspection_prompt_when_snapshot_player_is_inspec
             "players": [
                 {
                     "player_index": 1,
+                    "player_id": "p2",
+                    "joined": true,
+                    "ready": false,
                     "position": 20,
                     "laps": 0,
                     "fiat_balance": 0.0,

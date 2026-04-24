@@ -66,8 +66,18 @@ func test_sync_request_returns_snapshot_for_registered_peer() -> void:
     var board: Dictionary = snapshot.get("board_state", { })
     assert_eq(str(snapshot.get("game_id", "")), "demo_002", "snapshot includes game id")
     assert_eq(players.size(), 2, "snapshot includes player states")
+    assert_false(snapshot.has("ready_players"), "snapshot no longer exposes top-level ready_players")
     assert_eq(int(board.get("size", 0)), 24, "snapshot includes board state")
     assert_true(int(sync_result.get("final_seq", -1)) > 0, "sync includes latest broadcast sequence")
+
+    var first_player: Dictionary = players[0]
+    var second_player: Dictionary = players[1]
+    assert_eq(str(first_player.get("player_id", "")), "alice", "snapshot includes first player id")
+    assert_true(bool(first_player.get("joined", false)), "snapshot marks first seat joined")
+    assert_false(bool(first_player.get("ready", true)), "snapshot marks first seat not ready before ready signal")
+    assert_eq(str(second_player.get("player_id", "")), "bob", "snapshot includes second player id")
+    assert_true(bool(second_player.get("joined", false)), "snapshot marks second seat joined")
+    assert_false(bool(second_player.get("ready", true)), "snapshot marks second seat not ready before ready signal")
 
 
 func test_sync_request_rejects_peer_player_mismatch() -> void:

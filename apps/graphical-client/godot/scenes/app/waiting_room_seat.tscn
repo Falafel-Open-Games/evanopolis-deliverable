@@ -1,0 +1,74 @@
+[gd_scene format=3 uid="uid://bvjd3i3tn37qd"]
+
+[ext_resource type="Script" path="res://scripts/app/waiting_room_seat_view.gd" id="1_waiting_room_seat_view"]
+[ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="2_e2ark"]
+
+[node name="WaitingRoomSeatRoot" type="Control" unique_id=389302058 node_paths=PackedStringArray("background_rect", "slot_index_label", "name_label", "status_label", "badge_label")]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 3
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 48.0
+grow_horizontal = 2
+script = ExtResource("1_waiting_room_seat_view")
+background_rect = NodePath("SeatBackground")
+slot_index_label = NodePath("SeatBackground/SeatMargin/SeatRow/SlotIndexLabel")
+name_label = NodePath("SeatBackground/SeatMargin/SeatRow/TextColumn/NameLabel")
+status_label = NodePath("SeatBackground/SeatMargin/SeatRow/TextColumn/StatusLabel")
+badge_label = NodePath("SeatBackground/SeatMargin/SeatRow/BadgeLabel")
+
+[node name="SeatBackground" type="ColorRect" parent="." unique_id=29362601]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0549019, 0.0862745, 0.0901961, 0.84)
+
+[node name="SeatMargin" type="MarginContainer" parent="SeatBackground" unique_id=72364902]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = -1.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="SeatRow" type="HBoxContainer" parent="SeatBackground/SeatMargin" unique_id=516736983]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SlotIndexLabel" type="Label" parent="SeatBackground/SeatMargin/SeatRow" unique_id=2072088708]
+custom_minimum_size = Vector2(18, 0)
+layout_mode = 2
+text = "1"
+vertical_alignment = 1
+
+[node name="TextColumn" type="VBoxContainer" parent="SeatBackground/SeatMargin/SeatRow" unique_id=77221834]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="NameLabel" type="Label" parent="SeatBackground/SeatMargin/SeatRow/TextColumn" unique_id=675365840]
+layout_mode = 2
+text = "Player"
+
+[node name="StatusLabel" type="Label" parent="SeatBackground/SeatMargin/SeatRow/TextColumn" unique_id=1263859812]
+layout_mode = 2
+theme = ExtResource("2_e2ark")
+text = "WAITING"
+
+[node name="BadgeLabel" type="Label" parent="SeatBackground/SeatMargin/SeatRow" unique_id=146885628]
+custom_minimum_size = Vector2(56, 0)
+layout_mode = 2
+theme = ExtResource("2_e2ark")
+text = "OPEN"
+horizontal_alignment = 2
+vertical_alignment = 1

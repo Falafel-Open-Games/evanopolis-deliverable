@@ -1,0 +1,210 @@
+[gd_scene format=3 uid="uid://cw4dp7gsv7jn4"]
+
+[ext_resource type="Script" uid="uid://bbv18bxt8e87a" path="res://scripts/app/waiting_room_view.gd" id="1_waiting_room_view"]
+[ext_resource type="Texture2D" uid="uid://b3b8jfiin1ry4" path="res://assets/cow_logo.png" id="2_cow_logo"]
+[ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="2_tq6v2"]
+
+[node name="WaitingRoomRoot" type="Control" unique_id=918327763 node_paths=PackedStringArray("waiting_room_title_label", "ready_button")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_waiting_room_view")
+waiting_room_title_label = NodePath("SafeMargin/BoxContainer/WaitingRoomTitle")
+ready_button = NodePath("SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox/ReadyButton")
+
+[node name="SafeMargin" type="MarginContainer" parent="." unique_id=485763566]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="BoxContainer" type="BoxContainer" parent="SafeMargin" unique_id=1395786198]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+
+[node name="WaitingRoomTitle" type="Label" parent="SafeMargin/BoxContainer" unique_id=1476003603]
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+text = "Preparing launch handoff"
+horizontal_alignment = 2
+
+[node name="RootVBox" type="VBoxContainer" parent="SafeMargin" unique_id=1531054791]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HeaderCenter" type="CenterContainer" parent="SafeMargin/RootVBox" unique_id=597870758]
+layout_mode = 2
+
+[node name="LogoTexture" type="TextureRect" parent="SafeMargin/RootVBox/HeaderCenter" unique_id=939685220]
+custom_minimum_size = Vector2(180, 48)
+layout_mode = 2
+texture = ExtResource("2_cow_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MainRow" type="HBoxContainer" parent="SafeMargin/RootVBox" unique_id=1584919381]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="LeftColumn" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow" unique_id=1118980224]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="InfoPanel" type="ColorRect" parent="SafeMargin/RootVBox/MainRow/LeftColumn" unique_id=1781273044]
+layout_mode = 2
+size_flags_vertical = 3
+color = Color(0.0549019, 0.0862745, 0.0901961, 0.84)
+
+[node name="InfoMargin" type="MarginContainer" parent="SafeMargin/RootVBox/MainRow/LeftColumn/InfoPanel" unique_id=301083469]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="InfoVBox" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/LeftColumn/InfoPanel/InfoMargin" unique_id=1071227625]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="InfoTitle" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/InfoPanel/InfoMargin/InfoVBox" unique_id=559288140]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.913725, 0.682353, 0.337255, 1)
+text = "EVANOPOLIS AT A GLANCE"
+
+[node name="InfoBody" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/InfoPanel/InfoMargin/InfoVBox" unique_id=1972957749]
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+theme_override_colors/font_color = Color(0.980392, 0.94902, 0.870588, 1)
+autowrap_mode = 2
+
+[node name="WinTitle" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/InfoPanel/InfoMargin/InfoVBox" unique_id=1675052937]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.486275, 0.85098, 0.564706, 1)
+text = "WIN CONDITIONS"
+
+[node name="WinBody" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/InfoPanel/InfoMargin/InfoVBox" unique_id=810234193]
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
+autowrap_mode = 2
+
+[node name="IdentityPanel" type="ColorRect" parent="SafeMargin/RootVBox/MainRow/LeftColumn" unique_id=26102190]
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+size_flags_vertical = 3
+color = Color(0.0549019, 0.0862745, 0.0901961, 0.84)
+
+[node name="IdentityMargin" type="MarginContainer" parent="SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel" unique_id=1871888978]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="IdentityVBox" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel/IdentityMargin" unique_id=207421278]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="IdentityTitle" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel/IdentityMargin/IdentityVBox" unique_id=607122009]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.913725, 0.682353, 0.337255, 1)
+text = "YOUR IDENTITY"
+
+[node name="IdentitySeatLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel/IdentityMargin/IdentityVBox" unique_id=801208915]
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+theme_override_colors/font_color = Color(0.980392, 0.94902, 0.870588, 1)
+text = "Seat"
+
+[node name="IdentityPlayerLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel/IdentityMargin/IdentityVBox" unique_id=1101049021]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.486275, 0.85098, 0.564706, 1)
+text = "Player"
+
+[node name="IdentityNoteLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel/IdentityMargin/IdentityVBox" unique_id=1814324207]
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
+autowrap_mode = 2
+
+[node name="RightColumn" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow" unique_id=869592073]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RosterPanel" type="ColorRect" parent="SafeMargin/RootVBox/MainRow/RightColumn" unique_id=2050546347]
+layout_mode = 2
+size_flags_vertical = 3
+color = Color(0.0549019, 0.0862745, 0.0901961, 0.84)
+
+[node name="RosterMargin" type="MarginContainer" parent="SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel" unique_id=637129131]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="RosterVBox" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin" unique_id=396697202]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="RosterTitle" type="Label" parent="SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox" unique_id=2010085082]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.913725, 0.682353, 0.337255, 1)
+text = "PLAYER ROSTER"
+
+[node name="RoomFactsLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox" unique_id=623091029]
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
+text = "Room facts"
+
+[node name="SeatsVBox" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox" unique_id=173342252]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="ReadyButton" type="Button" parent="SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox" unique_id=548163328]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme = ExtResource("2_tq6v2")
+text = "READY"
+
+[node name="RosterFooterLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox" unique_id=773055612]
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
+autowrap_mode = 2

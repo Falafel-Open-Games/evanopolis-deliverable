@@ -552,15 +552,14 @@ func _apply_state_snapshot(snapshot: Dictionary) -> void:
         var player_index_value: int = int(player_in_snapshot.get("player_index", -1))
         if player_index_value < 0:
             continue
-        connected_player_indexes[player_index_value] = true
+        if bool(player_in_snapshot.get("joined", false)):
+            connected_player_indexes[player_index_value] = true
         player_positions[player_index_value] = int(player_in_snapshot.get("position", -1))
         player_fiat_balances[player_index_value] = float(player_in_snapshot.get("fiat_balance", 0.0))
         player_bitcoin_balances[player_index_value] = float(player_in_snapshot.get("bitcoin_balance", 0.0))
         player_in_inspection[player_index_value] = bool(player_in_snapshot.get("in_inspection", false))
         player_inspection_free_exits[player_index_value] = int(player_in_snapshot.get("inspection_free_exits", 0))
-    var ready_players: Array = snapshot.get("ready_players", [])
-    for ready_index in range(ready_players.size()):
-        player_ready_states[ready_index] = bool(ready_players[ready_index])
+        player_ready_states[player_index_value] = bool(player_in_snapshot.get("ready", false))
     _log_server(
         "state snapshot: game_id=%s turn=%d cycle=%d current_player=%d players=%d board_size=%d started=%s finished=%s winner=%d end_reason=%s pending_action=%s pending_tile=%d pending_owner=%d pending_amount=%.2f pending_buy_price=%.2f"
         % [
@@ -585,8 +584,11 @@ func _apply_state_snapshot(snapshot: Dictionary) -> void:
     for player_variant in players:
         var player: Dictionary = player_variant
         player_summaries.append(
-            "p%d(pos=%d laps=%d fiat=%.2f btc=%.8f inspection=%s free_exits=%d)" % [
+            "p%d(id=%s joined=%s ready=%s pos=%d laps=%d fiat=%.2f btc=%.8f inspection=%s free_exits=%d)" % [
                 int(player.get("player_index", -1)),
+                str(player.get("player_id", "")),
+                bool(player.get("joined", false)),
+                bool(player.get("ready", false)),
                 int(player.get("position", -1)),
                 int(player.get("laps", 0)),
                 float(player.get("fiat_balance", 0.0)),

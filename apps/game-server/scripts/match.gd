@@ -740,10 +740,14 @@ func last_sequence() -> int:
 
 func build_state_snapshot() -> Dictionary:
     var players_snapshot: Array[Dictionary] = []
-    for player in state.players:
+    for player_index in range(state.players.size()):
+        var player: PlayerState = state.players[player_index]
         players_snapshot.append(
             {
                 "player_index": player.player_index,
+                "player_id": player_ids[player_index],
+                "joined": not player_ids[player_index].is_empty(),
+                "ready": bool(player_ready[player_index]),
                 "fiat_balance": player.fiat_balance,
                 "bitcoin_balance": player.bitcoin_balance,
                 "position": player.position,
@@ -764,7 +768,6 @@ func build_state_snapshot() -> Dictionary:
         "board_state": board_state.duplicate(true),
         "players": players_snapshot,
         "pending_action": pending_action.duplicate(true),
-        "ready_players": player_ready.duplicate(),
         "ready_count": _ready_player_count(),
     }
 

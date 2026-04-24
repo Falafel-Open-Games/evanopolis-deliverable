@@ -217,7 +217,7 @@ Failure:
 `rpc_state_snapshot` is a `Dictionary` intended to contain the authoritative
 state needed for reconnect:
 
-- player identities and balances
+- player identities, seat occupancy, and balances
 - inspection state and voucher counts
 - board/tile state including ownership, miners, and incident face
 - pawn positions
@@ -225,5 +225,34 @@ state needed for reconnect:
 - pending action metadata
 - finished-game metadata when applicable
 
-The exact dictionary shape is defined by the server implementation and covered
-by the reconnect and sync tests under `tests/`.
+Current top-level fields include:
+
+- `game_id: String`
+- `turn_number: int`
+- `current_player_index: int`
+- `current_cycle: int`
+- `has_started: bool`
+- `has_finished: bool`
+- `winner_index: int`
+- `end_reason: String`
+- `board_state: Dictionary`
+- `pending_action: Dictionary`
+- `players: Array[Dictionary]`
+- `ready_count: int`
+
+Each `players` entry is authoritative per-seat state and currently includes:
+
+- `player_index: int`
+- `player_id: String`
+- `joined: bool`
+- `ready: bool`
+- `fiat_balance: float`
+- `bitcoin_balance: float`
+- `position: int`
+- `laps: int`
+- `in_inspection: bool`
+- `inspection_free_exits: int`
+
+Clients should treat `players[*].joined` and `players[*].ready` as the
+canonical waiting-room seat state and should not depend on a separate
+top-level ready array.

@@ -48,8 +48,7 @@ var _boot_state: StatusCardState = StatusCardState.new(
 var _launch_payload_received: bool = false
 var _pending_launch_payload_emit: bool = false
 
-@onready var bridge_timeout_timer: Timer = %BridgeTimeoutTimer
-
+@export var bridge_timeout_timer: Timer
 func _ready() -> void:
     assert(bridge_timeout_timer)
 

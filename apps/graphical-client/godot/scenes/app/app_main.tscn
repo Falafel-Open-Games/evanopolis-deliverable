@@ -1,13 +1,118 @@
 [gd_scene format=3 uid="uid://cwhq6s8tpo1fw"]
 
+[ext_resource type="Script" uid="uid://o3sbn02exjjd" path="res://scripts/app/app_boot.gd" id="1_5rii6"]
 [ext_resource type="Script" uid="uid://cjvsqspi84ux" path="res://scripts/app/session_check.gd" id="1_session"]
-[ext_resource type="PackedScene" uid="uid://dvp2w6127neee" path="res://scenes/app/app_boot.tscn" id="2_boot"]
-[ext_resource type="PackedScene" path="res://scenes/app/session_check_status.tscn" id="3_session_view"]
+[ext_resource type="Script" uid="uid://bjyq17k441t31" path="res://scripts/app/app_main_view.gd" id="3_app_main_view"]
+[ext_resource type="Texture2D" uid="uid://dhhnmhvyt71oy" path="res://assets/title_screen.png" id="4_title_screen"]
+[ext_resource type="PackedScene" uid="uid://cw4dp7gsv7jn4" path="res://scenes/app/waiting_room.tscn" id="5_waiting_room"]
 
 [node name="HeadlessRpc" type="Node" unique_id=1513789639 node_paths=PackedStringArray("boot_node")]
 script = ExtResource("1_session")
 boot_node = NodePath("AppBoot")
 
-[node name="AppBoot" parent="." unique_id=920493591 instance=ExtResource("2_boot")]
+[node name="AppBoot" type="Node" parent="." unique_id=1904609129 node_paths=PackedStringArray("bridge_timeout_timer")]
+script = ExtResource("1_5rii6")
+bridge_timeout_timer = NodePath("BridgeTimeoutTimer")
 
-[node name="SessionCheckStatus" parent="." unique_id=1586041027 instance=ExtResource("3_session_view")]
+[node name="BridgeTimeoutTimer" type="Timer" parent="AppBoot" unique_id=1534245246]
+one_shot = true
+
+[node name="AppMainView" type="Control" parent="." unique_id=1586041027 node_paths=PackedStringArray("boot_node", "session_node")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("3_app_main_view")
+boot_node = NodePath("../AppBoot")
+session_node = NodePath("..")
+
+[node name="BackgroundTexture" type="TextureRect" parent="AppMainView" unique_id=1308474952]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_title_screen")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BackgroundShade" type="ColorRect" parent="AppMainView" unique_id=678504966]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0156863, 0.0313726, 0.0470588, 0.34)
+
+[node name="ModalCenter" type="CenterContainer" parent="AppMainView" unique_id=1497992716]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ModalPanel" type="ColorRect" parent="AppMainView/ModalCenter" unique_id=1315846700]
+visible = false
+custom_minimum_size = Vector2(360, 150)
+layout_mode = 2
+color = Color(0.0549019, 0.0862745, 0.0901961, 0.9)
+
+[node name="ModalMargin" type="MarginContainer" parent="AppMainView/ModalCenter/ModalPanel" unique_id=455329860]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="ModalVBox" type="VBoxContainer" parent="AppMainView/ModalCenter/ModalPanel/ModalMargin" unique_id=1970127165]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ModalStatusLabel" type="Label" parent="AppMainView/ModalCenter/ModalPanel/ModalMargin/ModalVBox" unique_id=1198687532]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.913725, 0.682353, 0.337255, 1)
+text = "Waiting for launch data"
+
+[node name="ModalDetailLabel" type="Label" parent="AppMainView/ModalCenter/ModalPanel/ModalMargin/ModalVBox" unique_id=952620375]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.980392, 0.94902, 0.870588, 1)
+text = "The session checker is idle until AppBoot publishes a launch payload."
+autowrap_mode = 2
+
+[node name="ModalNoteLabel" type="Label" parent="AppMainView/ModalCenter/ModalPanel/ModalMargin/ModalVBox" unique_id=128200873]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
+text = "This is the first server-backed step after the wrapper handoff."
+autowrap_mode = 2
+
+[node name="WaitingRoomMount" type="Control" parent="AppMainView" unique_id=1674657536]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="WaitingRoomRoot" parent="AppMainView/WaitingRoomMount" unique_id=1242303975 instance=ExtResource("5_waiting_room")]
+layout_mode = 1
+
+[node name="ModalShade" type="ColorRect" parent="AppMainView" unique_id=421205389]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0156863, 0.0313726, 0.0470588, 0.68)
