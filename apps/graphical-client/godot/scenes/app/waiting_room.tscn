@@ -1,8 +1,11 @@
 [gd_scene format=3 uid="uid://cw4dp7gsv7jn4"]
 
 [ext_resource type="Script" uid="uid://bbv18bxt8e87a" path="res://scripts/app/waiting_room_view.gd" id="1_waiting_room_view"]
-[ext_resource type="Texture2D" uid="uid://b3b8jfiin1ry4" path="res://assets/cow_logo.png" id="2_cow_logo"]
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="2_tq6v2"]
+[ext_resource type="Texture2D" uid="uid://nvg4u1fej683" path="res://assets/empty_hex_logo.png" id="3_q2amx"]
+[ext_resource type="Texture2D" uid="uid://du3jhapf4vij1" path="res://assets/hexagon.png" id="4_o5chr"]
+[ext_resource type="Texture2D" uid="uid://iwrf13sdxou6" path="res://assets/avatar_sheet.png" id="5_a3j2m"]
+[ext_resource type="Texture2D" uid="uid://c54ekwg7dupx6" path="res://assets/cow_alt_logo.png" id="6_33tm5"]
 
 [node name="WaitingRoomRoot" type="Control" unique_id=918327763 node_paths=PackedStringArray("waiting_room_title_label", "ready_button")]
 layout_mode = 3
@@ -42,13 +45,42 @@ horizontal_alignment = 2
 layout_mode = 2
 theme_override_constants/separation = 8
 
+[node name="LogoTexture2" type="TextureRect" parent="SafeMargin/RootVBox" unique_id=984370948]
+texture_filter = 2
+custom_minimum_size = Vector2(180, 67.3)
+layout_mode = 2
+texture = ExtResource("3_q2amx")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HexagonFill" type="TextureRect" parent="SafeMargin/RootVBox/LogoTexture2" unique_id=2063148461]
+modulate = Color(0.43137255, 0.62352943, 0.14509805, 1)
+layout_mode = 0
+offset_left = 285.0
+offset_top = 2.0
+offset_right = 323.0
+offset_bottom = 40.0
+texture = ExtResource("4_o5chr")
+expand_mode = 1
+
+[node name="LogoIcon" type="Sprite2D" parent="SafeMargin/RootVBox/LogoTexture2" unique_id=1995141760]
+texture_filter = 2
+position = Vector2(305, 21)
+scale = Vector2(0.28, 0.28)
+texture = ExtResource("5_a3j2m")
+hframes = 4
+vframes = 4
+frame = 6
+region_rect = Rect2(0, 0, 187.46881, 206.92221)
+
 [node name="HeaderCenter" type="CenterContainer" parent="SafeMargin/RootVBox" unique_id=597870758]
+visible = false
 layout_mode = 2
 
 [node name="LogoTexture" type="TextureRect" parent="SafeMargin/RootVBox/HeaderCenter" unique_id=939685220]
-custom_minimum_size = Vector2(180, 48)
+custom_minimum_size = Vector2(180, 67.3)
 layout_mode = 2
-texture = ExtResource("2_cow_logo")
+texture = ExtResource("6_33tm5")
 expand_mode = 1
 stretch_mode = 5
 

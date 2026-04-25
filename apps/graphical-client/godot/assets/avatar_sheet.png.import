@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b3b8jfiin1ry4"
-path="res://.godot/imported/cow_logo.png-b8a016f4dc56e7c5df6fc66f6f41dc12.ctex"
+uid="uid://iwrf13sdxou6"
+path="res://.godot/imported/avatar_sheet.png-f2d1b7f9c3c1d3a198acc327a10962a8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/cow_logo.png"
-dest_files=["res://.godot/imported/cow_logo.png-b8a016f4dc56e7c5df6fc66f6f41dc12.ctex"]
+source_file="res://assets/avatar_sheet.png"
+dest_files=["res://.godot/imported/avatar_sheet.png-f2d1b7f9c3c1d3a198acc327a10962a8.ctex"]
 
 [params]
 

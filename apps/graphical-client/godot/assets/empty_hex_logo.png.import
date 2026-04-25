@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://6uisvclldghg"
-path="res://.godot/imported/6.Atacama.png-ca573d6994f2401098d3abfbf4340e0e.ctex"
+uid="uid://nvg4u1fej683"
+path="res://.godot/imported/empty_hex_logo.png-6bfde2b7ca6ea6713df760a0af00916e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/6.Atacama.png"
-dest_files=["res://.godot/imported/6.Atacama.png-ca573d6994f2401098d3abfbf4340e0e.ctex"]
+source_file="res://assets/empty_hex_logo.png"
+dest_files=["res://.godot/imported/empty_hex_logo.png-6bfde2b7ca6ea6713df760a0af00916e.ctex"]
 
 [params]
 

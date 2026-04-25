@@ -54,6 +54,33 @@ Success:
 Failure:
 - `rpc_action_rejected(0, reason)`
 
+### `rpc_set_player_identity(game_id: String, player_id: String, display_name: String, icon_id: int, color_id: int)`
+
+Sets the waiting-room identity metadata for a player.
+
+The server owns the authoritative identity state and is responsible for
+validating:
+
+- short-name length / format
+- icon choice bounds
+- color choice bounds
+- exclusive color reservation across the room
+
+Icons are not exclusive and may be reused by multiple players. Colors are
+exclusive and represent the pawn color in the waiting room and later match UI.
+
+Success:
+- `rpc_player_identity_changed(seq, player_index, display_name, icon_id, color_id)` broadcast
+
+Failure:
+- `rpc_action_rejected(0, reason)` where `reason` may include:
+  - `color_unavailable`
+  - `invalid_display_name`
+  - `invalid_color_id`
+  - `invalid_icon_id`
+  - `identity_locked`
+  - other server-side validation failures
+
 ### `rpc_sync_request(game_id: String, player_id: String, last_applied_seq: int)`
 
 Requests authoritative catch-up state after reconnect or late join.
@@ -178,6 +205,7 @@ Failure:
 - `rpc_game_ended(seq: int, winner_index: int, reason: String, btc_goal: float, winner_btc: float)`
 - `rpc_player_ready_state(seq: int, player_index: int, is_ready: bool, ready_count: int, total_players: int)`
 - `rpc_player_joined(seq: int, player_id: String, player_index: int)`
+- `rpc_player_identity_changed(seq: int, player_index: int, display_name: String, icon_id: int, color_id: int)`
 
 ### Movement / landing
 
@@ -246,6 +274,9 @@ Each `players` entry is authoritative per-seat state and currently includes:
 - `player_id: String`
 - `joined: bool`
 - `ready: bool`
+- `display_name: String`
+- `icon_id: int`
+- `color_id: int`
 - `fiat_balance: float`
 - `bitcoin_balance: float`
 - `position: int`
@@ -256,3 +287,7 @@ Each `players` entry is authoritative per-seat state and currently includes:
 Clients should treat `players[*].joined` and `players[*].ready` as the
 canonical waiting-room seat state and should not depend on a separate
 top-level ready array.
+
+Clients should also treat `players[*].display_name`, `players[*].icon_id`, and
+`players[*].color_id` as the canonical waiting-room identity state. Colors are
+exclusive across joined players; icons are not.
