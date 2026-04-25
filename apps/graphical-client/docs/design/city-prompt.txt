@@ -1,0 +1,23 @@
+GLOBAL STYLE LOCK:
+- flat vector illustration (no painterly or textured rendering)
+- minimal detail, no small noise or micro-textures
+- clean geometric shapes
+- consistent line thickness
+- soft gradients only (no realistic lighting)
+- simplified buildings and infrastructure
+- no photorealism, no concept-art style
+
+COMPLEXITY LIMIT:
+- medium-low detail only
+- elements must be readable at small size
+- avoid clutter and dense composition
+
+COLOR SYSTEM:
+- soft, slightly desaturated palette
+- no strong contrast
+- no deep shadows
+- lighting should be gentle and diffused
+
+CONSISTENCY:
+- must match the exact style of the first city image (Ciudad del Este)
+- do not introduce new rendering styles
