@@ -35,6 +35,22 @@ Work in this order unless a blocker forces a change:
 - When writing multi-line messages with `jj describe -m`, use a literal blank line inside the quoted string. Do not type `\n` or `\\n`.
 - If a repo or app has a build-id sync step equivalent to `just sync-build-id`, run it before opening a PR.
 
+### Common `jj` workflow
+
+- Inspect the current stack with:
+  - `jj status`
+  - `jj log -r '@|@-|main|main@origin' --no-graph`
+- Finalize the current working-copy change with:
+  - `jj describe -m "feat: summary
+
+    Body line one.
+    Body line two."`
+- Move the local `main` bookmark to the current tip with:
+  - `jj bookmark set main -r @`
+- Keep `main` tracked against origin with:
+  - `jj bookmark track main@origin`
+- If you need a fresh commit above the current one before describing it, create it explicitly with `jj new` and then describe that revision.
+
 Example:
 `jj describe -m "feat: summary
 
