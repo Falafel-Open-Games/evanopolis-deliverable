@@ -9,6 +9,10 @@ const BearV0Deck = preload("res://scripts/incidents/bear_v0_deck.gd")
 const BullV0Deck = preload("res://scripts/incidents/bull_v0_deck.gd")
 const EconomyV0 = preload("res://scripts/rules/economy_v0.gd")
 
+const MAX_WAITING_ROOM_NAME_LENGTH: int = 16
+const MAX_WAITING_ROOM_ICON_COUNT: int = 15
+const MAX_WAITING_ROOM_COLOR_COUNT: int = 6
+
 var config: Config
 var clients: Array[Client]
 var rng: RandomNumberGenerator
@@ -110,6 +114,41 @@ func rpc_player_ready(game_id: String, player_id: String) -> String:
     player_ready[resolved_index] = true
     _broadcast("rpc_player_ready_state", [resolved_index, true, _ready_player_count(), clients.size()])
     _maybe_start_game_when_all_ready()
+    return ""
+
+
+func rpc_set_player_identity(game_id: String, player_id: String, display_name: String, icon_id: int, color_id: int) -> String:
+    if has_started:
+        return "identity_locked"
+    if has_finished:
+        return "identity_locked"
+    if game_id != state.game_id:
+        return "invalid_game_id"
+    var resolved_index: int = _player_index_from_id(player_id)
+    if resolved_index < 0:
+        return "invalid_player_id"
+    if clients[resolved_index] == null:
+        return "player_not_connected"
+
+    var normalized_display_name: String = display_name.strip_edges()
+    var name_reason: String = _validate_identity_display_name(normalized_display_name)
+    if not name_reason.is_empty():
+        return name_reason
+    var icon_reason: String = _validate_identity_icon_id(icon_id)
+    if not icon_reason.is_empty():
+        return icon_reason
+    var color_reason: String = _validate_identity_color_id(color_id)
+    if not color_reason.is_empty():
+        return color_reason
+    var color_conflict_index: int = _identity_color_conflict_index(resolved_index, color_id)
+    if color_conflict_index >= 0:
+        return "color_unavailable"
+
+    var player: PlayerState = state.players[resolved_index]
+    player.display_name = normalized_display_name
+    player.icon_id = icon_id
+    player.color_id = color_id
+    _broadcast("rpc_player_identity_changed", [resolved_index, player.display_name, player.icon_id, player.color_id])
     return ""
 
 
@@ -748,6 +787,9 @@ func build_state_snapshot() -> Dictionary:
                 "player_id": player_ids[player_index],
                 "joined": not player_ids[player_index].is_empty(),
                 "ready": bool(player_ready[player_index]),
+                "display_name": player.display_name,
+                "icon_id": player.icon_id,
+                "color_id": player.color_id,
                 "fiat_balance": player.fiat_balance,
                 "bitcoin_balance": player.bitcoin_balance,
                 "position": player.position,
@@ -836,6 +878,37 @@ func _broadcast(method: String, args: Array) -> void:
         if client == null:
             continue
         client.callv(method, payload)
+
+
+func _validate_identity_display_name(display_name: String) -> String:
+    var name_length: int = display_name.length()
+    if name_length <= 0:
+        return "invalid_display_name"
+    if name_length > MAX_WAITING_ROOM_NAME_LENGTH:
+        return "invalid_display_name"
+    return ""
+
+
+func _validate_identity_icon_id(icon_id: int) -> String:
+    if icon_id < 0 or icon_id >= MAX_WAITING_ROOM_ICON_COUNT:
+        return "invalid_icon_id"
+    return ""
+
+
+func _validate_identity_color_id(color_id: int) -> String:
+    if color_id < 0 or color_id >= MAX_WAITING_ROOM_COLOR_COUNT:
+        return "invalid_color_id"
+    return ""
+
+
+func _identity_color_conflict_index(player_index: int, color_id: int) -> int:
+    for other_index in range(state.players.size()):
+        if other_index == player_index:
+            continue
+        var other_player_id: String = player_ids[other_index]
+        if not other_player_id.is_empty() and int(state.players[other_index].color_id) == color_id:
+            return other_index
+    return -1
 
 
 func _send_to_player(player_index: int, method: String, args: Array) -> void:

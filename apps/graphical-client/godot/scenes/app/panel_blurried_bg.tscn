@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://dxfoynfa302k7"]
+
+[ext_resource type="Shader" uid="uid://mn2jiesw3kyp" path="res://shaders/blur.gdshader" id="1_5m0q8"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_o5chr"]
+shader = ExtResource("1_5m0q8")
+shader_parameter/blur_amount = 1.0000001424999998
+shader_parameter/mix_amount = 0.3770000179075
+shader_parameter/color_over = Color(0.05490196, 0.101960786, 0.14117648, 1)
+
+[node name="PanelBlurriedBg" type="MarginContainer" unique_id=1137042040]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 1
+theme_override_constants/margin_top = 1
+theme_override_constants/margin_right = 1
+theme_override_constants/margin_bottom = 1
+
+[node name="InfoPanelBg" type="Panel" parent="." unique_id=981211599]
+material = SubResource("ShaderMaterial_o5chr")
+layout_mode = 2

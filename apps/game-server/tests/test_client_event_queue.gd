@@ -192,6 +192,9 @@ func test_state_snapshot_logs_with_players_present() -> void:
                     "player_id": "p0",
                     "joined": true,
                     "ready": false,
+                    "display_name": "Miner One",
+                    "icon_id": 4,
+                    "color_id": 2,
                     "position": 6,
                     "laps": 0,
                     "fiat_balance": 20.0,
@@ -203,6 +206,9 @@ func test_state_snapshot_logs_with_players_present() -> void:
                     "player_id": "p1",
                     "joined": true,
                     "ready": false,
+                    "display_name": "Miner Two",
+                    "icon_id": 5,
+                    "color_id": 3,
                     "position": 3,
                     "laps": 1,
                     "fiat_balance": 16.0,
@@ -216,6 +222,12 @@ func test_state_snapshot_logs_with_players_present() -> void:
     assert_eq(client.game_id, "demo_002", "snapshot applies game id")
     assert_eq(client.current_player_index, 1, "snapshot applies current player")
     assert_eq(int(client.board_state.get("size", 0)), 24, "snapshot applies board state")
+    assert_eq(str(client.player_display_names.get(0, "")), "Miner One", "snapshot applies first player display name")
+    assert_eq(int(client.player_icon_ids.get(0, -1)), 4, "snapshot applies first player icon")
+    assert_eq(int(client.player_color_ids.get(0, -1)), 2, "snapshot applies first player color")
+    assert_eq(str(client.player_display_names.get(1, "")), "Miner Two", "snapshot applies second player display name")
+    assert_eq(int(client.player_icon_ids.get(1, -1)), 5, "snapshot applies second player icon")
+    assert_eq(int(client.player_color_ids.get(1, -1)), 3, "snapshot applies second player color")
 
     client.free()
 

@@ -10,3 +10,4 @@ tmp/
 .godot/
 *.log
 *.tmp
+apps/graphical-client/godot/import

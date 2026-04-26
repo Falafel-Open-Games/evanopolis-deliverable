@@ -194,6 +194,21 @@ func _handle_player_ready(game_id: String, player_id: String) -> void:
         _rpc_to_peer(sender_id, "rpc_action_rejected", [seq, reason])
 
 
+func _handle_set_player_identity(
+        game_id: String,
+        player_id: String,
+        display_name: String,
+        icon_id: int,
+        color_id: int,
+) -> void:
+    var sender_id: int = _get_sender_id()
+    var result: Dictionary = server.rpc_set_player_identity(game_id, player_id, display_name, icon_id, color_id, sender_id)
+    var reason: String = str(result.get("reason", ""))
+    var seq: int = int(result.get("seq", 0))
+    if not reason.is_empty():
+        _rpc_to_peer(sender_id, "rpc_action_rejected", [seq, reason])
+
+
 func _maybe_queue_room_lookup(game_id: String, player_id: String, peer_id: int) -> bool:
     if server.matches.has(game_id):
         return false

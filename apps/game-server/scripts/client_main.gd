@@ -39,6 +39,9 @@ var player_positions: Dictionary = { }
 var player_in_inspection: Dictionary = { }
 var player_inspection_free_exits: Dictionary = { }
 var player_ready_states: Dictionary = { }
+var player_display_names: Dictionary = { }
+var player_icon_ids: Dictionary = { }
+var player_color_ids: Dictionary = { }
 var local_ready_sent: bool = false
 
 
@@ -141,6 +144,10 @@ func _handle_game_ended(seq: int, winner_index: int, reason: String, btc_goal: f
 
 func _handle_player_joined(seq: int, player_id_value: String, player_index_value: int) -> void:
     _queue_event(seq, "_apply_player_joined", [player_id_value, player_index_value])
+
+
+func _handle_player_identity_changed(seq: int, player_index_value: int, display_name: String, icon_id: int, color_id: int) -> void:
+    _queue_event(seq, "_apply_player_identity_changed", [player_index_value, display_name, icon_id, color_id])
 
 
 func _handle_dice_rolled(seq: int, die_1: int, die_2: int, total: int) -> void:
@@ -325,6 +332,17 @@ func _apply_player_ready_state(player_index_value: int, is_ready: bool, ready_co
     )
 
 
+func _apply_player_identity_changed(player_index_value: int, display_name: String, icon_id: int, color_id: int) -> void:
+    connected_player_indexes[player_index_value] = true
+    player_display_names[player_index_value] = display_name
+    player_icon_ids[player_index_value] = icon_id
+    player_color_ids[player_index_value] = color_id
+    _log_server(
+        "player identity changed: player=%d display_name=%s icon_id=%d color_id=%d"
+        % [player_index_value, display_name, icon_id, color_id],
+    )
+
+
 func _apply_game_ended(winner_index: int, reason: String, btc_goal: float, winner_btc: float) -> void:
     match_has_finished = true
     match_winner_index = winner_index
@@ -348,6 +366,12 @@ func _apply_player_joined(player_id_value: String, player_index_value: int) -> v
         player_fiat_balances[player_index_value] = 0.0
     if not player_bitcoin_balances.has(player_index_value):
         player_bitcoin_balances[player_index_value] = 0.0
+    if not player_display_names.has(player_index_value):
+        player_display_names[player_index_value] = ""
+    if not player_icon_ids.has(player_index_value):
+        player_icon_ids[player_index_value] = -1
+    if not player_color_ids.has(player_index_value):
+        player_color_ids[player_index_value] = -1
     _log_server("player joined: player_id=%s player_index=%d" % [player_id_value, player_index_value])
 
 
@@ -547,6 +571,9 @@ func _apply_state_snapshot(snapshot: Dictionary) -> void:
     player_in_inspection.clear()
     player_inspection_free_exits.clear()
     player_ready_states.clear()
+    player_display_names.clear()
+    player_icon_ids.clear()
+    player_color_ids.clear()
     for player_variant in players:
         var player_in_snapshot: Dictionary = player_variant
         var player_index_value: int = int(player_in_snapshot.get("player_index", -1))
@@ -560,6 +587,9 @@ func _apply_state_snapshot(snapshot: Dictionary) -> void:
         player_in_inspection[player_index_value] = bool(player_in_snapshot.get("in_inspection", false))
         player_inspection_free_exits[player_index_value] = int(player_in_snapshot.get("inspection_free_exits", 0))
         player_ready_states[player_index_value] = bool(player_in_snapshot.get("ready", false))
+        player_display_names[player_index_value] = str(player_in_snapshot.get("display_name", ""))
+        player_icon_ids[player_index_value] = int(player_in_snapshot.get("icon_id", -1))
+        player_color_ids[player_index_value] = int(player_in_snapshot.get("color_id", -1))
     _log_server(
         "state snapshot: game_id=%s turn=%d cycle=%d current_player=%d players=%d board_size=%d started=%s finished=%s winner=%d end_reason=%s pending_action=%s pending_tile=%d pending_owner=%d pending_amount=%.2f pending_buy_price=%.2f"
         % [
@@ -584,11 +614,14 @@ func _apply_state_snapshot(snapshot: Dictionary) -> void:
     for player_variant in players:
         var player: Dictionary = player_variant
         player_summaries.append(
-            "p%d(id=%s joined=%s ready=%s pos=%d laps=%d fiat=%.2f btc=%.8f inspection=%s free_exits=%d)" % [
+            "p%d(id=%s joined=%s ready=%s name=%s icon=%d color=%d pos=%d laps=%d fiat=%.2f btc=%.8f inspection=%s free_exits=%d)" % [
                 int(player.get("player_index", -1)),
                 str(player.get("player_id", "")),
                 bool(player.get("joined", false)),
                 bool(player.get("ready", false)),
+                str(player.get("display_name", "")),
+                int(player.get("icon_id", -1)),
+                int(player.get("color_id", -1)),
                 int(player.get("position", -1)),
                 int(player.get("laps", 0)),
                 float(player.get("fiat_balance", 0.0)),

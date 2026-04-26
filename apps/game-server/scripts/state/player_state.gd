@@ -2,6 +2,9 @@ class_name PlayerState
 extends RefCounted
 
 var player_index: int
+var display_name: String = ""
+var icon_id: int = -1
+var color_id: int = -1
 var fiat_balance: float = 0.0
 var bitcoin_balance: float = 0.0
 var position: int = 0

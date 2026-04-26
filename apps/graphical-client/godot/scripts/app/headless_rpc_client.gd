@@ -48,6 +48,10 @@ func rpc_sync_request(_game_id: String, _player_id: String, _last_applied_seq: i
 func rpc_player_ready(_game_id: String, _player_id: String) -> void:
     pass
 
+@rpc("any_peer")
+func rpc_set_player_identity(_game_id: String, _player_id: String, _display_name: String, _icon_id: int, _color_id: int) -> void:
+    pass
+
 @rpc("authority")
 func rpc_game_started(_seq: int, _new_game_id: String) -> void:
     pass
@@ -82,6 +86,10 @@ func rpc_player_ready_state(_seq: int, _player_index: int, _is_ready: bool, _rea
 
 @rpc("authority")
 func rpc_player_joined(_seq: int, _player_id: String, _player_index: int) -> void:
+    pass
+
+@rpc("authority")
+func rpc_player_identity_changed(_seq: int, _player_index: int, _display_name: String, _icon_id: int, _color_id: int) -> void:
     pass
 
 @rpc("authority")

@@ -20,6 +20,9 @@ extends RefCounted
 @abstract func rpc_player_joined(seq: int, player_id: String, player_index: int) -> void
 
 
+@abstract func rpc_player_identity_changed(seq: int, player_index: int, display_name: String, icon_id: int, color_id: int) -> void
+
+
 @abstract func rpc_dice_rolled(seq: int, die_1: int, die_2: int, total: int) -> void
 
 

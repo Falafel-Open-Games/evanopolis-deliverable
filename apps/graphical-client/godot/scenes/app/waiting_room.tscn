@@ -1,13 +1,14 @@
 [gd_scene format=3 uid="uid://cw4dp7gsv7jn4"]
 
+[ext_resource type="Script" path="res://scripts/app/waiting_room_layout_controller.gd" id="1_waiting_room_layout_controller"]
 [ext_resource type="Script" uid="uid://bbv18bxt8e87a" path="res://scripts/app/waiting_room_view.gd" id="1_waiting_room_view"]
+[ext_resource type="Texture2D" uid="uid://fswqge4gw827" path="res://assets/wordmark_v4.png" id="2_q2amx"]
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="2_tq6v2"]
-[ext_resource type="Texture2D" uid="uid://nvg4u1fej683" path="res://assets/empty_hex_logo.png" id="3_q2amx"]
-[ext_resource type="Texture2D" uid="uid://du3jhapf4vij1" path="res://assets/hexagon.png" id="4_o5chr"]
-[ext_resource type="Texture2D" uid="uid://iwrf13sdxou6" path="res://assets/avatar_sheet.png" id="5_a3j2m"]
-[ext_resource type="Texture2D" uid="uid://c54ekwg7dupx6" path="res://assets/cow_alt_logo.png" id="6_33tm5"]
+[ext_resource type="Texture2D" uid="uid://b02jfjlfjcyde" path="res://assets/avatar_sheet_shadows_removed.png" id="5_ln3sd"]
+[ext_resource type="PackedScene" uid="uid://dxfoynfa302k7" path="res://scenes/app/panel_blurried_bg.tscn" id="6_o5chr"]
+[ext_resource type="PackedScene" uid="uid://bvjd3i3tn37qd" path="res://scenes/app/waiting_room_seat.tscn" id="6_q2amx"]
 
-[node name="WaitingRoomRoot" type="Control" unique_id=918327763 node_paths=PackedStringArray("waiting_room_title_label", "ready_button")]
+[node name="WaitingRoomRoot" type="Control" unique_id=918327763 node_paths=PackedStringArray("waiting_room_title_label", "ready_button", "info_body_label", "identity_seat_label", "identity_player_label", "identity_note_label", "room_facts_label", "seats_vbox", "roster_footer_label")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,7 +17,21 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_waiting_room_view")
 waiting_room_title_label = NodePath("SafeMargin/BoxContainer/WaitingRoomTitle")
-ready_button = NodePath("SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox/ReadyButton")
+ready_button = NodePath("SafeMargin/RootVBox/ReadyButton")
+info_body_label = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/BoxContainer/InfoBody")
+identity_seat_label = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/IdentitySeatLabel")
+identity_player_label = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/IdentityPlayerLabel")
+identity_note_label = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/IdentityNoteLabel")
+room_facts_label = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/RoomFactsLabel")
+seats_vbox = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/SeatsVBox")
+roster_footer_label = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/RosterFooterLabel")
+
+[node name="WaitingRoomLayoutController" type="Node" parent="." unique_id=1560968820 node_paths=PackedStringArray("collapsible_info_column", "identity_edit_button", "middle_column_panel", "middle_column_close_button")]
+script = ExtResource("1_waiting_room_layout_controller")
+collapsible_info_column = NodePath("../SafeMargin/RootVBox/MainRow/InfoColumn")
+identity_edit_button = NodePath("../SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/EditIdentityButton")
+middle_column_panel = NodePath("../SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder")
+middle_column_close_button = NodePath("../SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder/CloseButton")
 
 [node name="SafeMargin" type="MarginContainer" parent="." unique_id=485763566]
 layout_mode = 1
@@ -30,6 +45,246 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
+[node name="RootVBox" type="VBoxContainer" parent="SafeMargin" unique_id=1531054791]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LogoTexture2" type="TextureRect" parent="SafeMargin/RootVBox" unique_id=984370948]
+texture_filter = 2
+custom_minimum_size = Vector2(180, 67.3)
+layout_mode = 2
+texture = ExtResource("2_q2amx")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LogoIcon" type="Sprite2D" parent="SafeMargin/RootVBox/LogoTexture2" unique_id=1995141760]
+texture_filter = 2
+position = Vector2(306, 21)
+scale = Vector2(0.26, 0.26)
+texture = ExtResource("5_ln3sd")
+hframes = 4
+vframes = 4
+frame = 8
+region_rect = Rect2(0, 0, 187.46881, 206.92221)
+
+[node name="MainRow" type="HBoxContainer" parent="SafeMargin/RootVBox" unique_id=1584919381]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="InfoColumn" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow" unique_id=1118980224]
+editor_description = "216
+"
+custom_minimum_size = Vector2(216, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="InfoPanelBorder" type="Panel" parent="SafeMargin/RootVBox/MainRow/InfoColumn" unique_id=2128381194]
+clip_contents = true
+layout_mode = 2
+size_flags_vertical = 3
+theme = ExtResource("2_tq6v2")
+
+[node name="PanelBlurriedBg" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder" unique_id=1137042040 instance=ExtResource("6_o5chr")]
+layout_mode = 1
+
+[node name="InfoMargin" type="MarginContainer" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder" unique_id=301083469]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="InfoVBox" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin" unique_id=1071227625]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BoxContainer" type="BoxContainer" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox" unique_id=1864966613]
+layout_mode = 2
+vertical = true
+
+[node name="InfoTitle" type="Label" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/BoxContainer" unique_id=559288140]
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+theme_type_variation = &"SectionTitle"
+text = "Game Info"
+uppercase = true
+
+[node name="HSeparator" type="HSeparator" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/BoxContainer" unique_id=495855394]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="InfoBody" type="Label" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/BoxContainer" unique_id=1972957749]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+text = "Make strategic purchases to increase your hash power. Bitcoin mining containers brings block rewards. Properties bring energy toll from your opponents."
+autowrap_mode = 2
+
+[node name="MoreInfoButton" type="Button" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/BoxContainer" unique_id=2106814826]
+custom_minimum_size = Vector2(43, 20)
+layout_mode = 2
+size_flags_horizontal = 8
+mouse_default_cursor_shape = 2
+theme = ExtResource("2_tq6v2")
+theme_type_variation = &"SecondaryButton"
+disabled = true
+text = "More"
+
+[node name="IdentityPanelBorder" type="Panel" parent="SafeMargin/RootVBox/MainRow/InfoColumn" unique_id=376993026]
+clip_contents = true
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PanelBlurriedBg" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder" unique_id=1793731775 instance=ExtResource("6_o5chr")]
+layout_mode = 1
+
+[node name="IdentityMargin" type="MarginContainer" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder" unique_id=1871888978]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="IdentityVBox" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin" unique_id=207421278]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="IdentityTitle" type="Label" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox" unique_id=607122009]
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+theme_type_variation = &"SectionTitle"
+text = "YOUR IDENTITY"
+
+[node name="IdentitySeatLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox" unique_id=801208915]
+visible = false
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+theme_override_colors/font_color = Color(0.980392, 0.94902, 0.870588, 1)
+text = "Seat"
+
+[node name="IdentityPlayerLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox" unique_id=1101049021]
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+theme_type_variation = &"SubsectionTitle"
+text = "Player"
+
+[node name="IdentityNoteLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox" unique_id=1814324207]
+visible = false
+custom_minimum_size = Vector2(210, 0)
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
+autowrap_mode = 2
+
+[node name="EditIdentityButton" type="Button" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox" unique_id=729670122]
+custom_minimum_size = Vector2(43, 20)
+layout_mode = 2
+size_flags_horizontal = 8
+mouse_default_cursor_shape = 2
+theme = ExtResource("2_tq6v2")
+theme_type_variation = &"SecondaryButton"
+text = "Edit"
+
+[node name="MiddleColumn" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow" unique_id=1288470809]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EditIdentityPanelBorder" type="Panel" parent="SafeMargin/RootVBox/MainRow/MiddleColumn" unique_id=1889802468]
+editor_description = "155 > "
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PanelBlurriedBg" parent="SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder" unique_id=1831978970 instance=ExtResource("6_o5chr")]
+layout_mode = 1
+
+[node name="CloseButton" type="Button" parent="SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder" unique_id=1456302641]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+theme = ExtResource("2_tq6v2")
+theme_type_variation = &"SecondaryButton"
+text = "close"
+
+[node name="RosterColumn" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow" unique_id=869592073]
+editor_description = "217"
+clip_contents = true
+custom_minimum_size = Vector2(217, 0)
+layout_mode = 2
+
+[node name="RosterPanelBorder" type="Panel" parent="SafeMargin/RootVBox/MainRow/RosterColumn" unique_id=2010301036]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PanelBlurriedBg" parent="SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder" unique_id=474619198 instance=ExtResource("6_o5chr")]
+layout_mode = 1
+
+[node name="RosterMargin" type="MarginContainer" parent="SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder" unique_id=637129131]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="RosterVBox" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin" unique_id=396697202]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="RosterTitle" type="Label" parent="SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox" unique_id=2010085082]
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+theme_type_variation = &"SectionTitle"
+text = "PLAYER ROSTER"
+
+[node name="RoomFactsLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox" unique_id=623091029]
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+theme_type_variation = &"SmallLabel"
+theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
+text = "Room facts"
+
+[node name="SeatsVBox" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox" unique_id=173342252]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="WaitingRoomSeatRoot" parent="SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/SeatsVBox" unique_id=389302058 instance=ExtResource("6_q2amx")]
+layout_mode = 2
+
+[node name="RosterFooterLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox" unique_id=773055612]
+visible = false
+custom_minimum_size = Vector2(220, 0)
+layout_mode = 2
+theme = ExtResource("2_tq6v2")
+theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
+autowrap_mode = 2
+
+[node name="ReadyButton" type="Button" parent="SafeMargin/RootVBox" unique_id=548163328]
+custom_minimum_size = Vector2(135, 29)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+mouse_default_cursor_shape = 2
+theme = ExtResource("2_tq6v2")
+text = "Ready"
+
 [node name="BoxContainer" type="BoxContainer" parent="SafeMargin" unique_id=1395786198]
 layout_mode = 2
 size_flags_horizontal = 8
@@ -40,203 +295,3 @@ layout_mode = 2
 theme = ExtResource("2_tq6v2")
 text = "Preparing launch handoff"
 horizontal_alignment = 2
-
-[node name="RootVBox" type="VBoxContainer" parent="SafeMargin" unique_id=1531054791]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="LogoTexture2" type="TextureRect" parent="SafeMargin/RootVBox" unique_id=984370948]
-texture_filter = 2
-custom_minimum_size = Vector2(180, 67.3)
-layout_mode = 2
-texture = ExtResource("3_q2amx")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="HexagonFill" type="TextureRect" parent="SafeMargin/RootVBox/LogoTexture2" unique_id=2063148461]
-modulate = Color(0.43137255, 0.62352943, 0.14509805, 1)
-layout_mode = 0
-offset_left = 285.0
-offset_top = 2.0
-offset_right = 323.0
-offset_bottom = 40.0
-texture = ExtResource("4_o5chr")
-expand_mode = 1
-
-[node name="LogoIcon" type="Sprite2D" parent="SafeMargin/RootVBox/LogoTexture2" unique_id=1995141760]
-texture_filter = 2
-position = Vector2(305, 21)
-scale = Vector2(0.28, 0.28)
-texture = ExtResource("5_a3j2m")
-hframes = 4
-vframes = 4
-frame = 6
-region_rect = Rect2(0, 0, 187.46881, 206.92221)
-
-[node name="HeaderCenter" type="CenterContainer" parent="SafeMargin/RootVBox" unique_id=597870758]
-visible = false
-layout_mode = 2
-
-[node name="LogoTexture" type="TextureRect" parent="SafeMargin/RootVBox/HeaderCenter" unique_id=939685220]
-custom_minimum_size = Vector2(180, 67.3)
-layout_mode = 2
-texture = ExtResource("6_33tm5")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="MainRow" type="HBoxContainer" parent="SafeMargin/RootVBox" unique_id=1584919381]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 10
-
-[node name="LeftColumn" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow" unique_id=1118980224]
-custom_minimum_size = Vector2(250, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 8
-
-[node name="InfoPanel" type="ColorRect" parent="SafeMargin/RootVBox/MainRow/LeftColumn" unique_id=1781273044]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.0549019, 0.0862745, 0.0901961, 0.84)
-
-[node name="InfoMargin" type="MarginContainer" parent="SafeMargin/RootVBox/MainRow/LeftColumn/InfoPanel" unique_id=301083469]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
-
-[node name="InfoVBox" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/LeftColumn/InfoPanel/InfoMargin" unique_id=1071227625]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="InfoTitle" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/InfoPanel/InfoMargin/InfoVBox" unique_id=559288140]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.913725, 0.682353, 0.337255, 1)
-text = "EVANOPOLIS AT A GLANCE"
-
-[node name="InfoBody" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/InfoPanel/InfoMargin/InfoVBox" unique_id=1972957749]
-custom_minimum_size = Vector2(210, 0)
-layout_mode = 2
-theme = ExtResource("2_tq6v2")
-theme_override_colors/font_color = Color(0.980392, 0.94902, 0.870588, 1)
-autowrap_mode = 2
-
-[node name="WinTitle" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/InfoPanel/InfoMargin/InfoVBox" unique_id=1675052937]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.486275, 0.85098, 0.564706, 1)
-text = "WIN CONDITIONS"
-
-[node name="WinBody" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/InfoPanel/InfoMargin/InfoVBox" unique_id=810234193]
-custom_minimum_size = Vector2(210, 0)
-layout_mode = 2
-theme = ExtResource("2_tq6v2")
-theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
-autowrap_mode = 2
-
-[node name="IdentityPanel" type="ColorRect" parent="SafeMargin/RootVBox/MainRow/LeftColumn" unique_id=26102190]
-custom_minimum_size = Vector2(0, 84)
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.0549019, 0.0862745, 0.0901961, 0.84)
-
-[node name="IdentityMargin" type="MarginContainer" parent="SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel" unique_id=1871888978]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
-
-[node name="IdentityVBox" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel/IdentityMargin" unique_id=207421278]
-layout_mode = 2
-theme_override_constants/separation = 3
-
-[node name="IdentityTitle" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel/IdentityMargin/IdentityVBox" unique_id=607122009]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.913725, 0.682353, 0.337255, 1)
-text = "YOUR IDENTITY"
-
-[node name="IdentitySeatLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel/IdentityMargin/IdentityVBox" unique_id=801208915]
-layout_mode = 2
-theme = ExtResource("2_tq6v2")
-theme_override_colors/font_color = Color(0.980392, 0.94902, 0.870588, 1)
-text = "Seat"
-
-[node name="IdentityPlayerLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel/IdentityMargin/IdentityVBox" unique_id=1101049021]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.486275, 0.85098, 0.564706, 1)
-text = "Player"
-
-[node name="IdentityNoteLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel/IdentityMargin/IdentityVBox" unique_id=1814324207]
-custom_minimum_size = Vector2(210, 0)
-layout_mode = 2
-theme = ExtResource("2_tq6v2")
-theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
-autowrap_mode = 2
-
-[node name="RightColumn" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow" unique_id=869592073]
-custom_minimum_size = Vector2(260, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="RosterPanel" type="ColorRect" parent="SafeMargin/RootVBox/MainRow/RightColumn" unique_id=2050546347]
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.0549019, 0.0862745, 0.0901961, 0.84)
-
-[node name="RosterMargin" type="MarginContainer" parent="SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel" unique_id=637129131]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 8
-
-[node name="RosterVBox" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin" unique_id=396697202]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="RosterTitle" type="Label" parent="SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox" unique_id=2010085082]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.913725, 0.682353, 0.337255, 1)
-text = "PLAYER ROSTER"
-
-[node name="RoomFactsLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox" unique_id=623091029]
-layout_mode = 2
-theme = ExtResource("2_tq6v2")
-theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
-text = "Room facts"
-
-[node name="SeatsVBox" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox" unique_id=173342252]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 6
-
-[node name="ReadyButton" type="Button" parent="SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox" unique_id=548163328]
-custom_minimum_size = Vector2(0, 34)
-layout_mode = 2
-mouse_default_cursor_shape = 2
-theme = ExtResource("2_tq6v2")
-text = "READY"
-
-[node name="RosterFooterLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox" unique_id=773055612]
-custom_minimum_size = Vector2(220, 0)
-layout_mode = 2
-theme = ExtResource("2_tq6v2")
-theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
-autowrap_mode = 2

@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://bvjd3i3tn37qd"]
 
-[ext_resource type="Script" path="res://scripts/app/waiting_room_seat_view.gd" id="1_waiting_room_seat_view"]
+[ext_resource type="Script" uid="uid://dwpwo8va1ao8f" path="res://scripts/app/waiting_room_seat_view.gd" id="1_waiting_room_seat_view"]
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="2_e2ark"]
 
 [node name="WaitingRoomSeatRoot" type="Control" unique_id=389302058 node_paths=PackedStringArray("background_rect", "slot_index_label", "name_label", "status_label", "badge_label")]
-custom_minimum_size = Vector2(0, 48)
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 3
 anchors_preset = 10
 anchor_right = 1.0
@@ -49,6 +49,7 @@ theme_override_constants/separation = 8
 [node name="SlotIndexLabel" type="Label" parent="SeatBackground/SeatMargin/SeatRow" unique_id=2072088708]
 custom_minimum_size = Vector2(18, 0)
 layout_mode = 2
+theme = ExtResource("2_e2ark")
 text = "1"
 vertical_alignment = 1
 
@@ -58,6 +59,7 @@ size_flags_horizontal = 3
 
 [node name="NameLabel" type="Label" parent="SeatBackground/SeatMargin/SeatRow/TextColumn" unique_id=675365840]
 layout_mode = 2
+theme = ExtResource("2_e2ark")
 text = "Player"
 
 [node name="StatusLabel" type="Label" parent="SeatBackground/SeatMargin/SeatRow/TextColumn" unique_id=1263859812]

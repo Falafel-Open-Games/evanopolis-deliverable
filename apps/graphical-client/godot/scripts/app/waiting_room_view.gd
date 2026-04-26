@@ -12,19 +12,17 @@ var _waiting_room_state: WaitingRoomState = null
 
 @export var waiting_room_title_label: Label
 @export var ready_button: Button
-@onready var info_body_label: Label = $SafeMargin/RootVBox/MainRow/LeftColumn/InfoPanel/InfoMargin/InfoVBox/InfoBody
-@onready var win_body_label: Label = $SafeMargin/RootVBox/MainRow/LeftColumn/InfoPanel/InfoMargin/InfoVBox/WinBody
-@onready var identity_seat_label: Label = $SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel/IdentityMargin/IdentityVBox/IdentitySeatLabel
-@onready var identity_player_label: Label = $SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel/IdentityMargin/IdentityVBox/IdentityPlayerLabel
-@onready var identity_note_label: Label = $SafeMargin/RootVBox/MainRow/LeftColumn/IdentityPanel/IdentityMargin/IdentityVBox/IdentityNoteLabel
-@onready var room_facts_label: Label = $SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox/RoomFactsLabel
-@onready var seats_vbox: VBoxContainer = $SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox/SeatsVBox
-@onready var roster_footer_label: Label = $SafeMargin/RootVBox/MainRow/RightColumn/RosterPanel/RosterMargin/RosterVBox/RosterFooterLabel
+@export var info_body_label: Label
+@export var identity_seat_label: Label
+@export var identity_player_label: Label
+@export var identity_note_label: Label
+@export var room_facts_label: Label
+@export var seats_vbox: VBoxContainer
+@export var roster_footer_label: Label
 
 func _ready() -> void:
     assert(waiting_room_title_label)
     assert(info_body_label)
-    assert(win_body_label)
     assert(identity_seat_label)
     assert(identity_player_label)
     assert(identity_note_label)
@@ -54,8 +52,8 @@ func _on_ready_button_pressed() -> void:
     ready_requested.emit()
 
 func _configure_static_copy() -> void:
-    info_body_label.text = "In this game you are a bitcoin mining entrepreneur, that have to make purchase decisions about strategic properties in different cities to build your mining operation and achieve maximum hash power against the other miners in the world."
-    win_body_label.text = "You win the game if your opponents go broke, or if you accumulate 20 Bitcoins, or if you are the bigger miner after the length of the game."
+    # info_body_label.text = ""
+    pass
 
 func _show_placeholder() -> void:
     waiting_room_title_label.text = "Preparing launch handoff"
@@ -64,7 +62,7 @@ func _show_placeholder() -> void:
     identity_note_label.text = "Short name, icon, and color customization will land after the server snapshot carries waiting-room identity metadata."
     room_facts_label.text = "Room facts"
     roster_footer_label.text = ""
-    ready_button.text = "READY"
+    ready_button.text = "Ready"
     ready_button.disabled = true
 
 func _render_waiting_room() -> void:
@@ -84,11 +82,11 @@ func _render_waiting_room() -> void:
     roster_footer_label.text = _waiting_room_state.footer_note
 
     if _waiting_room_state.local_player_ready:
-        ready_button.text = "READY LOCKED IN"
+        ready_button.text = "Ready Locked In"
     elif _waiting_room_state.ready_request_pending:
-        ready_button.text = "SENDING READY..."
+        ready_button.text = "Sending Ready…"
     else:
-        ready_button.text = "READY"
+        ready_button.text = "Ready"
 
     _rebuild_seats()
 

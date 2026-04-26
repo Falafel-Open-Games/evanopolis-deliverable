@@ -61,6 +61,11 @@ func rpc_player_ready(game_id: String, player_id: String) -> void:
     _handle_player_ready(game_id, player_id)
 
 
+@rpc("any_peer")
+func rpc_set_player_identity(game_id: String, player_id: String, display_name: String, icon_id: int, color_id: int) -> void:
+    _handle_set_player_identity(game_id, player_id, display_name, icon_id, color_id)
+
+
 @rpc("authority")
 func rpc_game_started(seq: int, new_game_id: String) -> void:
     _handle_game_started(seq, new_game_id)
@@ -104,6 +109,11 @@ func rpc_player_ready_state(seq: int, player_index: int, is_ready: bool, ready_c
 @rpc("authority")
 func rpc_player_joined(seq: int, player_id: String, player_index: int) -> void:
     _handle_player_joined(seq, player_id, player_index)
+
+
+@rpc("authority")
+func rpc_player_identity_changed(seq: int, player_index: int, display_name: String, icon_id: int, color_id: int) -> void:
+    _handle_player_identity_changed(seq, player_index, display_name, icon_id, color_id)
 
 
 @rpc("authority")
@@ -250,6 +260,10 @@ func _handle_player_ready(game_id: String, player_id: String) -> void:
     pass
 
 
+func _handle_set_player_identity(game_id: String, player_id: String, display_name: String, icon_id: int, color_id: int) -> void:
+    pass
+
+
 func _handle_game_started(seq: int, new_game_id: String) -> void:
     pass
 
@@ -283,6 +297,10 @@ func _handle_player_ready_state(seq: int, player_index: int, is_ready: bool, rea
 
 
 func _handle_player_joined(seq: int, player_id: String, player_index: int) -> void:
+    pass
+
+
+func _handle_player_identity_changed(seq: int, player_index: int, display_name: String, icon_id: int, color_id: int) -> void:
     pass
 
 

@@ -74,6 +74,19 @@ func rpc_player_joined(seq: int, player_id: String, player_index: int) -> void:
     )
 
 
+func rpc_player_identity_changed(seq: int, player_index: int, display_name: String, icon_id: int, color_id: int) -> void:
+    events.append(
+        {
+            "method": "rpc_player_identity_changed",
+            "seq": seq,
+            "player_index": player_index,
+            "display_name": display_name,
+            "icon_id": icon_id,
+            "color_id": color_id,
+        },
+    )
+
+
 func rpc_dice_rolled(seq: int, die_1: int, die_2: int, total: int) -> void:
     events.append(
         {
