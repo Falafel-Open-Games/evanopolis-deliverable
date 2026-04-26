@@ -813,7 +813,6 @@ func build_state_snapshot() -> Dictionary:
         "ready_count": _ready_player_count(),
     }
 
-
 func _set_pending_action(action_type: String, tile_index: int, metadata: Dictionary = { }) -> void:
     pending_action = {
         "type": action_type,

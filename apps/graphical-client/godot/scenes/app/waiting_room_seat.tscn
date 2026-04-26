@@ -2,8 +2,9 @@
 
 [ext_resource type="Script" uid="uid://dwpwo8va1ao8f" path="res://scripts/app/waiting_room_seat_view.gd" id="1_waiting_room_seat_view"]
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="2_e2ark"]
+[ext_resource type="PackedScene" uid="uid://b8sk5drkuskkn" path="res://scenes/app/player_identity_roster_card.tscn" id="3_durt2"]
 
-[node name="WaitingRoomSeatRoot" type="Control" unique_id=389302058 node_paths=PackedStringArray("background_rect", "slot_index_label", "name_label", "status_label", "badge_label")]
+[node name="WaitingRoomSeatRoot" type="Control" unique_id=389302058 node_paths=PackedStringArray("background_rect", "slot_index_label", "identity_card", "badge_label")]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 3
 anchors_preset = 10
@@ -13,8 +14,7 @@ grow_horizontal = 2
 script = ExtResource("1_waiting_room_seat_view")
 background_rect = NodePath("SeatBackground")
 slot_index_label = NodePath("SeatBackground/SeatMargin/SeatRow/SlotIndexLabel")
-name_label = NodePath("SeatBackground/SeatMargin/SeatRow/TextColumn/NameLabel")
-status_label = NodePath("SeatBackground/SeatMargin/SeatRow/TextColumn/StatusLabel")
+identity_card = NodePath("SeatBackground/SeatMargin/SeatRow/TextColumn/PlayerIdentityCardRoot")
 badge_label = NodePath("SeatBackground/SeatMargin/SeatRow/BadgeLabel")
 
 [node name="SeatBackground" type="ColorRect" parent="." unique_id=29362601]
@@ -47,28 +47,20 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="SlotIndexLabel" type="Label" parent="SeatBackground/SeatMargin/SeatRow" unique_id=2072088708]
-custom_minimum_size = Vector2(18, 0)
 layout_mode = 2
 theme = ExtResource("2_e2ark")
 text = "1"
 vertical_alignment = 1
 
-[node name="TextColumn" type="VBoxContainer" parent="SeatBackground/SeatMargin/SeatRow" unique_id=77221834]
+[node name="TextColumn" type="HBoxContainer" parent="SeatBackground/SeatMargin/SeatRow" unique_id=22634859]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 8
 
-[node name="NameLabel" type="Label" parent="SeatBackground/SeatMargin/SeatRow/TextColumn" unique_id=675365840]
+[node name="PlayerIdentityCardRoot" parent="SeatBackground/SeatMargin/SeatRow/TextColumn" unique_id=908241667 instance=ExtResource("3_durt2")]
 layout_mode = 2
-theme = ExtResource("2_e2ark")
-text = "Player"
-
-[node name="StatusLabel" type="Label" parent="SeatBackground/SeatMargin/SeatRow/TextColumn" unique_id=1263859812]
-layout_mode = 2
-theme = ExtResource("2_e2ark")
-text = "WAITING"
 
 [node name="BadgeLabel" type="Label" parent="SeatBackground/SeatMargin/SeatRow" unique_id=146885628]
-custom_minimum_size = Vector2(56, 0)
 layout_mode = 2
 theme = ExtResource("2_e2ark")
 text = "OPEN"

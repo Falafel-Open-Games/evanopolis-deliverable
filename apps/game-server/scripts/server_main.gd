@@ -193,7 +193,6 @@ func _handle_player_ready(game_id: String, player_id: String) -> void:
     if not reason.is_empty():
         _rpc_to_peer(sender_id, "rpc_action_rejected", [seq, reason])
 
-
 func _handle_set_player_identity(
         game_id: String,
         player_id: String,

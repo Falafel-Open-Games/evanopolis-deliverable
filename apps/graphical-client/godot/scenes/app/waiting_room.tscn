@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://cw4dp7gsv7jn4"]
 
-[ext_resource type="Script" path="res://scripts/app/waiting_room_layout_controller.gd" id="1_waiting_room_layout_controller"]
+[ext_resource type="PackedScene" uid="uid://b4uu13hppoiyf" path="res://scenes/app/player_identity_card.tscn" id="1_player_identity_card"]
+[ext_resource type="Script" uid="uid://ca7apuwomuo8s" path="res://scripts/app/waiting_room_layout_controller.gd" id="1_waiting_room_layout_controller"]
 [ext_resource type="Script" uid="uid://bbv18bxt8e87a" path="res://scripts/app/waiting_room_view.gd" id="1_waiting_room_view"]
 [ext_resource type="Texture2D" uid="uid://fswqge4gw827" path="res://assets/wordmark_v4.png" id="2_q2amx"]
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="2_tq6v2"]
@@ -8,7 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://dxfoynfa302k7" path="res://scenes/app/panel_blurried_bg.tscn" id="6_o5chr"]
 [ext_resource type="PackedScene" uid="uid://bvjd3i3tn37qd" path="res://scenes/app/waiting_room_seat.tscn" id="6_q2amx"]
 
-[node name="WaitingRoomRoot" type="Control" unique_id=918327763 node_paths=PackedStringArray("waiting_room_title_label", "ready_button", "info_body_label", "identity_seat_label", "identity_player_label", "identity_note_label", "room_facts_label", "seats_vbox", "roster_footer_label")]
+[node name="WaitingRoomRoot" type="Control" unique_id=918327763 node_paths=PackedStringArray("waiting_room_title_label", "ready_button", "info_body_label", "identity_card", "room_facts_label", "seats_vbox", "roster_footer_label")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -19,9 +20,7 @@ script = ExtResource("1_waiting_room_view")
 waiting_room_title_label = NodePath("SafeMargin/BoxContainer/WaitingRoomTitle")
 ready_button = NodePath("SafeMargin/RootVBox/ReadyButton")
 info_body_label = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/BoxContainer/InfoBody")
-identity_seat_label = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/IdentitySeatLabel")
-identity_player_label = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/IdentityPlayerLabel")
-identity_note_label = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/IdentityNoteLabel")
+identity_card = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/PlayerIdentityCardRoot")
 room_facts_label = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/RoomFactsLabel")
 seats_vbox = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/SeatsVBox")
 roster_footer_label = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/RosterFooterLabel")
@@ -64,7 +63,6 @@ scale = Vector2(0.26, 0.26)
 texture = ExtResource("5_ln3sd")
 hframes = 4
 vframes = 4
-frame = 8
 region_rect = Rect2(0, 0, 187.46881, 206.92221)
 
 [node name="MainRow" type="HBoxContainer" parent="SafeMargin/RootVBox" unique_id=1584919381]
@@ -127,6 +125,7 @@ text = "Make strategic purchases to increase your hash power. Bitcoin mining con
 autowrap_mode = 2
 
 [node name="MoreInfoButton" type="Button" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/BoxContainer" unique_id=2106814826]
+visible = false
 custom_minimum_size = Vector2(43, 20)
 layout_mode = 2
 size_flags_horizontal = 8
@@ -167,26 +166,12 @@ theme = ExtResource("2_tq6v2")
 theme_type_variation = &"SectionTitle"
 text = "YOUR IDENTITY"
 
-[node name="IdentitySeatLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox" unique_id=801208915]
-visible = false
+[node name="HSeparator2" type="HSeparator" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox" unique_id=256616657]
 layout_mode = 2
-theme = ExtResource("2_tq6v2")
-theme_override_colors/font_color = Color(0.980392, 0.94902, 0.870588, 1)
-text = "Seat"
+theme_override_constants/separation = 1
 
-[node name="IdentityPlayerLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox" unique_id=1101049021]
+[node name="PlayerIdentityCardRoot" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox" unique_id=2110529576 instance=ExtResource("1_player_identity_card")]
 layout_mode = 2
-theme = ExtResource("2_tq6v2")
-theme_type_variation = &"SubsectionTitle"
-text = "Player"
-
-[node name="IdentityNoteLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox" unique_id=1814324207]
-visible = false
-custom_minimum_size = Vector2(210, 0)
-layout_mode = 2
-theme = ExtResource("2_tq6v2")
-theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
-autowrap_mode = 2
 
 [node name="EditIdentityButton" type="Button" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox" unique_id=729670122]
 custom_minimum_size = Vector2(43, 20)
@@ -259,6 +244,7 @@ theme = ExtResource("2_tq6v2")
 theme_type_variation = &"SmallLabel"
 theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
 text = "Room facts"
+autowrap_mode = 1
 
 [node name="SeatsVBox" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox" unique_id=173342252]
 layout_mode = 2

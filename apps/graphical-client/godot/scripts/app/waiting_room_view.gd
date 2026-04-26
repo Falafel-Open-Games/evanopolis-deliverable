@@ -2,9 +2,11 @@ extends Control
 
 const WaitingRoomState = preload("res://scripts/app/models/waiting_room_state.gd")
 const WaitingRoomSlot = preload("res://scripts/app/models/waiting_room_slot.gd")
+const PlayerIdentityCard = preload("res://scripts/app/player_identity_card.gd")
 const WaitingRoomSeatScene = preload("res://scenes/app/waiting_room_seat.tscn")
 
-const SECONDARY_TEXT_COLOR: Color = Color(0.823529, 0.831373, 0.756863, 1.0)
+const DEFAULT_IDENTITY_ICON_FRAME: int = 11
+const DEFAULT_IDENTITY_COLOR_SLOT: int = 1
 
 signal ready_requested
 
@@ -13,9 +15,7 @@ var _waiting_room_state: WaitingRoomState = null
 @export var waiting_room_title_label: Label
 @export var ready_button: Button
 @export var info_body_label: Label
-@export var identity_seat_label: Label
-@export var identity_player_label: Label
-@export var identity_note_label: Label
+@export var identity_card: PlayerIdentityCard
 @export var room_facts_label: Label
 @export var seats_vbox: VBoxContainer
 @export var roster_footer_label: Label
@@ -23,9 +23,7 @@ var _waiting_room_state: WaitingRoomState = null
 func _ready() -> void:
     assert(waiting_room_title_label)
     assert(info_body_label)
-    assert(identity_seat_label)
-    assert(identity_player_label)
-    assert(identity_note_label)
+    assert(identity_card)
     assert(room_facts_label)
     assert(seats_vbox)
     assert(ready_button)
@@ -57,9 +55,7 @@ func _configure_static_copy() -> void:
 
 func _show_placeholder() -> void:
     waiting_room_title_label.text = "Preparing launch handoff"
-    identity_seat_label.text = "Seat"
-    identity_player_label.text = "Player"
-    identity_note_label.text = "Short name, icon, and color customization will land after the server snapshot carries waiting-room identity metadata."
+    identity_card.set_identity("Player", "No player id yet", DEFAULT_IDENTITY_ICON_FRAME, DEFAULT_IDENTITY_COLOR_SLOT)
     room_facts_label.text = "Room facts"
     roster_footer_label.text = ""
     ready_button.text = "Ready"
@@ -71,9 +67,7 @@ func _render_waiting_room() -> void:
         return
 
     waiting_room_title_label.text = "Waiting for players"
-    identity_seat_label.text = "Seat %d of %d" % [_waiting_room_state.local_player_index + 1, _waiting_room_state.room_capacity]
-    identity_player_label.text = _short_player_id(_waiting_room_state.local_player_id)
-    identity_note_label.text = "Short name, icon, and color customization will land after the server snapshot carries waiting-room identity metadata."
+    identity_card.set_identity("Player", _short_player_id(_waiting_room_state.local_player_id), DEFAULT_IDENTITY_ICON_FRAME, DEFAULT_IDENTITY_COLOR_SLOT)
     room_facts_label.text = "Room %s  |  %d/%d ready" % [
         _waiting_room_state.game_id,
         _waiting_room_state.ready_count,

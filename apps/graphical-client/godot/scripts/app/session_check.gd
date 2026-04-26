@@ -327,6 +327,7 @@ func _emit_waiting_room_state() -> void:
         var is_local: bool = player_index == _local_player_index
         var is_ready: bool = _is_player_ready(player_index)
         var known_player_id: String = str(_known_player_ids.get(player_index, ""))
+        var player_id: String = known_player_id
         var is_known_player: bool = is_local or not known_player_id.is_empty() or is_ready
         var display_name: String = "Awaiting player"
         var status_text: String = "Open seat"
@@ -334,8 +335,10 @@ func _emit_waiting_room_state() -> void:
         if is_local:
             display_name = "You"
             status_text = "Ready" if is_ready else "Waiting"
+            if player_id.is_empty():
+                player_id = _current_player_id
         elif not known_player_id.is_empty():
-            display_name = _short_player_id(known_player_id)
+            display_name = "Player"
             status_text = "Ready" if is_ready else "Joined"
         elif is_ready:
             display_name = "Player %d" % (player_index + 1)
@@ -345,6 +348,7 @@ func _emit_waiting_room_state() -> void:
             WaitingRoomSlotModel.new(
                 player_index,
                 display_name,
+                player_id,
                 status_text,
                 is_local,
                 is_ready,
@@ -389,6 +393,7 @@ func _waiting_room_footer_note() -> String:
     if not _waiting_room_note.is_empty():
         return _waiting_room_note
     return "Roster names and identity customization will improve once the server snapshot includes richer waiting-room metadata."
+
 
 func _try_schedule_retry(message: String) -> bool:
     if _connect_attempts >= MAX_CONNECT_ATTEMPTS:
