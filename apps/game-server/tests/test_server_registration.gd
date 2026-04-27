@@ -127,7 +127,7 @@ func test_set_player_identity_rejects_invalid_identity_values() -> void:
     var empty_name: Dictionary = server.rpc_set_player_identity("demo_002", "alice", "   ", 0, 0, 11)
     assert_eq(str(empty_name.get("reason", "")), "invalid_display_name", "empty display name rejected")
 
-    var invalid_icon: Dictionary = server.rpc_set_player_identity("demo_002", "alice", "Miner Alice", 15, 0, 11)
+    var invalid_icon: Dictionary = server.rpc_set_player_identity("demo_002", "alice", "Miner Alice", 16, 0, 11)
     assert_eq(str(invalid_icon.get("reason", "")), "invalid_icon_id", "invalid icon rejected")
 
     var invalid_color: Dictionary = server.rpc_set_player_identity("demo_002", "alice", "Miner Alice", 0, 6, 11)

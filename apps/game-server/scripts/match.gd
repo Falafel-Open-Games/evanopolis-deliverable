@@ -10,7 +10,7 @@ const BullV0Deck = preload("res://scripts/incidents/bull_v0_deck.gd")
 const EconomyV0 = preload("res://scripts/rules/economy_v0.gd")
 
 const MAX_WAITING_ROOM_NAME_LENGTH: int = 16
-const MAX_WAITING_ROOM_ICON_COUNT: int = 15
+const MAX_WAITING_ROOM_ICON_COUNT: int = 16
 const MAX_WAITING_ROOM_COLOR_COUNT: int = 6
 
 var config: Config

@@ -5,6 +5,9 @@
 [ext_resource type="Script" uid="uid://cem0fdnqvysm2" path="res://scripts/app/color_picker.gd" id="3_0dvm6"]
 [ext_resource type="PackedScene" uid="uid://bnus4dxwk52xs" path="res://scenes/app/color_choice_button.tscn" id="3_0htto"]
 [ext_resource type="Script" uid="uid://drhatq0d6t6wn" path="res://scripts/app/player_identity_editor_ui.gd" id="4_ui76g"]
+[ext_resource type="Texture2D" uid="uid://k2r3dp5lblhc" path="res://import/kenney_ui-pack/Green/arrow_basic_w_small.svg" id="6_jkqhr"]
+[ext_resource type="Texture2D" uid="uid://b02jfjlfjcyde" path="res://assets/avatar_sheet_shadows_removed.png" id="7_i4i5s"]
+[ext_resource type="Texture2D" uid="uid://chfimcj8ayfos" path="res://import/kenney_ui-pack/Green/arrow_basic_e_small.svg" id="7_oa7ob"]
 
 [node name="PlayerIdentityEditorUI" type="MarginContainer" unique_id=2009013027]
 anchors_preset = 15
@@ -32,67 +35,335 @@ uppercase = true
 layout_mode = 2
 theme_override_constants/separation = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="vbox" unique_id=1766841941]
+[node name="MarginContainer" type="MarginContainer" parent="vbox" unique_id=1446706040]
+layout_mode = 2
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_bottom = 6
+
+[node name="HBoxContainer" type="HBoxContainer" parent="vbox/MarginContainer" unique_id=1766841941]
 layout_mode = 2
 
-[node name="Preview Card" type="VBoxContainer" parent="vbox/HBoxContainer" unique_id=158501]
+[node name="Preview Card" type="VBoxContainer" parent="vbox/MarginContainer/HBoxContainer" unique_id=158501]
 layout_mode = 2
 
-[node name="Preview Title" type="Label" parent="vbox/HBoxContainer/Preview Card" unique_id=240706443]
+[node name="Preview Title" type="Label" parent="vbox/MarginContainer/HBoxContainer/Preview Card" unique_id=240706443]
 layout_mode = 2
 theme = ExtResource("1_ohplp")
 theme_type_variation = &"SubsectionTitle"
 text = "Preview"
 horizontal_alignment = 1
 
-[node name="PlayerIdentityCardRoot" parent="vbox/HBoxContainer/Preview Card" unique_id=908241667 instance=ExtResource("2_ik653")]
+[node name="PlayerIdentityCardRoot" parent="vbox/MarginContainer/HBoxContainer/Preview Card" unique_id=908241667 instance=ExtResource("2_ik653")]
 layout_mode = 2
 
-[node name="Name and Color" type="VBoxContainer" parent="vbox/HBoxContainer" unique_id=305862382]
+[node name="Name and Color" type="VBoxContainer" parent="vbox/MarginContainer/HBoxContainer" unique_id=305862382]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Display Name Label" type="Label" parent="vbox/HBoxContainer/Name and Color" unique_id=1719406128]
+[node name="Display Name Label" type="Label" parent="vbox/MarginContainer/HBoxContainer/Name and Color" unique_id=1719406128]
 layout_mode = 2
 theme = ExtResource("1_ohplp")
 theme_type_variation = &"SubsectionTitle"
 text = "Display Name"
 
-[node name="LineEdit" type="LineEdit" parent="vbox/HBoxContainer/Name and Color" unique_id=117908470]
+[node name="LineEdit" type="LineEdit" parent="vbox/MarginContainer/HBoxContainer/Name and Color" unique_id=117908470]
 layout_mode = 2
 max_length = 12
 
-[node name="Select Color Label" type="Label" parent="vbox/HBoxContainer/Name and Color" unique_id=1205233200]
+[node name="Select Color Label" type="Label" parent="vbox/MarginContainer/HBoxContainer/Name and Color" unique_id=1205233200]
 layout_mode = 2
 theme = ExtResource("1_ohplp")
 theme_type_variation = &"SubsectionTitle"
 text = "Select Color"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="vbox/HBoxContainer/Name and Color" unique_id=1280890699]
+[node name="HBoxContainer" type="HBoxContainer" parent="vbox/MarginContainer/HBoxContainer/Name and Color" unique_id=1280890699]
 layout_mode = 2
 script = ExtResource("3_0dvm6")
 
-[node name="ColorChoiceButton" parent="vbox/HBoxContainer/Name and Color/HBoxContainer" unique_id=1112465227 instance=ExtResource("3_0htto")]
+[node name="ColorChoiceButton" parent="vbox/MarginContainer/HBoxContainer/Name and Color/HBoxContainer" unique_id=1112465227 instance=ExtResource("3_0htto")]
 layout_mode = 2
 
-[node name="ColorChoiceButton2" parent="vbox/HBoxContainer/Name and Color/HBoxContainer" unique_id=466077878 instance=ExtResource("3_0htto")]
+[node name="ColorChoiceButton2" parent="vbox/MarginContainer/HBoxContainer/Name and Color/HBoxContainer" unique_id=466077878 instance=ExtResource("3_0htto")]
 layout_mode = 2
 
-[node name="ColorChoiceButton3" parent="vbox/HBoxContainer/Name and Color/HBoxContainer" unique_id=203566910 instance=ExtResource("3_0htto")]
+[node name="ColorChoiceButton3" parent="vbox/MarginContainer/HBoxContainer/Name and Color/HBoxContainer" unique_id=203566910 instance=ExtResource("3_0htto")]
 layout_mode = 2
 
-[node name="ColorChoiceButton4" parent="vbox/HBoxContainer/Name and Color/HBoxContainer" unique_id=376912640 instance=ExtResource("3_0htto")]
+[node name="ColorChoiceButton4" parent="vbox/MarginContainer/HBoxContainer/Name and Color/HBoxContainer" unique_id=376912640 instance=ExtResource("3_0htto")]
 layout_mode = 2
 
-[node name="ColorChoiceButton5" parent="vbox/HBoxContainer/Name and Color/HBoxContainer" unique_id=1767522688 instance=ExtResource("3_0htto")]
+[node name="ColorChoiceButton5" parent="vbox/MarginContainer/HBoxContainer/Name and Color/HBoxContainer" unique_id=1767522688 instance=ExtResource("3_0htto")]
 layout_mode = 2
 
-[node name="ColorChoiceButton6" parent="vbox/HBoxContainer/Name and Color/HBoxContainer" unique_id=202165435 instance=ExtResource("3_0htto")]
+[node name="ColorChoiceButton6" parent="vbox/MarginContainer/HBoxContainer/Name and Color/HBoxContainer" unique_id=202165435 instance=ExtResource("3_0htto")]
 layout_mode = 2
 
 [node name="HSeparator3" type="HSeparator" parent="vbox" unique_id=1361078989]
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 1
+
+[node name="MarginContainer2" type="MarginContainer" parent="vbox" unique_id=327756715]
+layout_mode = 2
+theme_override_constants/margin_top = -7
+theme_override_constants/margin_bottom = 6
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="vbox/MarginContainer2" unique_id=1855598423]
+layout_mode = 2
+
+[node name="PrevIconButton" type="Button" parent="vbox/MarginContainer2/HBoxContainer3" unique_id=521887063]
+layout_mode = 2
+icon = ExtResource("6_jkqhr")
+flat = true
+
+[node name="CarouselViewport" type="Control" parent="vbox/MarginContainer2/HBoxContainer3" unique_id=2147000313]
+custom_minimum_size = Vector2(87, 50)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ClipRoot" type="Control" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport" unique_id=1092504511]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = 4.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="IconStrip" type="HBoxContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot" unique_id=1146599947]
+custom_minimum_size = Vector2(1000, 50)
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="MarginContainer" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=179436320]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer" unique_id=787493537]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+
+[node name="MarginContainer2" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=1981130631]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer2" unique_id=748198213]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 1
+
+[node name="MarginContainer3" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=358050361]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer3" unique_id=1866212022]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 2
+
+[node name="MarginContainer4" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=1636718193]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer4" unique_id=748952541]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 3
+
+[node name="MarginContainer5" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=1112660538]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer5" unique_id=517105919]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 4
+
+[node name="MarginContainer6" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=325774745]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer6" unique_id=1523578406]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 5
+
+[node name="MarginContainer7" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=256508645]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer7" unique_id=414077292]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 6
+
+[node name="MarginContainer8" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=664031552]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer8" unique_id=1415350633]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 7
+
+[node name="MarginContainer9" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=1693368404]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer9" unique_id=1940998958]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 8
+
+[node name="MarginContainer10" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=780272449]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer10" unique_id=160383499]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 9
+
+[node name="MarginContainer11" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=1585098723]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer11" unique_id=76403409]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 10
+
+[node name="MarginContainer12" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=1505476710]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer12" unique_id=819065251]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 11
+
+[node name="MarginContainer13" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=123519024]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer13" unique_id=1640232862]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 4
+
+[node name="MarginContainer14" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=2065259136]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer14" unique_id=1118666065]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 4
+
+[node name="MarginContainer15" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=1521344241]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer15" unique_id=1905436586]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 4
+
+[node name="MarginContainer16" type="MarginContainer" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip" unique_id=1428307649]
+custom_minimum_size = Vector2(55, 0)
+layout_mode = 2
+
+[node name="IconSprite" type="Sprite2D" parent="vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip/MarginContainer16" unique_id=641152904]
+texture_filter = 2
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("7_i4i5s")
+centered = false
+offset = Vector2(-20, 0)
+hframes = 4
+vframes = 4
+frame = 15
+
+[node name="NextIconButton" type="Button" parent="vbox/MarginContainer2/HBoxContainer3" unique_id=1315965619]
+layout_mode = 2
+icon = ExtResource("7_oa7ob")
+flat = true
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="vbox" unique_id=582238830]
 custom_minimum_size = Vector2(100, 24)
