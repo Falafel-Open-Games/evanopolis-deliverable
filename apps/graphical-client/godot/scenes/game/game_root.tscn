@@ -1,0 +1,87 @@
+[gd_scene format=3 uid="uid://d2u5y5dj1ib6d"]
+
+[ext_resource type="Script" uid="uid://didc1soy01cg2" path="res://scripts/game/game_root.gd" id="1_game_root"]
+[ext_resource type="PackedScene" uid="uid://dlaj22qah2fc8" path="res://scenes/game/board/energy_diorama_pack.tscn" id="2_rx5uh"]
+[ext_resource type="PackedScene" uid="uid://cpmxp51rnmgsr" path="res://scenes/app/main_logo.tscn" id="3_rx5uh"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_f3gwi"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_kdtot"]
+sky_material = SubResource("ProceduralSkyMaterial_f3gwi")
+
+[sub_resource type="Environment" id="Environment_scx5b"]
+background_mode = 2
+background_energy_multiplier = 0.57
+sky = SubResource("Sky_kdtot")
+sky_custom_fov = 115.8
+ambient_light_source = 3
+tonemap_mode = 4
+tonemap_exposure = 1.46
+tonemap_agx_contrast = 1.05
+ssao_enabled = true
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_k63du"]
+size = Vector3(10, 1, 10)
+
+[sub_resource type="BoxMesh" id="BoxMesh_cylga"]
+size = Vector3(10, 1, 10)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_agidj"]
+albedo_color = Color(0.34, 0.21958335, 0.05099999, 1)
+
+[node name="GameRoot" type="Node3D" unique_id=408025639]
+script = ExtResource("1_game_root")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1577108294]
+environment = SubResource("Environment_scx5b")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1205018361]
+transform = Transform3D(0.7071067, -0.49999997, 0.49999997, 0, 0.70710677, 0.70710677, -0.7071067, -0.49999997, 0.49999997, 0, 0, 0)
+light_energy = 0.5
+shadow_enabled = true
+sky_mode = 1
+
+[node name="CameraRig" type="Node3D" parent="." unique_id=1640706551]
+
+[node name="GameCamera" type="Camera3D" parent="CameraRig" unique_id=1957603148]
+transform = Transform3D(1, 0, 0, 0, 0.88945633, 0.45702034, 0, -0.45702034, 0.88945633, 0, 2.065961, 1.6490017)
+current = true
+fov = 32.6
+size = 2.399
+
+[node name="BoardRoot" type="Node3D" parent="." unique_id=1523784243]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="BoardRoot" unique_id=1334743173]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BoardRoot/StaticBody3D" unique_id=1104566667]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BoxShape3D_k63du")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="BoardRoot/StaticBody3D" unique_id=1702885146]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015847921, -0.5, 0)
+mesh = SubResource("BoxMesh_cylga")
+surface_material_override/0 = SubResource("StandardMaterial3D_agidj")
+
+[node name="energy-diorama-pack2" parent="BoardRoot" unique_id=625056848 instance=ExtResource("2_rx5uh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.9892778)
+
+[node name="PawnRoot" type="Node3D" parent="." unique_id=979076114]
+
+[node name="HudRoot" type="CanvasLayer" parent="." unique_id=1810049097]
+
+[node name="SafeMargin" type="MarginContainer" parent="HudRoot" unique_id=109095849]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="MainLogo" parent="HudRoot/SafeMargin" unique_id=2033182455 instance=ExtResource("3_rx5uh")]
+layout_mode = 2
+size_flags_vertical = 0

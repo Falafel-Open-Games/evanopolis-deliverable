@@ -1,0 +1,232 @@
+EVANOPOLIS – CORE GAME RULES (V3)
+
+--------------------------------------------------
+CORE DESIGN PRINCIPLES
+--------------------------------------------------
+
+- Minimalistic: easy to learn, fast to play
+- Visual clarity over complexity
+- Physical (diegetic) feedback preferred over UI overlays
+- Short sessions (target: 10–20 minutes)
+- Strategy + randomness (dice-driven movement, light engine building)
+
+--------------------------------------------------
+GAME OBJECTIVE
+--------------------------------------------------
+
+- First player to reach 20 BITCOIN (₿) wins the game
+
+--------------------------------------------------
+CORE RESOURCES
+--------------------------------------------------
+
+There are 3 core resources:
+
+1. FIAT ($)
+2. ENERGY (⚡)
+3. BITCOIN (₿) ← victory resource
+
+--------------------------------------------------
+RESOURCE FLOW (CORE LOOP)
+--------------------------------------------------
+
+FIAT → used to BUY tiles  
+TILES → generate ENERGY  
+ENERGY → allocated between:
+    - SELL → generates FIAT
+    - MINE → generates BITCOIN  
+
+Simplified pipeline:
+
+FIAT → buy → ENERGY → (SELL or MINE) → FIAT or BITCOIN
+
+--------------------------------------------------
+BOARD STRUCTURE
+--------------------------------------------------
+
+- Hexagonal ring composed of 6 sides
+- Each side = 1 city / energy type
+- Each side has 3 tiles (total: 18 tiles)
+
+Cities / Energy Types:
+
+1. Patagonia → Wind
+2. Ciudad del Este → Hydro
+3. El Salvador → Geothermal (Volcano)
+4. Angra dos Reis → Nuclear
+5. Atacama → Solar
+6. Irkutsk / Iceland → Cold Geothermal
+
+--------------------------------------------------
+TURN STRUCTURE
+--------------------------------------------------
+
+Each turn follows this sequence:
+
+1. Roll dice
+2. Move pawn
+3. Resolve landing tile:
+   - Unowned → option to BUY
+   - Owned → PAY toll
+4. End turn:
+   - ENERGY allocation is applied
+   - FIAT and BITCOIN are generated
+
+--------------------------------------------------
+TILE STATES
+--------------------------------------------------
+
+Each tile has 2 possible states:
+
+1. UNOWNED
+   - Single layer (height = 1)
+   - Neutral base
+
+2. OWNED
+   - Double layer (height = 2)
+   - Top layer = original tile (city color)
+   - Bottom layer = player color (ownership)
+
+--------------------------------------------------
+OWNERSHIP VISUAL SYSTEM
+--------------------------------------------------
+
+- Ownership is represented physically via stacking
+- When a player buys a tile:
+  → a second tile (player-colored) is added BELOW
+
+Visual meaning:
+
+- Flat tile → unowned
+- Raised tile → owned
+- Bottom color → owner
+
+--------------------------------------------------
+PLAYER IDENTITY
+--------------------------------------------------
+
+- Each player selects a UNIQUE avatar in the lobby
+- Each player has a UNIQUE color
+
+Player color is used for:
+- Tile ownership base layer
+- UI highlights
+
+--------------------------------------------------
+TILE INTERACTION
+--------------------------------------------------
+
+When landing on a tile:
+
+IF unowned:
+  - Player may BUY using FIAT
+
+IF owned by another player:
+  - Player pays toll in FIAT
+
+IF owned by self:
+  - No penalty
+
+--------------------------------------------------
+ENERGY GENERATION
+--------------------------------------------------
+
+- Each owned tile generates ENERGY every turn
+- Total ENERGY is the sum of all owned tiles
+
+--------------------------------------------------
+ENERGY ALLOCATION SYSTEM
+--------------------------------------------------
+
+At the end of each turn, players allocate ENERGY between:
+
+1. SELL (FIAT generation)
+2. MINE (BITCOIN generation)
+
+Rules:
+
+- Allocation is expressed as a percentage (0–100%)
+- SELL + MINE must always equal 100%
+- Allocation persists between turns until changed
+
+Example:
+
+100 ENERGY total
+
+50% SELL → generates FIAT  
+50% MINE → generates BITCOIN  
+
+--------------------------------------------------
+RESOURCE CONVERSION
+--------------------------------------------------
+
+SELL:
+- Converts ENERGY into FIAT
+- Used for buying tiles and paying tolls
+
+MINE:
+- Converts ENERGY into BITCOIN
+- Contributes toward victory
+
+--------------------------------------------------
+PLAYER DECISION LOOP
+--------------------------------------------------
+
+Each turn includes two key decisions:
+
+1. BOARD DECISION
+   - Buy / Pass / Pay
+
+2. ENERGY DECISION
+   - Adjust ENERGY allocation between SELL and MINE
+
+--------------------------------------------------
+GAME FEEL TARGET
+--------------------------------------------------
+
+- Fast decisions
+- Visible ownership (no UI dependency)
+- Clear "danger vs safe" zones on the board
+- Increasing tension as more tiles are owned
+- Trade-off between expansion (FIAT) and victory (BITCOIN)
+
+--------------------------------------------------
+SCOPE LIMITS (V1)
+--------------------------------------------------
+
+Explicitly NOT included:
+
+- No auctions
+- No mortgage system
+- No jail mechanics
+- No complex trading system
+- No multi-layer upgrades (max 2 layers per tile)
+- No card system (reserved for future)
+
+--------------------------------------------------
+FUTURE EXTENSIONS (NOT IN V1)
+--------------------------------------------------
+
+- Tile upgrades (3rd layer or structures)
+- Card system
+- Territory bonuses (own full side)
+- Dynamic pricing or scaling costs
+- Special event tiles
+
+--------------------------------------------------
+SUMMARY
+--------------------------------------------------
+
+Core loop:
+
+ROLL → MOVE → BUY / PAY → ALLOCATE ENERGY → PRODUCE → REPEAT
+
+Victory:
+
+First to 20 BITCOIN (₿)
+
+Key innovation:
+
+- ENERGY split between FIAT generation and BITCOIN mining
+- Ownership represented by STACKED TILES
+- Physical, readable, UI-independent system

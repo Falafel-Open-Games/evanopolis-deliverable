@@ -3,9 +3,8 @@
 [ext_resource type="PackedScene" uid="uid://b4uu13hppoiyf" path="res://scenes/app/player_identity_card.tscn" id="1_player_identity_card"]
 [ext_resource type="Script" uid="uid://ca7apuwomuo8s" path="res://scripts/app/waiting_room_layout_controller.gd" id="1_waiting_room_layout_controller"]
 [ext_resource type="Script" uid="uid://bbv18bxt8e87a" path="res://scripts/app/waiting_room_view.gd" id="1_waiting_room_view"]
-[ext_resource type="Texture2D" uid="uid://fswqge4gw827" path="res://assets/wordmark_v4.png" id="2_q2amx"]
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="2_tq6v2"]
-[ext_resource type="Texture2D" uid="uid://b02jfjlfjcyde" path="res://assets/avatar_sheet_shadows_removed.png" id="5_ln3sd"]
+[ext_resource type="PackedScene" uid="uid://cpmxp51rnmgsr" path="res://scenes/app/main_logo.tscn" id="3_a3j2m"]
 [ext_resource type="PackedScene" uid="uid://dxfoynfa302k7" path="res://scenes/app/panel_blurried_bg.tscn" id="6_o5chr"]
 [ext_resource type="PackedScene" uid="uid://bvjd3i3tn37qd" path="res://scenes/app/waiting_room_seat.tscn" id="6_q2amx"]
 [ext_resource type="PackedScene" uid="uid://c2fwn0ix7pjp5" path="res://scenes/app/player_identity_editor_ui.tscn" id="8_33tm5"]
@@ -50,22 +49,8 @@ theme_override_constants/margin_bottom = 16
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="LogoTexture2" type="TextureRect" parent="SafeMargin/RootVBox" unique_id=984370948]
-texture_filter = 2
-custom_minimum_size = Vector2(180, 67.3)
+[node name="MainLogo" parent="SafeMargin/RootVBox" unique_id=2033182455 instance=ExtResource("3_a3j2m")]
 layout_mode = 2
-texture = ExtResource("2_q2amx")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="LogoIcon" type="Sprite2D" parent="SafeMargin/RootVBox/LogoTexture2" unique_id=1995141760]
-texture_filter = 2
-position = Vector2(306, 21)
-scale = Vector2(0.26, 0.26)
-texture = ExtResource("5_ln3sd")
-hframes = 4
-vframes = 4
-region_rect = Rect2(0, 0, 187.46881, 206.92221)
 
 [node name="MainRow" type="HBoxContainer" parent="SafeMargin/RootVBox" unique_id=1584919381]
 layout_mode = 2
@@ -235,6 +220,7 @@ theme_type_variation = &"SectionTitle"
 text = "PLAYER ROSTER"
 
 [node name="RoomFactsLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox" unique_id=623091029]
+custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme = ExtResource("2_tq6v2")
 theme_type_variation = &"SmallLabel"
@@ -252,7 +238,7 @@ layout_mode = 2
 
 [node name="RosterFooterLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox" unique_id=773055612]
 visible = false
-custom_minimum_size = Vector2(220, 0)
+custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme = ExtResource("2_tq6v2")
 theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
@@ -277,5 +263,3 @@ layout_mode = 2
 theme = ExtResource("2_tq6v2")
 text = "Preparing launch handoff"
 horizontal_alignment = 2
-
-[editable path="SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder/PlayerIdentityEditorUI"]

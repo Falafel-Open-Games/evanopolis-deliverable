@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://cpmxp51rnmgsr"]
+
+[ext_resource type="Texture2D" uid="uid://fswqge4gw827" path="res://assets/wordmark_v4.png" id="1_vq8rc"]
+[ext_resource type="Texture2D" uid="uid://b02jfjlfjcyde" path="res://assets/avatar_sheet_shadows_removed.png" id="2_k5epq"]
+
+[node name="MainLogo" type="MarginContainer" unique_id=2033182455]
+size_flags_horizontal = 4
+
+[node name="LogoTexture2" type="TextureRect" parent="." unique_id=634550000]
+texture_filter = 2
+custom_minimum_size = Vector2(180, 67.3)
+layout_mode = 2
+texture = ExtResource("1_vq8rc")
+expand_mode = 2
+stretch_mode = 5
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=474780462]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="LogoIcon" type="Sprite2D" parent="MarginContainer" unique_id=308028216]
+texture_filter = 2
+position = Vector2(2, -12)
+scale = Vector2(0.26, 0.26)
+texture = ExtResource("2_k5epq")
+hframes = 4
+vframes = 4
+region_rect = Rect2(0, 0, 187.46881, 206.92221)

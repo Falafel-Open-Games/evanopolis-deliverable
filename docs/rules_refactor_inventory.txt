@@ -1,0 +1,625 @@
+EVANOPOLIS RULES REFACTOR INVENTORY
+
+Purpose
+
+This file is AI-friendly prep material for the upcoming gameplay refactor
+associated with devlog 007.
+
+It has two jobs:
+
+1. Declare which documents now define the intended future rules.
+2. Map every current repo surface that still contains old rules logic, old
+   rules text, old rules tests, or old rules UI assumptions.
+
+Use this file as migration context before touching gameplay code, gameplay RPCs,
+gameplay tests, or gameplay-facing UI.
+
+
+AUTHORITY STATUS
+
+Incoming design authority for the refactor:
+
+- docs/game_rules.txt
+  This is now the intended authoritative game-rules document for the next
+  phase.
+
+- apps/graphical-client/docs/design/evanopolis_v1_gameplay_mockup_atacama.html
+  This is now the main UI reference mockup for the gameplay direction that
+  follows the new rules.
+
+Current runtime authority before the refactor lands:
+
+- apps/game-server/scripts/match.gd
+- apps/game-server/scripts/rules/economy_v0.gd
+- apps/game-server/scripts/state/game_state.gd
+- apps/game-server/scripts/state/player_state.gd
+- apps/game-server/scripts/incidents/bear_v0_deck.gd
+- apps/game-server/scripts/incidents/bull_v0_deck.gd
+- apps/game-server/docs/RPC_API.md
+
+Important nuance:
+
+- docs/game_rules.txt is the authority for the new direction.
+- apps/game-server is still the authority for what the shipped runtime
+  currently does.
+- Until the refactor lands, these two authorities do not match.
+
+
+NEW RULESET SUMMARY FROM docs/game_rules.txt
+
+Core goal:
+
+- First player to reach 20 BITCOIN wins.
+
+Core resources:
+
+- FIAT
+- ENERGY
+- BITCOIN
+
+Core resource loop:
+
+- FIAT buys tiles.
+- Owned tiles generate ENERGY.
+- ENERGY is split between SELL and MINE.
+- SELL generates FIAT.
+- MINE generates BITCOIN.
+
+Board structure:
+
+- Hexagonal ring
+- 6 sides
+- 3 tiles per side
+- 18 total tiles
+
+Cities / energy types named in the new rules:
+
+- Patagonia / Wind
+- Ciudad del Este / Hydro
+- El Salvador / Geothermal
+- Angra dos Reis / Nuclear
+- Atacama / Solar
+- Irkutsk or Iceland / Cold Geothermal
+
+Turn loop:
+
+1. Roll dice
+2. Move pawn
+3. Resolve landing tile
+4. End turn
+5. Apply ENERGY allocation
+6. Generate FIAT and BITCOIN
+
+Landing logic:
+
+- Unowned tile: buy option
+- Other player owned tile: pay toll
+- Self-owned tile: no penalty
+
+Persistent strategic choice:
+
+- Each player keeps an ENERGY split between SELL and MINE.
+- SELL + MINE must always equal 100 percent.
+- Allocation persists until changed.
+
+Explicit V1 exclusions:
+
+- no auctions
+- no mortgage system
+- no jail mechanics
+- no complex trading
+- no card system
+- no multi-layer upgrades beyond 2-layer ownership presentation
+
+
+HIGH-LEVEL DELTA: OLD RUNTIME VS NEW RULESET
+
+The current runtime is built around a different economy and a different board
+interaction model.
+
+Major old-runtime mechanics that do not belong in the new rules:
+
+- incident tiles
+- bear and bull card decks
+- inspection / jail-like mechanics
+- inspection vouchers
+- miner batches per property
+- BTC rewards triggered by landing on owned property
+- inflation cycles tied to laps
+- property price scaling by cycle
+- the old six-city set including Caracas, Assuncion, Minsk, Rockdale
+- current board size default of 24 instead of the new 18-tile plan
+
+Old doc text that should no longer drive implementation:
+
+- "you win if opponents go broke"
+- "you are the biggest miner after the length of the game"
+
+Those win conditions appear in graphical-client design docs, but are not part
+of the new authority and are not fully implemented in current runtime code
+either.
+
+
+CURRENT AUTHORITATIVE CODE SURFACES
+
+1. Main runtime rules engine
+
+- apps/game-server/scripts/match.gd
+
+What it currently owns:
+
+- waiting-room ready flow
+- player identity validation and locking
+- turn order
+- dice rolls
+- pawn movement
+- board-state construction
+- landing resolution
+- pending-action state
+- buy property flow
+- pay toll flow
+- buy miner batch flow
+- incident resolution
+- inspection resolution
+- reconnect snapshot building
+- BTC-goal victory
+
+Current mechanics embedded in this file that conflict with the new rules:
+
+- pending action type "resolve_incident"
+- miner batch purchase and miner payout
+- incident tile flipping
+- inspection entry and exit
+- cycle / inflation handling on lap completion
+- board generation based on 24+ tiles and old city set
+
+2. Economy constants
+
+- apps/game-server/scripts/rules/economy_v0.gd
+
+What it currently contains:
+
+- initial fiat balance
+- BTC goal to win
+- inspection fee
+- miner batch price
+- max miner batches per property
+- miner BTC payout per batch
+- base property prices for current old city list
+
+Likely rewrite scope:
+
+- almost complete rewrite
+- keep only concepts still valid under the new rules
+- add explicit ENERGY production and FIAT/BITCOIN conversion formulas
+
+3. Match state structs
+
+- apps/game-server/scripts/state/game_state.gd
+- apps/game-server/scripts/state/player_state.gd
+
+Current player fields:
+
+- fiat_balance
+- bitcoin_balance
+- position
+- laps
+- in_inspection
+- inspection_free_exits
+- display_name
+- icon_id
+- color_id
+
+Likely new-state needs:
+
+- energy_balance or total_energy production state
+- persistent sell_percent / mine_percent allocation state
+- removal of inspection-related state
+- possible removal of laps if cycles disappear
+
+4. Incident decks
+
+- apps/game-server/scripts/incidents/bear_v0_deck.gd
+- apps/game-server/scripts/incidents/bull_v0_deck.gd
+
+Status:
+
+- fully old-rules-only
+- should be deleted or retired if the new V1 really has no card system
+
+5. RPC contract
+
+- apps/game-server/docs/RPC_API.md
+- apps/game-server/scripts/headless_rpc.gd
+- apps/game-server/scripts/client.gd
+- apps/game-server/scripts/server.gd
+
+Current gameplay RPC surface includes:
+
+- rpc_roll_dice
+- rpc_end_turn
+- rpc_buy_property
+- rpc_buy_miner_batch
+- rpc_pay_toll
+- rpc_pay_inspection_fee
+- rpc_roll_inspection_exit
+- rpc_use_inspection_voucher
+
+Current server-to-client events include:
+
+- rpc_tile_landed with action_required values tied to old flows
+- rpc_incident_drawn
+- rpc_incident_type_changed
+- rpc_miner_batches_added
+- rpc_mining_reward
+- rpc_player_sent_to_inspection
+- rpc_inspection_voucher_granted
+- rpc_cycle_started
+
+Likely RPC delta for new rules:
+
+- remove incident and inspection RPCs
+- remove miner-batch RPCs if miner batches disappear
+- keep roll / move / buy / pay / end-turn concepts if still useful
+- add an authoritative way to update and broadcast ENERGY allocation
+- add authoritative production or end-turn resource result events
+- update snapshot shape to include ENERGY and allocation state
+
+6. Match creation inputs
+
+- apps/game-server/scripts/config.gd
+- apps/game-server/scripts/room_definition_loader.gd
+- apps/game-server/docs/ROOMS_API_INTEGRATION.md
+
+Current relevant behavior:
+
+- config reads player_count
+- config reads experimental.board_size
+- room hydration creates a match lazily from room definition
+
+Important note:
+
+- rooms-api already carries experimental.turn_duration_seconds, but the current
+  game server does not use it.
+- if the new rules introduce a real timer, that is effectively new runtime work.
+
+
+CURRENT TEST SURFACES THAT EMBED OLD RULES
+
+These tests are not just validation. They are also executable documentation for
+the old rules. Many will need rewrite or removal.
+
+Primary old-rules gameplay specs:
+
+- apps/game-server/tests/test_match_turn_actions.gd
+  Covers landing context, buy/pass, tolls, miner batches, miner rewards, BTC
+  goal ending, turn increments, and many rejection cases.
+
+- apps/game-server/tests/test_match_incidents.gd
+  Covers incident tiles, card draw order, tile flipping, and incident side
+  effects.
+
+- apps/game-server/tests/test_match_inspection.gd
+  Covers inspection entry, inspection fee, vouchers, and doubles-based exit.
+
+- apps/game-server/tests/test_match_roll_validation.gd
+  Covers action gating around turn ownership and pending action state.
+
+Still relevant but likely partially reusable:
+
+- apps/game-server/tests/test_match_join.gd
+- apps/game-server/tests/test_match_broadcasts.gd
+- apps/game-server/tests/test_reconnect.gd
+- apps/game-server/tests/test_room_definition_loader.gd
+
+Text-client behavioral tests that encode old prompt flow:
+
+- apps/game-server/tests/test_client_event_queue.gd
+
+Why this matters:
+
+- this file currently assumes the old action menu and old pending-action
+  recovery model, including buy prompts, toll prompts, inspection prompts, and
+  old snapshot resume behavior.
+
+Test harness:
+
+- apps/game-server/tests/match_test_client.gd
+
+This harness is probably reusable, but the asserted events and payload shapes
+will change.
+
+
+CURRENT NON-AUTHORITATIVE RULES TEXT AND RULES COPIES
+
+These files are not runtime authority, but they contain gameplay text or
+assumptions that can mislead future edits if left unmarked.
+
+1. Graphical client design docs with old win-condition copy
+
+- apps/graphical-client/docs/design/SCREEN_SPECS.md
+- apps/graphical-client/docs/design/WIREFRAMES.md
+
+Old statements present there:
+
+- win by opponents going broke
+- win by reaching 20 Bitcoins
+- win by being the biggest miner after game length
+
+Action:
+
+- these docs should be updated to match docs/game_rules.txt
+
+2. Graphical client waiting room scene with gameplay copy
+
+- apps/graphical-client/godot/scenes/app/waiting_room.tscn
+
+It currently contains hardcoded copy about:
+
+- strategic purchases
+- hash power
+- mining containers
+- block rewards
+- energy toll
+
+Action:
+
+- review whether this wording still matches the new rules vocabulary
+- likely update to FIAT / ENERGY / BITCOIN framing
+
+3. Text client reference implementation
+
+- apps/game-server/scripts/client_main.gd
+
+Status:
+
+- not authoritative
+- still important because it mirrors old gameplay prompts, old reconnect
+  resume behavior, and old action terminology
+
+Old-rules assumptions inside it:
+
+- buy or end turn prompt
+- toll prompt
+- miner batch prompt
+- inspection resolution prompt
+- old snapshot logging fields
+
+4. Text-client README
+
+- apps/text-client/README.md
+
+Status:
+
+- manual testing guide
+- contains old gameplay validation expectations
+
+5. Wrapper planning docs
+
+- apps/web-wrapper/docs/ENTRY_FLOW_PLAN.md
+
+Important status:
+
+- it explicitly says the wrapper does not own game rules or turn flow
+- this is still the right boundary
+
+6. Historical planning docs
+
+- docs/runbooks/two-week-wrap-up.md
+- docs/migration/game-server.md
+
+Status:
+
+- historical only
+- mentions old gameplay flow at a planning level
+
+
+CURRENT GRAPHICAL-CLIENT IMPLEMENTATION SURFACES
+
+1. Current gameplay UI authority for the new direction
+
+- apps/graphical-client/docs/design/evanopolis_v1_gameplay_mockup_atacama.html
+
+Observed gameplay UI concepts in that mockup:
+
+- top bar with turn state
+- visible FIAT resource
+- visible ENERGY resource
+- visible BTC goal progress
+- landed-tile card showing cost and per-turn ENERGY production
+- strong BUY action
+- player list with ranking and per-player resource summary
+- bottom gameplay controls with ROLL and END TURN
+- ENERGY split control between SELL and MINE
+- production preview panel
+- activity log panel
+- explicit note that ownership is physically stacked
+
+This aligns much more closely with docs/game_rules.txt than the current
+runtime/client surfaces do.
+
+2. Existing graphical-client RPC scaffolding
+
+- apps/graphical-client/godot/scripts/app/headless_rpc_client.gd
+
+Status:
+
+- mirrors current old RPC surface as empty stubs
+- will need RPC contract updates before the real gameplay scene can follow the
+  new rules cleanly
+
+3. Existing graphical-client session bridge
+
+- apps/graphical-client/godot/scripts/app/session_check.gd
+
+Status:
+
+- currently only handles launch, auth, join, sync, and waiting-room state
+- good boundary to preserve
+- should not absorb full gameplay-rule logic during the refactor
+
+4. Empty gameplay HUD placeholder
+
+- apps/graphical-client/godot/scripts/game/hud/turn_hud.gd
+
+Status:
+
+- effectively open territory for the new gameplay UI work
+
+
+ROOMS-API AND MATCH-METADATA SURFACES
+
+Relevant files:
+
+- apps/rooms-api/REST_API.md
+- apps/rooms-api/src/schemas/rooms.ts
+- apps/game-server/docs/ROOMS_API_INTEGRATION.md
+
+Current relevant fields:
+
+- player_count
+- experimental.board_size
+- experimental.turn_duration_seconds
+
+Important notes:
+
+- player_count is real and active
+- board_size is real and active in game-server hydration
+- turn_duration_seconds exists in schema and docs but is not active in runtime
+- rooms-api should remain metadata-only, not live gameplay authority
+
+Refactor implication:
+
+- if the new rules standardize on 18 tiles, decide whether board_size remains a
+  configurable room field or becomes fixed V1 runtime behavior
+
+
+SPECIFIC OLD MECHANICS TO REMOVE OR REPLACE
+
+Likely removals:
+
+- incident tiles
+- bear deck
+- bull deck
+- inspection system
+- inspection voucher system
+- miner batch system
+- mining reward on land event
+- inflation cycle event
+- lap-based board economy adjustments
+
+Likely replacements:
+
+- tile ENERGY production replaces miner-batch production logic
+- persistent SELL/MINE allocation replaces old miner upgrade loop
+- end-turn production resolution replaces old landing-triggered BTC reward loop
+- new 18-tile city layout replaces current board builder
+
+Likely kept concepts:
+
+- ready/join/waiting-room identity flow
+- authoritative roll and move
+- authoritative buy / pay / end turn gating
+- reconnect snapshot model
+- BTC as final victory resource
+
+
+CURRENT CONTRADICTIONS TO RESOLVE DURING THE REFACTOR
+
+1. Runtime vs design authority
+
+- The runtime still runs old rules.
+- docs/game_rules.txt defines the intended new rules.
+
+2. Win condition mismatch across repo
+
+- Runtime code currently implements BTC-goal win.
+- Some design docs still mention two extra win conditions that should be
+  removed unless intentionally revived.
+
+3. Board mismatch
+
+- Current runtime board is 24+ tiles and old city names.
+- New rules specify 18 tiles and a different city set.
+
+4. Resource model mismatch
+
+- Current runtime resource model is mostly fiat + bitcoin + miners.
+- New rules require fiat + energy + bitcoin, with persistent allocation.
+
+5. UI mismatch
+
+- New gameplay mockup expects ENERGY split controls and production preview.
+- Current runtime RPC and snapshot shape do not support that model yet.
+
+
+SUGGESTED REFACTOR ORDER
+
+1. Freeze authority
+
+- Treat docs/game_rules.txt as the only gameplay-rules source for new work.
+- Treat the gameplay mockup HTML as the main visual reference for gameplay UI.
+
+2. Replace server rules core
+
+- Rewrite apps/game-server/scripts/match.gd around the new economy loop.
+- Rewrite economy_v0.gd or replace it with a new rules module.
+- Update player and game state to carry ENERGY and allocation state.
+
+3. Replace board model
+
+- Rebuild board generation for 18 tiles and new cities.
+- Remove incident and inspection tile logic if no longer present.
+
+4. Replace RPC contract
+
+- remove old gameplay-only RPCs that no longer exist
+- add allocation update / production result events as needed
+- update reconnect snapshot shape
+
+5. Rewrite tests from rules authority
+
+- start with failing tests for the new rule loop
+- delete or replace incident / inspection / miner-batch tests
+- update reconnect and snapshot tests after new state shape is stable
+
+6. Update graphical-client gameplay layer
+
+- keep session_check as the pre-game handshake layer
+- build gameplay UI from the new mockup and the new RPC contract
+
+7. Clean stale docs and stale copy
+
+- update or remove old win-condition text
+- update waiting-room wording if needed
+- mark old docs as obsolete if they remain for history
+
+
+SHORT CHECKLIST FOR ANY AI OR HUMAN STARTING THIS REFACTOR
+
+- Read docs/game_rules.txt first.
+- Read this inventory second.
+- Do not trust old graphical-client gameplay copy without verifying it against
+  docs/game_rules.txt.
+- Do not trust old tests as future rules authority.
+- Assume apps/game-server/scripts/match.gd is the current runtime truth, but
+  not the target design truth.
+- Assume the gameplay mockup HTML is a target UI reference, not implemented
+  behavior.
+- Preserve waiting-room, auth, join, and reconnect discipline unless the new
+  rules explicitly require boundary changes.
+
+
+FILES MOST IMPORTANT TO OPEN FIRST
+
+- docs/game_rules.txt
+- docs/rules_refactor_inventory.txt
+- apps/game-server/scripts/match.gd
+- apps/game-server/scripts/rules/economy_v0.gd
+- apps/game-server/docs/RPC_API.md
+- apps/game-server/tests/test_match_turn_actions.gd
+- apps/game-server/tests/test_match_incidents.gd
+- apps/game-server/tests/test_match_inspection.gd
+- apps/graphical-client/docs/design/evanopolis_v1_gameplay_mockup_atacama.html
+- apps/graphical-client/godot/scripts/app/session_check.gd
+
