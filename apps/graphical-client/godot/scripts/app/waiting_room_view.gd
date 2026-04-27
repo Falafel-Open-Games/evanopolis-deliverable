@@ -70,6 +70,7 @@ func _show_placeholder() -> void:
     identity_editor_ui.set_unavailable_color_ids([])
     room_facts_label.text = "Room facts"
     roster_footer_label.text = ""
+    roster_footer_label.visible = false
     ready_button.text = "Ready"
     ready_button.disabled = true
 
@@ -98,6 +99,7 @@ func _render_waiting_room() -> void:
         _waiting_room_state.room_capacity,
     ]
     roster_footer_label.text = _waiting_room_state.footer_note
+    roster_footer_label.visible = not _waiting_room_state.footer_note.strip_edges().is_empty()
 
     if _waiting_room_state.local_player_ready:
         ready_button.text = "Ready Locked In"

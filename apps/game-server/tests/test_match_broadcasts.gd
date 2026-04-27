@@ -49,9 +49,9 @@ func test_identity_broadcast_and_color_conflict_are_handled() -> void:
     assert_eq(str(game_match.assign_client("alice", client_a).get("reason", "")), "", "alice registers")
     assert_eq(str(game_match.assign_client("bob", client_b).get("reason", "")), "", "bob registers")
 
-    assert_eq(game_match.rpc_set_player_identity(config.game_id, "alice", "Miner Alice", 3, 1), "", "alice identity accepted")
+    assert_eq(game_match.rpc_set_player_identity(config.game_id, "alice", "Miner Alice", 3, 3), "", "alice identity accepted")
     assert_eq(game_match.rpc_set_player_identity(config.game_id, "bob", "Miner Bob", 3, 2), "", "bob can reuse icon")
-    assert_eq(game_match.rpc_set_player_identity(config.game_id, "bob", "Miner Bob", 4, 1), "color_unavailable", "bob cannot take alice color")
+    assert_eq(game_match.rpc_set_player_identity(config.game_id, "bob", "Miner Bob", 4, 3), "color_unavailable", "bob cannot take alice color")
 
     var identity_events_a: Array[Dictionary] = _filter_events(client_a, "rpc_player_identity_changed")
     var identity_events_b: Array[Dictionary] = _filter_events(client_b, "rpc_player_identity_changed")
@@ -60,7 +60,7 @@ func test_identity_broadcast_and_color_conflict_are_handled() -> void:
 
     assert_eq(str(identity_events_a[0].get("display_name", "")), "Miner Alice", "alice name broadcast")
     assert_eq(int(identity_events_a[0].get("icon_id", -1)), 3, "alice icon broadcast")
-    assert_eq(int(identity_events_a[0].get("color_id", -1)), 1, "alice color broadcast")
+    assert_eq(int(identity_events_a[0].get("color_id", -1)), 3, "alice color broadcast")
     assert_eq(str(identity_events_a[1].get("display_name", "")), "Miner Bob", "bob name broadcast")
     assert_eq(int(identity_events_a[1].get("icon_id", -1)), 3, "bob can reuse alice icon")
     assert_eq(int(identity_events_a[1].get("color_id", -1)), 2, "bob color broadcast")

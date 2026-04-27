@@ -95,9 +95,9 @@ func test_set_player_identity_updates_snapshot_and_rejects_color_conflict() -> v
     assert_eq(str(server.register_remote_client("demo_002", "alice", 11, null).get("reason", "")), "", "alice joins")
     assert_eq(str(server.register_remote_client("demo_002", "bob", 12, null).get("reason", "")), "", "bob joins")
 
-    var alice_identity: Dictionary = server.rpc_set_player_identity("demo_002", "alice", "Miner Alice", 3, 1, 11)
+    var alice_identity: Dictionary = server.rpc_set_player_identity("demo_002", "alice", "Miner Alice", 3, 3, 11)
     assert_eq(str(alice_identity.get("reason", "")), "", "alice identity accepted")
-    var bob_conflict: Dictionary = server.rpc_set_player_identity("demo_002", "bob", "Miner Bob", 4, 1, 12)
+    var bob_conflict: Dictionary = server.rpc_set_player_identity("demo_002", "bob", "Miner Bob", 4, 3, 12)
     assert_eq(str(bob_conflict.get("reason", "")), "color_unavailable", "bob cannot reuse alice color")
     var bob_identity: Dictionary = server.rpc_set_player_identity("demo_002", "bob", "Miner Bob", 4, 2, 12)
     assert_eq(str(bob_identity.get("reason", "")), "", "bob identity accepted with free color")
@@ -111,10 +111,29 @@ func test_set_player_identity_updates_snapshot_and_rejects_color_conflict() -> v
     var bob: Dictionary = players[1]
     assert_eq(str(alice.get("display_name", "")), "Miner Alice", "snapshot includes alice name")
     assert_eq(int(alice.get("icon_id", -1)), 3, "snapshot includes alice icon")
-    assert_eq(int(alice.get("color_id", -1)), 1, "snapshot includes alice color")
+    assert_eq(int(alice.get("color_id", -1)), 3, "snapshot includes alice color")
     assert_eq(str(bob.get("display_name", "")), "Miner Bob", "snapshot includes bob name")
     assert_eq(int(bob.get("icon_id", -1)), 4, "snapshot includes bob icon")
     assert_eq(int(bob.get("color_id", -1)), 2, "snapshot includes bob color")
+
+
+func test_set_player_identity_accepts_last_icon_frame() -> void:
+    var config: Config = Config.from_values("demo_002", 2, 24)
+    var server: HeadlessServer = HeadlessServer.new()
+    server.create_match(config)
+    server.authorize_peer(11, "alice")
+    assert_eq(str(server.register_remote_client("demo_002", "alice", 11, null).get("reason", "")), "", "alice joins")
+
+    var identity_result: Dictionary = server.rpc_set_player_identity("demo_002", "alice", "Miner Alice", 15, 0, 11)
+    assert_eq(str(identity_result.get("reason", "")), "", "last icon frame is accepted")
+
+    var sync_result: Dictionary = server.rpc_sync_request("demo_002", "alice", 11)
+    assert_eq(str(sync_result.get("reason", "")), "", "sync succeeds")
+    var snapshot: Dictionary = sync_result.get("snapshot", { })
+    var players: Array = snapshot.get("players", [])
+    assert_eq(players.size(), 2, "snapshot includes room seats")
+    var alice: Dictionary = players[0]
+    assert_eq(int(alice.get("icon_id", -1)), 15, "snapshot includes last icon frame")
 
 
 func test_set_player_identity_rejects_invalid_identity_values() -> void:

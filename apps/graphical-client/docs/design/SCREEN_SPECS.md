@@ -90,7 +90,7 @@ Behavior notes:
   placeholder state
 - if identity editing is present, keep it intentionally constrained:
   - short name text field
-  - fixed icon picker with 10 choices
+  - fixed icon picker with 16 choices
   - fixed color picker with 6 choices
 - avoid open-ended avatar upload, free color picking, or profile systems
 

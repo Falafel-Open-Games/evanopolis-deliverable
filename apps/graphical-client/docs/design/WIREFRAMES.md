@@ -35,7 +35,7 @@ player-facing surface where the user may actually pause and look around.
 | Your identity                                                       |
 | +----------------------------------------------------------------------+
 | | Short name: [ SatoshiFox____ ]                                     |
-| | Icon: fixed picker (10 choices)                                    |
+| | Icon: fixed picker (16 choices)                                    |
 | | Color: fixed picker (6 choices)                                    |
 | +----------------------------------------------------------------------+
 |                                                                    |
