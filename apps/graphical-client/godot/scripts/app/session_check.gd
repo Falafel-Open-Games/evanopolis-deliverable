@@ -28,6 +28,9 @@ const WaitingRoomStateModel = preload("res://scripts/app/models/waiting_room_sta
 const WaitingRoomSlotModel = preload("res://scripts/app/models/waiting_room_slot.gd")
 const SessionTransport = preload("res://scripts/app/session_transport.gd")
 
+const DEFAULT_IDENTITY_ICON_ID: int = 11
+const DEFAULT_IDENTITY_COLOR_ID: int = 0
+
 signal session_state_changed(state: StatusCardState)
 signal waiting_room_state_changed(state: WaitingRoomStateModel)
 
@@ -66,10 +69,14 @@ var _session_transport: SessionTransport
 var _room_game_id: String
 var _room_capacity: int
 var _known_player_ids: Dictionary = { }
+var _known_player_display_names: Dictionary = { }
+var _known_player_icon_ids: Dictionary = { }
+var _known_player_color_ids: Dictionary = { }
 var _ready_players: Array = []
 var _waiting_room_state: WaitingRoomStateModel
 var _waiting_room_note: String = ""
 var _ready_request_pending: bool = false
+var _identity_request_pending: bool = false
 
 func _ready() -> void:
     assert(boot_node)
@@ -114,6 +121,13 @@ func can_request_player_ready() -> bool:
         return false
     return not _is_player_ready(_local_player_index)
 
+func can_request_player_identity() -> bool:
+    if _phase != SessionPhase.READY:
+        return false
+    if _local_player_index < 0:
+        return false
+    return not _identity_request_pending
+
 func request_player_ready() -> void:
     assert(_launch_payload)
     assert(_current_player_id != "")
@@ -125,6 +139,32 @@ func request_player_ready() -> void:
     _waiting_room_note = "Sending ready signal to the game server."
     _emit_waiting_room_state()
     rpc_id(1, "rpc_player_ready", _launch_payload._game_id, _current_player_id)
+
+func request_player_identity(display_name: String, icon_id: int, color_id: int) -> void:
+    assert(_launch_payload)
+    assert(_current_player_id != "")
+    assert(_local_player_index >= 0)
+    if not can_request_player_identity():
+        return
+
+    var normalized_display_name: String = display_name.strip_edges()
+    if normalized_display_name.is_empty():
+        _waiting_room_note = "Display name is required before saving identity."
+        _emit_waiting_room_state()
+        return
+
+    _identity_request_pending = true
+    _waiting_room_note = "Sending identity update to the game server."
+    _emit_waiting_room_state()
+    rpc_id(
+        1,
+        "rpc_set_player_identity",
+        _launch_payload._game_id,
+        _current_player_id,
+        normalized_display_name,
+        icon_id,
+        color_id
+    )
 
 func _on_launch_payload_received(payload: LaunchPayloadModel) -> void:
     if _phase != SessionPhase.WAITING_FOR_LAUNCH and _phase != SessionPhase.FAILED:
@@ -140,10 +180,14 @@ func _on_launch_payload_received(payload: LaunchPayloadModel) -> void:
     _room_game_id = payload._game_id
     _room_capacity = 0
     _known_player_ids.clear()
+    _known_player_display_names.clear()
+    _known_player_icon_ids.clear()
+    _known_player_color_ids.clear()
     _ready_players.clear()
     _waiting_room_state = null
     _waiting_room_note = ""
     _ready_request_pending = false
+    _identity_request_pending = false
     _connect_to_server()
 
 func _connect_to_server() -> void:
@@ -224,6 +268,11 @@ func rpc_join_accepted(_seq: int, player_id: String, player_index: int, last_seq
 @rpc("authority")
 func rpc_action_rejected(_seq: int, reason: String) -> void:
     if _phase == SessionPhase.READY:
+        if _identity_request_pending:
+            _identity_request_pending = false
+            _waiting_room_note = "Identity update rejected: %s" % reason
+            _emit_waiting_room_state()
+            return
         _ready_request_pending = false
         _waiting_room_note = "Ready action rejected: %s" % reason
         _emit_waiting_room_state()
@@ -275,6 +324,23 @@ func rpc_player_ready_state(
         _emit_waiting_room_state()
 
 @rpc("authority")
+func rpc_player_identity_changed(
+    _seq: int,
+    player_index: int,
+    display_name: String,
+    icon_id: int,
+    color_id: int
+) -> void:
+    _known_player_display_names[player_index] = display_name
+    _known_player_icon_ids[player_index] = icon_id
+    _known_player_color_ids[player_index] = color_id
+    if player_index == _local_player_index:
+        _identity_request_pending = false
+        _waiting_room_note = ""
+    if _phase == SessionPhase.READY:
+        _emit_waiting_room_state()
+
+@rpc("authority")
 func rpc_game_started(_seq: int, _new_game_id: String) -> void:
     _ready_request_pending = false
     _update_state(
@@ -313,6 +379,9 @@ func _apply_waiting_room_snapshot(snapshot: Dictionary) -> void:
             var player_id: String = str(player_in_snapshot.get("player_id", ""))
             if not player_id.is_empty():
                 _known_player_ids[player_index] = player_id
+        _known_player_display_names[player_index] = str(player_in_snapshot.get("display_name", ""))
+        _known_player_icon_ids[player_index] = int(player_in_snapshot.get("icon_id", -1))
+        _known_player_color_ids[player_index] = int(player_in_snapshot.get("color_id", -1))
         if bool(player_in_snapshot.get("ready", false)):
             _ready_players[player_index] = true
     _emit_waiting_room_state()
@@ -327,18 +396,21 @@ func _emit_waiting_room_state() -> void:
         var is_local: bool = player_index == _local_player_index
         var is_ready: bool = _is_player_ready(player_index)
         var known_player_id: String = str(_known_player_ids.get(player_index, ""))
+        var known_display_name: String = str(_known_player_display_names.get(player_index, "")).strip_edges()
+        var icon_id: int = _player_icon_id(player_index)
+        var color_id: int = _player_color_id(player_index)
         var player_id: String = known_player_id
         var is_known_player: bool = is_local or not known_player_id.is_empty() or is_ready
         var display_name: String = "Awaiting player"
         var status_text: String = "Open seat"
 
         if is_local:
-            display_name = "You"
+            display_name = known_display_name if not known_display_name.is_empty() else "You"
             status_text = "Ready" if is_ready else "Waiting"
             if player_id.is_empty():
                 player_id = _current_player_id
         elif not known_player_id.is_empty():
-            display_name = "Player"
+            display_name = known_display_name if not known_display_name.is_empty() else "Player"
             status_text = "Ready" if is_ready else "Joined"
         elif is_ready:
             display_name = "Player %d" % (player_index + 1)
@@ -352,7 +424,9 @@ func _emit_waiting_room_state() -> void:
                 status_text,
                 is_local,
                 is_ready,
-                is_known_player
+                is_known_player,
+                icon_id,
+                color_id
             )
         )
 
@@ -361,11 +435,18 @@ func _emit_waiting_room_state() -> void:
         if bool(ready_player):
             ready_count += 1
 
+    var local_display_name: String = _player_display_name(_local_player_index)
+    if local_display_name.is_empty():
+        local_display_name = "Player"
+
     _waiting_room_state = WaitingRoomStateModel.new(
         _room_game_id,
         capacity,
         _current_player_id,
         _local_player_index,
+        local_display_name,
+        _player_icon_id(_local_player_index),
+        _player_color_id(_local_player_index),
         _local_player_index >= 0 and _is_player_ready(_local_player_index),
         ready_count,
         slots,
@@ -393,6 +474,21 @@ func _waiting_room_footer_note() -> String:
     if not _waiting_room_note.is_empty():
         return _waiting_room_note
     return "Roster names and identity customization will improve once the server snapshot includes richer waiting-room metadata."
+
+func _player_display_name(player_index: int) -> String:
+    return str(_known_player_display_names.get(player_index, "")).strip_edges()
+
+func _player_icon_id(player_index: int) -> int:
+    var icon_id: int = int(_known_player_icon_ids.get(player_index, -1))
+    if icon_id < 0:
+        return DEFAULT_IDENTITY_ICON_ID
+    return icon_id
+
+func _player_color_id(player_index: int) -> int:
+    var color_id: int = int(_known_player_color_ids.get(player_index, -1))
+    if color_id < 0:
+        return DEFAULT_IDENTITY_COLOR_ID
+    return color_id
 
 
 func _try_schedule_retry(message: String) -> bool:

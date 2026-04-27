@@ -38,8 +38,11 @@ func _ready() -> void:
     assert(session_node.has_method("has_waiting_room_state"))
     assert(session_node.has_method("can_request_player_ready"))
     assert(session_node.has_method("request_player_ready"))
+    assert(session_node.has_method("can_request_player_identity"))
+    assert(session_node.has_method("request_player_identity"))
 
     waiting_room_view.connect("ready_requested", Callable(self, "_on_ready_button_pressed"))
+    waiting_room_view.connect("identity_save_requested", Callable(self, "_on_identity_save_requested"))
 
     boot_node.connect("boot_state_changed", Callable(self, "_on_boot_state_changed"))
     session_node.connect("session_state_changed", Callable(self, "_on_session_state_changed"))
@@ -66,6 +69,9 @@ func _on_waiting_room_state_changed(state: WaitingRoomState) -> void:
 
 func _on_ready_button_pressed() -> void:
     session_node.call("request_player_ready")
+
+func _on_identity_save_requested(display_name: String, icon_id: int, color_id: int) -> void:
+    session_node.call("request_player_identity", display_name, icon_id, color_id)
 
 func _render_scene() -> void:
     var status_state: StatusCardState = _boot_state
@@ -96,3 +102,4 @@ func _render_waiting_room(waiting_room_active: bool) -> void:
 
     waiting_room_view.call("set_waiting_room_state", _waiting_room_state)
     waiting_room_view.call("set_ready_enabled", session_node.call("can_request_player_ready"))
+    waiting_room_view.call("set_identity_save_enabled", session_node.call("can_request_player_identity"))

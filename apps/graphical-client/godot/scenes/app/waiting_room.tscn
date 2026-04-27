@@ -8,8 +8,9 @@
 [ext_resource type="Texture2D" uid="uid://b02jfjlfjcyde" path="res://assets/avatar_sheet_shadows_removed.png" id="5_ln3sd"]
 [ext_resource type="PackedScene" uid="uid://dxfoynfa302k7" path="res://scenes/app/panel_blurried_bg.tscn" id="6_o5chr"]
 [ext_resource type="PackedScene" uid="uid://bvjd3i3tn37qd" path="res://scenes/app/waiting_room_seat.tscn" id="6_q2amx"]
+[ext_resource type="PackedScene" uid="uid://c2fwn0ix7pjp5" path="res://scenes/app/player_identity_editor_ui.tscn" id="8_33tm5"]
 
-[node name="WaitingRoomRoot" type="Control" unique_id=918327763 node_paths=PackedStringArray("waiting_room_title_label", "ready_button", "info_body_label", "identity_card", "room_facts_label", "seats_vbox", "roster_footer_label")]
+[node name="WaitingRoomRoot" type="Control" unique_id=918327763 node_paths=PackedStringArray("waiting_room_title_label", "ready_button", "info_body_label", "identity_card", "room_facts_label", "seats_vbox", "roster_footer_label", "identity_editor_ui")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -24,13 +25,14 @@ identity_card = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBo
 room_facts_label = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/RoomFactsLabel")
 seats_vbox = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/SeatsVBox")
 roster_footer_label = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/RosterFooterLabel")
+identity_editor_ui = NodePath("SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder/PlayerIdentityEditorUI")
 
 [node name="WaitingRoomLayoutController" type="Node" parent="." unique_id=1560968820 node_paths=PackedStringArray("collapsible_info_column", "identity_edit_button", "middle_column_panel", "middle_column_close_button")]
 script = ExtResource("1_waiting_room_layout_controller")
 collapsible_info_column = NodePath("../SafeMargin/RootVBox/MainRow/InfoColumn")
 identity_edit_button = NodePath("../SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/EditIdentityButton")
 middle_column_panel = NodePath("../SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder")
-middle_column_close_button = NodePath("../SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder/CloseButton")
+middle_column_close_button = NodePath("../SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder/PlayerIdentityEditorUI/vbox/HBoxContainer2/CloseButton")
 
 [node name="SafeMargin" type="MarginContainer" parent="." unique_id=485763566]
 layout_mode = 1
@@ -125,7 +127,6 @@ text = "Make strategic purchases to increase your hash power. Bitcoin mining con
 autowrap_mode = 2
 
 [node name="MoreInfoButton" type="Button" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/BoxContainer" unique_id=2106814826]
-visible = false
 custom_minimum_size = Vector2(43, 20)
 layout_mode = 2
 size_flags_horizontal = 8
@@ -194,13 +195,8 @@ size_flags_vertical = 3
 [node name="PanelBlurriedBg" parent="SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder" unique_id=1831978970 instance=ExtResource("6_o5chr")]
 layout_mode = 1
 
-[node name="CloseButton" type="Button" parent="SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder" unique_id=1456302641]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
-theme = ExtResource("2_tq6v2")
-theme_type_variation = &"SecondaryButton"
-text = "close"
+[node name="PlayerIdentityEditorUI" parent="SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder" unique_id=300548905 instance=ExtResource("8_33tm5")]
+layout_mode = 1
 
 [node name="RosterColumn" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow" unique_id=869592073]
 editor_description = "217"
@@ -281,3 +277,5 @@ layout_mode = 2
 theme = ExtResource("2_tq6v2")
 text = "Preparing launch handoff"
 horizontal_alignment = 2
+
+[editable path="SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder/PlayerIdentityEditorUI"]

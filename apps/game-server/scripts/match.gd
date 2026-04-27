@@ -73,6 +73,9 @@ func register_client_at_index(player_id: String, player_index: int, client: Clie
     clients[player_index] = client
     player_ids[player_index] = player_id
     player_ready[player_index] = false
+    var player: PlayerState = state.players[player_index]
+    if player.color_id < 0:
+        player.color_id = player_index
     _broadcast("rpc_player_joined", [player_id, player_index])
     if _has_all_clients() and not require_explicit_ready:
         start_game()

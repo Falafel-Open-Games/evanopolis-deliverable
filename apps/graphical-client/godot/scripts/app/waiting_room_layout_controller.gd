@@ -67,8 +67,8 @@ func _start_transition(should_open_identity_editor: bool) -> void:
 
     _transition_tween.finished.connect(_on_transition_finished.bind(should_open_identity_editor))
 
-func _on_transition_finished(open_identity_editor: bool) -> void:
-    _is_identity_edit_open = open_identity_editor
+func _on_transition_finished(is_identity_editor_open: bool) -> void:
+    _is_identity_edit_open = is_identity_editor_open
     _is_transitioning = false
 
     identity_edit_button.disabled = _is_identity_edit_open

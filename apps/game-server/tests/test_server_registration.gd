@@ -77,13 +77,13 @@ func test_sync_request_returns_snapshot_for_registered_peer() -> void:
     assert_false(bool(first_player.get("ready", true)), "snapshot marks first seat not ready before ready signal")
     assert_eq(str(first_player.get("display_name", "")), "", "snapshot includes default first seat display name")
     assert_eq(int(first_player.get("icon_id", -1)), -1, "snapshot includes default first seat icon")
-    assert_eq(int(first_player.get("color_id", -1)), -1, "snapshot includes default first seat color")
+    assert_eq(int(first_player.get("color_id", -1)), 0, "snapshot includes default first seat color")
     assert_eq(str(second_player.get("player_id", "")), "bob", "snapshot includes second player id")
     assert_true(bool(second_player.get("joined", false)), "snapshot marks second seat joined")
     assert_false(bool(second_player.get("ready", true)), "snapshot marks second seat not ready before ready signal")
     assert_eq(str(second_player.get("display_name", "")), "", "snapshot includes default second seat display name")
     assert_eq(int(second_player.get("icon_id", -1)), -1, "snapshot includes default second seat icon")
-    assert_eq(int(second_player.get("color_id", -1)), -1, "snapshot includes default second seat color")
+    assert_eq(int(second_player.get("color_id", -1)), 1, "snapshot includes default second seat color")
 
 
 func test_set_player_identity_updates_snapshot_and_rejects_color_conflict() -> void:

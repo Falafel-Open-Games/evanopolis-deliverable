@@ -12,7 +12,7 @@ const PLAYER_REPRESENTATION_COLORS: Array[Color] = [
     Color(0.556863, 0.141176, 0.666667, 1.0),
 ]
 const DEFAULT_ICON_FRAME: int = 11
-const DEFAULT_COLOR_SLOT: int = 1
+const DEFAULT_COLOR_ID: int = 0
 
 @export var hexagon_texture: TextureRect
 @export var icon_sprite: Sprite2D
@@ -28,9 +28,9 @@ func _ready() -> void:
     assert(handle_label)
 
     if not _identity_initialized:
-        set_identity("Player", "No player id yet", DEFAULT_ICON_FRAME, DEFAULT_COLOR_SLOT)
+        set_identity("Player", "No player id yet", DEFAULT_ICON_FRAME, DEFAULT_COLOR_ID)
 
-func set_identity(display_name: String, handle_text: String, icon_frame: int = DEFAULT_ICON_FRAME, color_slot: int = DEFAULT_COLOR_SLOT) -> void:
+func set_identity(display_name: String, handle_text: String, icon_frame: int = DEFAULT_ICON_FRAME, color_id: int = DEFAULT_COLOR_ID) -> void:
     _identity_initialized = true
     var resolved_display_name: String = display_name.strip_edges()
     var resolved_handle: String = handle_text.strip_edges()
@@ -46,9 +46,9 @@ func set_identity(display_name: String, handle_text: String, icon_frame: int = D
     handle_label.add_theme_color_override("font_color", HANDLE_COLOR)
 
     icon_sprite.frame = icon_frame
-    hexagon_texture.modulate = _color_from_slot(color_slot)
+    hexagon_texture.modulate = _color_from_id(color_id)
 
-func _color_from_slot(color_slot: int) -> Color:
-    if color_slot < 1 or color_slot > PLAYER_REPRESENTATION_COLORS.size():
+func _color_from_id(color_id: int) -> Color:
+    if color_id < 0 or color_id >= PLAYER_REPRESENTATION_COLORS.size():
         return PLAYER_REPRESENTATION_COLORS[0]
-    return PLAYER_REPRESENTATION_COLORS[color_slot - 1]
+    return PLAYER_REPRESENTATION_COLORS[color_id]

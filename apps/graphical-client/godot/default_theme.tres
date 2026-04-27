@@ -59,6 +59,30 @@ corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 shadow_offset = Vector2(2, 2)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xgv2l"]
+bg_color = Color(0.83, 0.3735, 0.3735, 0.8235294)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_juax2"]
+bg_color = Color(0.83, 0.3735, 0.3735, 0.45490196)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.627451)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7j863"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
 border_width_left = 1
@@ -117,6 +141,11 @@ Button/styles/disabled = SubResource("StyleBoxFlat_u7cj8")
 Button/styles/hover = SubResource("StyleBoxFlat_ed8xq")
 Button/styles/normal = SubResource("StyleBoxFlat_cefca")
 Button/styles/pressed = SubResource("StyleBoxFlat_uwdo0")
+CancelBitton/base_type = &"Button"
+CancelBitton/font_sizes/font_size = 9
+CancelBitton/fonts/font = ExtResource("1_cefca")
+CancelBitton/styles/hover = SubResource("StyleBoxFlat_xgv2l")
+CancelBitton/styles/normal = SubResource("StyleBoxFlat_juax2")
 Label/colors/font_color = Color(0.9098039, 0.9098039, 0.9098039, 1)
 Label/constants/line_spacing = 0
 Label/font_sizes/font_size = 8

@@ -1,0 +1,116 @@
+[gd_scene format=3 uid="uid://c2fwn0ix7pjp5"]
+
+[ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="1_ohplp"]
+[ext_resource type="PackedScene" uid="uid://b4uu13hppoiyf" path="res://scenes/app/player_identity_card.tscn" id="2_ik653"]
+[ext_resource type="Script" uid="uid://cem0fdnqvysm2" path="res://scripts/app/color_picker.gd" id="3_0dvm6"]
+[ext_resource type="PackedScene" uid="uid://bnus4dxwk52xs" path="res://scenes/app/color_choice_button.tscn" id="3_0htto"]
+[ext_resource type="Script" uid="uid://drhatq0d6t6wn" path="res://scripts/app/player_identity_editor_ui.gd" id="4_ui76g"]
+
+[node name="PlayerIdentityEditorUI" type="MarginContainer" unique_id=2009013027]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
+script = ExtResource("4_ui76g")
+
+[node name="vbox" type="VBoxContainer" parent="." unique_id=300548905]
+layout_mode = 2
+
+[node name="IdentityTitle" type="Label" parent="vbox" unique_id=1718215607]
+layout_mode = 2
+theme = ExtResource("1_ohplp")
+theme_type_variation = &"SectionTitle"
+text = "Edit Identity"
+uppercase = true
+
+[node name="HSeparator2" type="HSeparator" parent="vbox" unique_id=1181156434]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="vbox" unique_id=1766841941]
+layout_mode = 2
+
+[node name="Preview Card" type="VBoxContainer" parent="vbox/HBoxContainer" unique_id=158501]
+layout_mode = 2
+
+[node name="Preview Title" type="Label" parent="vbox/HBoxContainer/Preview Card" unique_id=240706443]
+layout_mode = 2
+theme = ExtResource("1_ohplp")
+theme_type_variation = &"SubsectionTitle"
+text = "Preview"
+horizontal_alignment = 1
+
+[node name="PlayerIdentityCardRoot" parent="vbox/HBoxContainer/Preview Card" unique_id=908241667 instance=ExtResource("2_ik653")]
+layout_mode = 2
+
+[node name="Name and Color" type="VBoxContainer" parent="vbox/HBoxContainer" unique_id=305862382]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Display Name Label" type="Label" parent="vbox/HBoxContainer/Name and Color" unique_id=1719406128]
+layout_mode = 2
+theme = ExtResource("1_ohplp")
+theme_type_variation = &"SubsectionTitle"
+text = "Display Name"
+
+[node name="LineEdit" type="LineEdit" parent="vbox/HBoxContainer/Name and Color" unique_id=117908470]
+layout_mode = 2
+max_length = 12
+
+[node name="Select Color Label" type="Label" parent="vbox/HBoxContainer/Name and Color" unique_id=1205233200]
+layout_mode = 2
+theme = ExtResource("1_ohplp")
+theme_type_variation = &"SubsectionTitle"
+text = "Select Color"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="vbox/HBoxContainer/Name and Color" unique_id=1280890699]
+layout_mode = 2
+script = ExtResource("3_0dvm6")
+
+[node name="ColorChoiceButton" parent="vbox/HBoxContainer/Name and Color/HBoxContainer" unique_id=1112465227 instance=ExtResource("3_0htto")]
+layout_mode = 2
+
+[node name="ColorChoiceButton2" parent="vbox/HBoxContainer/Name and Color/HBoxContainer" unique_id=466077878 instance=ExtResource("3_0htto")]
+layout_mode = 2
+
+[node name="ColorChoiceButton3" parent="vbox/HBoxContainer/Name and Color/HBoxContainer" unique_id=203566910 instance=ExtResource("3_0htto")]
+layout_mode = 2
+
+[node name="ColorChoiceButton4" parent="vbox/HBoxContainer/Name and Color/HBoxContainer" unique_id=376912640 instance=ExtResource("3_0htto")]
+layout_mode = 2
+
+[node name="ColorChoiceButton5" parent="vbox/HBoxContainer/Name and Color/HBoxContainer" unique_id=1767522688 instance=ExtResource("3_0htto")]
+layout_mode = 2
+
+[node name="ColorChoiceButton6" parent="vbox/HBoxContainer/Name and Color/HBoxContainer" unique_id=202165435 instance=ExtResource("3_0htto")]
+layout_mode = 2
+
+[node name="HSeparator3" type="HSeparator" parent="vbox" unique_id=1361078989]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="vbox" unique_id=582238830]
+custom_minimum_size = Vector2(100, 24)
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="CloseButton" type="Button" parent="vbox/HBoxContainer2" unique_id=1404472122]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+theme = ExtResource("1_ohplp")
+theme_type_variation = &"CancelBitton"
+text = "Close"
+
+[node name="SaveButton" type="Button" parent="vbox/HBoxContainer2" unique_id=1064799040]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_default_cursor_shape = 2
+theme = ExtResource("1_ohplp")
+theme_type_variation = &"SecondaryButton"
+text = "Update"

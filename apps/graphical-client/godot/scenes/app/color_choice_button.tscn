@@ -1,0 +1,59 @@
+[gd_scene format=3 uid="uid://bnus4dxwk52xs"]
+
+[ext_resource type="Texture2D" uid="uid://du3jhapf4vij1" path="res://assets/hexagon.png" id="1_n20uo"]
+[ext_resource type="Texture2D" uid="uid://n6xoyw3wqs5l" path="res://import/kenney_ui-pack/Green/icon_checkmark.svg" id="3_bkhvy"]
+
+[node name="ColorChoiceButton" type="Button" unique_id=1112465227]
+custom_minimum_size = Vector2(28, 28)
+offset_right = 28.0
+offset_bottom = 28.0
+mouse_default_cursor_shape = 2
+toggle_mode = true
+action_mode = 0
+icon = ExtResource("1_n20uo")
+flat = true
+expand_icon = true
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=356977268]
+self_modulate = Color(0, 0, 0, 0.22745098)
+custom_minimum_size = Vector2(22, 22)
+layout_mode = 0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = 23.0
+offset_bottom = 23.0
+texture = ExtResource("1_n20uo")
+expand_mode = 1
+
+[node name="check" type="TextureRect" parent="." unique_id=833838803]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -6.0
+offset_top = -6.0
+offset_right = 6.0
+offset_bottom = 6.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_bkhvy")
+expand_mode = 1
+
+[node name="pending_check" type="TextureRect" parent="." unique_id=309611731]
+modulate = Color(1, 1, 1, 0.501961)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -6.0
+offset_top = -6.0
+offset_right = 6.0
+offset_bottom = 6.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_bkhvy")
+expand_mode = 1
