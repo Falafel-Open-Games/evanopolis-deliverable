@@ -9,11 +9,11 @@ const CAROUSEL_VIEWPORT_PATH: NodePath = ^"vbox/MarginContainer2/HBoxContainer3/
 const ICON_STRIP_PATH: NodePath = ^"vbox/MarginContainer2/HBoxContainer3/CarouselViewport/ClipRoot/IconStrip"
 const NEXT_ICON_BUTTON_PATH: NodePath = ^"vbox/MarginContainer2/HBoxContainer3/NextIconButton"
 const SAVE_BUTTON_PATH: NodePath = ^"vbox/HBoxContainer2/SaveButton"
-const ICON_SPRITE_NODE_PATH: NodePath = ^"IconSprite"
+const ICON_TEXTURE_RECT_NODE_PATH: NodePath = ^"IconTextureRect"
 const MAX_DISPLAY_NAME_LENGTH: int = 12
 const VISIBLE_ICON_COUNT: int = 6
-const SELECTED_ICON_SCALE: Vector2 = Vector2(0.34, 0.34)
-const UNSELECTED_ICON_SCALE: Vector2 = Vector2(0.30, 0.30)
+const SELECTED_ICON_SCALE: Vector2 = Vector2(1.12, 1.12)
+const UNSELECTED_ICON_SCALE: Vector2 = Vector2(1.0, 1.0)
 const SELECTED_ICON_TINT: Color = Color(1.0, 1.0, 1.0, 1.0)
 const UNSELECTED_ICON_TINT: Color = Color(1.0, 1.0, 1.0, 0.72)
 
@@ -39,7 +39,7 @@ var _has_local_draft_changes: bool = false
 var _save_enabled_by_parent: bool = true
 var _syncing_authoritative_identity: bool = false
 var _icon_choice_controls: Array[Control] = []
-var _icon_choice_sprites: Array[Sprite2D] = []
+var _icon_choice_texture_rects: Array[TextureRect] = []
 var _icon_scroll_index: int = 0
 
 func _ready() -> void:
@@ -183,19 +183,22 @@ func _refresh_save_button_enabled() -> void:
 
 func _setup_icon_picker() -> void:
     _icon_choice_controls.clear()
-    _icon_choice_sprites.clear()
+    _icon_choice_texture_rects.clear()
     for child_index in range(icon_strip.get_child_count()):
         var icon_choice: Control = icon_strip.get_child(child_index) as Control
         assert(icon_choice)
-        var icon_sprite: Sprite2D = icon_choice.get_node(ICON_SPRITE_NODE_PATH) as Sprite2D
-        assert(icon_sprite)
+        var icon_texture_rect: TextureRect = icon_choice.get_node(ICON_TEXTURE_RECT_NODE_PATH) as TextureRect
+        assert(icon_texture_rect)
         icon_choice.mouse_filter = Control.MOUSE_FILTER_STOP
         icon_choice.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
         icon_choice.gui_input.connect(_on_icon_choice_gui_input.bind(child_index))
-        icon_sprite.frame = child_index
+        var duplicated_texture: AtlasTexture = (icon_texture_rect.texture as AtlasTexture).duplicate() as AtlasTexture
+        assert(duplicated_texture)
+        icon_texture_rect.texture = duplicated_texture
+        AvatarBox.apply_icon_id_to_texture_rect(icon_texture_rect, child_index)
         _icon_choice_controls.append(icon_choice)
-        _icon_choice_sprites.append(icon_sprite)
-    assert(_icon_choice_sprites.size() > PlayerIdentityCard.DEFAULT_ICON_FRAME)
+        _icon_choice_texture_rects.append(icon_texture_rect)
+    assert(_icon_choice_texture_rects.size() > PlayerIdentityCard.DEFAULT_ICON_FRAME)
     _refresh_icon_selection_visuals()
 
 func _refresh_icon_picker_layout() -> void:
@@ -219,7 +222,7 @@ func _on_icon_choice_gui_input(event: InputEvent, icon_id: int) -> void:
     _refresh_save_button_enabled()
 
 func _set_selected_icon_id(icon_id: int, should_adjust_scroll: bool) -> void:
-    assert(icon_id >= 0 and icon_id < _icon_choice_sprites.size())
+    assert(icon_id >= 0 and icon_id < _icon_choice_texture_rects.size())
     _selected_icon_id = icon_id
     if should_adjust_scroll:
         _ensure_selected_icon_visible()
@@ -229,10 +232,10 @@ func _set_selected_icon_id(icon_id: int, should_adjust_scroll: bool) -> void:
 func _refresh_icon_selection_visuals() -> void:
     for icon_id in range(_icon_choice_controls.size()):
         var icon_choice: Control = _icon_choice_controls[icon_id]
-        var icon_sprite: Sprite2D = _icon_choice_sprites[icon_id]
+        var icon_texture_rect: TextureRect = _icon_choice_texture_rects[icon_id]
         var is_selected: bool = icon_id == _selected_icon_id
         icon_choice.modulate = SELECTED_ICON_TINT if is_selected else UNSELECTED_ICON_TINT
-        icon_sprite.scale = SELECTED_ICON_SCALE if is_selected else UNSELECTED_ICON_SCALE
+        icon_texture_rect.scale = SELECTED_ICON_SCALE if is_selected else UNSELECTED_ICON_SCALE
 
 func _ensure_selected_icon_visible() -> void:
     var max_scroll_index: int = _max_icon_scroll_index()

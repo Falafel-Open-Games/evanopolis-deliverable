@@ -1,0 +1,188 @@
+[gd_scene format=3 uid="uid://ba7ecewut65r8"]
+
+[ext_resource type="Script" uid="uid://btncgctqtr68b" path="res://scripts/game/hud/top_bar.gd" id="1_77pja"]
+[ext_resource type="PackedScene" uid="uid://dxfoynfa302k7" path="res://scenes/app/panel_blurried_bg.tscn" id="1_yugup"]
+[ext_resource type="PackedScene" uid="uid://b330i3pu36cjv" path="res://scenes/app/avatar_box.tscn" id="2_rtodx"]
+[ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="3_g1q52"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f7370"]
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+bg_color = Color(0.9137255, 0.5372549, 0.3254902, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+corner_detail = 6
+
+[node name="TopBar" type="Panel" unique_id=766824955 node_paths=PackedStringArray("avatar_box")]
+custom_minimum_size = Vector2(0, 56)
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+size_flags_vertical = 0
+script = ExtResource("1_77pja")
+avatar_box = NodePath("MarginContainer/HBoxContainer/AvatarBox")
+
+[node name="PanelBlurriedBg" parent="." unique_id=1137042040 instance=ExtResource("1_yugup")]
+layout_mode = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=447159327]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=2103731524]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AvatarBox" parent="MarginContainer/HBoxContainer" unique_id=1845499584 instance=ExtResource("2_rtodx")]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1093291562]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = -2
+
+[node name="GameTitle" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer" unique_id=1771852129]
+layout_mode = 2
+theme = ExtResource("3_g1q52")
+theme_type_variation = &"SectionTitle"
+text = "EVANOPOLIS"
+
+[node name="TurnLabel" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer" unique_id=204672123]
+layout_mode = 2
+theme = ExtResource("3_g1q52")
+theme_type_variation = &"SubsectionTitle"
+theme_override_colors/font_color = Color(0.015686275, 0.8, 0.68235296, 1)
+text = "Turn 6 - Your Turn"
+uppercase = true
+
+[node name="spacer" type="MarginContainer" parent="MarginContainer/HBoxContainer" unique_id=247265476]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="GameGoal" type="MarginContainer" parent="MarginContainer/HBoxContainer" unique_id=467629524]
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="MarginContainer/HBoxContainer/GameGoal" unique_id=1219277636]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/GameGoal" unique_id=801494866]
+custom_minimum_size = Vector2(107, 0)
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/GameGoal/MarginContainer" unique_id=1293521914]
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/GameGoal/MarginContainer/VBoxContainer" unique_id=529552723]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/GameGoal/MarginContainer/VBoxContainer/HBoxContainer" unique_id=856462422]
+layout_mode = 2
+theme = ExtResource("3_g1q52")
+theme_type_variation = &"ResourceLabel"
+theme_override_colors/font_color = Color(0.9137255, 0.5372549, 0.3254902, 1)
+text = "₿ 4.2 / 20"
+
+[node name="Label2" type="Label" parent="MarginContainer/HBoxContainer/GameGoal/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1502622976]
+layout_mode = 2
+theme = ExtResource("3_g1q52")
+text = "goal"
+uppercase = true
+
+[node name="ProgressBar" type="ProgressBar" parent="MarginContainer/HBoxContainer/GameGoal/MarginContainer" unique_id=1596947128]
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_styles/fill = SubResource("StyleBoxFlat_f7370")
+max_value = 20.0
+value = 4.25
+show_percentage = false
+
+[node name="GameResources" type="MarginContainer" parent="MarginContainer" unique_id=2081011703]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="Panel" type="Panel" parent="MarginContainer/GameResources" unique_id=1124668486]
+layout_mode = 2
+
+[node name="MarginContainer2" type="MarginContainer" parent="MarginContainer/GameResources" unique_id=983512077]
+custom_minimum_size = Vector2(190, 0)
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/GameResources/MarginContainer2" unique_id=101924653]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer" unique_id=1152700861]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer" unique_id=440278359]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 0
+
+[node name="FiatValue" type="Label" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer/VBoxContainer" unique_id=1550231564]
+layout_mode = 2
+size_flags_vertical = 6
+theme = ExtResource("3_g1q52")
+theme_type_variation = &"ResourceLabel"
+theme_override_colors/font_color = Color(0.015686275, 0.8, 0.68235296, 1)
+text = "$ 100 000"
+horizontal_alignment = 1
+
+[node name="FiatLabel" type="Label" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer/VBoxContainer" unique_id=866299398]
+layout_mode = 2
+theme = ExtResource("3_g1q52")
+text = " Fiat"
+horizontal_alignment = 1
+uppercase = true
+
+[node name="VSeparator" type="VSeparator" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer" unique_id=372813466]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="MarginContainer2" type="MarginContainer" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer" unique_id=210557936]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer2" unique_id=864898791]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 0
+
+[node name="EnergyValue" type="Label" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer2/VBoxContainer2" unique_id=1662141715]
+layout_mode = 2
+size_flags_vertical = 6
+theme = ExtResource("3_g1q52")
+theme_type_variation = &"ResourceLabel"
+theme_override_colors/font_color = Color(0.98039216, 0.68235296, 0.28627452, 1)
+text = "⚡ 9999"
+horizontal_alignment = 1
+
+[node name="EnergyLabel" type="Label" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer2/VBoxContainer2" unique_id=1869862282]
+layout_mode = 2
+theme = ExtResource("3_g1q52")
+text = " Energy"
+horizontal_alignment = 1
+uppercase = true

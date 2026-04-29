@@ -1,56 +1,19 @@
 [gd_scene format=3 uid="uid://b8sk5drkuskkn"]
 
 [ext_resource type="Script" uid="uid://cgk0s2ygxfbm3" path="res://scripts/app/player_identity_card.gd" id="1_b24ys"]
-[ext_resource type="Texture2D" uid="uid://du3jhapf4vij1" path="res://assets/hexagon.png" id="2_l0m0d"]
-[ext_resource type="Texture2D" uid="uid://b02jfjlfjcyde" path="res://assets/avatar_sheet_shadows_removed.png" id="3_npkkr"]
+[ext_resource type="PackedScene" uid="uid://b330i3pu36cjv" path="res://scenes/app/avatar_box.tscn" id="2_sbrjr"]
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="4_cpjv4"]
 
-[node name="PlayerIdentityCardRoot" type="HBoxContainer" unique_id=908241667 node_paths=PackedStringArray("hexagon_texture", "icon_sprite", "display_name_label", "handle_label")]
+[node name="PlayerIdentityCardRoot" type="HBoxContainer" unique_id=908241667 node_paths=PackedStringArray("avatar_box", "display_name_label", "handle_label")]
 theme_override_constants/separation = 10
 script = ExtResource("1_b24ys")
-hexagon_texture = NodePath("AvatarBox/HexagonTexture")
-icon_sprite = NodePath("AvatarBox/IconSprite")
+avatar_box = NodePath("AvatarBox")
 display_name_label = NodePath("TextVBox/DisplayNameLabel")
 handle_label = NodePath("TextVBox/HandleLabel")
 
-[node name="AvatarBox" type="Control" parent="." unique_id=1928775521]
-custom_minimum_size = Vector2(20, 20)
+[node name="AvatarBox" parent="." unique_id=1845499584 instance=ExtResource("2_sbrjr")]
+custom_minimum_size = Vector2(24, 24)
 layout_mode = 2
-size_flags_vertical = 4
-
-[node name="HexagonTexture" type="TextureRect" parent="AvatarBox" unique_id=1183659442]
-texture_filter = 2
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("2_l0m0d")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="HexagonDarkenedCore" type="TextureRect" parent="AvatarBox" unique_id=596536583]
-modulate = Color(0, 0, 0, 0.19607843)
-layout_mode = 1
-offset_left = 2.0
-offset_top = 2.0
-offset_right = 18.0
-offset_bottom = 18.0
-mouse_filter = 2
-texture = ExtResource("2_l0m0d")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="IconSprite" type="Sprite2D" parent="AvatarBox" unique_id=1730019214]
-texture_filter = 1
-position = Vector2(10, 10)
-scale = Vector2(0.125, 0.125)
-texture = ExtResource("3_npkkr")
-hframes = 4
-vframes = 4
-frame = 11
 
 [node name="TextVBox" type="VBoxContainer" parent="." unique_id=1096628236]
 custom_minimum_size = Vector2(100, 0)

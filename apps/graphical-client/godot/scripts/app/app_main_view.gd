@@ -72,6 +72,7 @@ func _on_session_state_changed(state: StatusCardState) -> void:
 
 func _on_waiting_room_state_changed(state: WaitingRoomState) -> void:
     _waiting_room_state = state
+    _sync_gameplay_identity()
     _render_scene()
 
 func _on_ready_button_pressed() -> void:
@@ -107,6 +108,7 @@ func _render_shell(gameplay_active: bool) -> void:
 func _render_gameplay(gameplay_active: bool) -> void:
     if gameplay_active:
         _ensure_game_root()
+        _sync_gameplay_identity()
     elif _game_root != null:
         _game_root.visible = false
 
@@ -139,3 +141,15 @@ func _ensure_game_root() -> void:
 
     _game_root = GameRootScene.instantiate()
     add_child(_game_root)
+    _sync_gameplay_identity()
+
+func _sync_gameplay_identity() -> void:
+    if _game_root == null:
+        return
+    if _waiting_room_state == null:
+        return
+    _game_root.call(
+        "set_local_player_identity",
+        _waiting_room_state.local_icon_id,
+        _waiting_room_state.local_color_id
+    )

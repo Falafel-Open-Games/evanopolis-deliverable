@@ -1,62 +1,24 @@
 [gd_scene format=3 uid="uid://b4uu13hppoiyf"]
 
 [ext_resource type="Script" uid="uid://cgk0s2ygxfbm3" path="res://scripts/app/player_identity_card.gd" id="1_player_identity_card"]
-[ext_resource type="Texture2D" uid="uid://du3jhapf4vij1" path="res://assets/hexagon.png" id="2_fj72m"]
-[ext_resource type="Texture2D" uid="uid://b02jfjlfjcyde" path="res://assets/avatar_sheet_shadows_removed.png" id="3_avatar_sheet"]
+[ext_resource type="PackedScene" uid="uid://b330i3pu36cjv" path="res://scenes/app/avatar_box.tscn" id="2_3rljb"]
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="4_default_theme"]
 
-[node name="PlayerIdentityCardRoot" type="HBoxContainer" unique_id=908241667 node_paths=PackedStringArray("hexagon_texture", "icon_sprite", "display_name_label", "handle_label")]
+[node name="PlayerIdentityCardRoot" type="HBoxContainer" unique_id=908241667 node_paths=PackedStringArray("avatar_box", "display_name_label", "handle_label")]
 theme_override_constants/separation = 10
 script = ExtResource("1_player_identity_card")
-hexagon_texture = NodePath("AvatarBox/HexagonTexture")
-icon_sprite = NodePath("AvatarBox/IconSprite")
+avatar_box = NodePath("AvatarBox")
 display_name_label = NodePath("TextVBox/DisplayNameLabel")
 handle_label = NodePath("TextVBox/HandleLabel")
 
-[node name="AvatarBox" type="Control" parent="." unique_id=1928775521]
-custom_minimum_size = Vector2(46, 46)
+[node name="AvatarBox" parent="." unique_id=1845499584 instance=ExtResource("2_3rljb")]
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 2
-size_flags_vertical = 4
-
-[node name="HexagonTexture" type="TextureRect" parent="AvatarBox" unique_id=1183659442]
-texture_filter = 2
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("2_fj72m")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="HexagonDarkenedCore" type="TextureRect" parent="AvatarBox" unique_id=596536583]
-modulate = Color(0, 0, 0, 0.19607843)
-layout_mode = 1
-offset_left = 3.0
-offset_top = 3.0
-offset_right = 43.0
-offset_bottom = 43.0
-mouse_filter = 2
-texture = ExtResource("2_fj72m")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="IconSprite" type="Sprite2D" parent="AvatarBox" unique_id=1730019214]
-texture_filter = 2
-position = Vector2(24, 24)
-scale = Vector2(0.3, 0.3)
-texture = ExtResource("3_avatar_sheet")
-hframes = 4
-vframes = 4
-frame = 11
 
 [node name="TextVBox" type="VBoxContainer" parent="." unique_id=1096628236]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 2
 
 [node name="DisplayNameLabel" type="Label" parent="TextVBox" unique_id=1651775237]
 layout_mode = 2
@@ -73,3 +35,5 @@ theme = ExtResource("4_default_theme")
 theme_type_variation = &"SmallLabel"
 text = "No player id yet"
 clip_text = true
+
+[editable path="AvatarBox"]

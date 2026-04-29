@@ -1,7 +1,9 @@
 [gd_scene format=3 uid="uid://d2u5y5dj1ib6d"]
 
 [ext_resource type="Script" uid="uid://didc1soy01cg2" path="res://scripts/game/game_root.gd" id="1_game_root"]
+[ext_resource type="Script" path="res://scripts/game/hud/game_hud_intro_controller.gd" id="2_8k27q"]
 [ext_resource type="PackedScene" uid="uid://dlaj22qah2fc8" path="res://scenes/game/board/energy_diorama_pack.tscn" id="2_rx5uh"]
+[ext_resource type="PackedScene" uid="uid://ba7ecewut65r8" path="res://scenes/game/hud/top_bar.tscn" id="3_pevc5"]
 [ext_resource type="PackedScene" uid="uid://cpmxp51rnmgsr" path="res://scenes/app/main_logo.tscn" id="3_rx5uh"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_f3gwi"]
@@ -82,6 +84,21 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="MainLogo" parent="HudRoot/SafeMargin" unique_id=2033182455 instance=ExtResource("3_rx5uh")]
+[node name="TopBar" parent="HudRoot/SafeMargin" unique_id=766824955 instance=ExtResource("3_pevc5")]
 layout_mode = 2
+
+[node name="InitialLogo" parent="HudRoot" unique_id=2033182455 instance=ExtResource("3_rx5uh")]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -180.0
+offset_right = 180.0
+offset_bottom = 67.3
+grow_horizontal = 2
 size_flags_vertical = 0
+theme_override_constants/margin_top = 16
+
+[node name="HudIntroController" type="Node" parent="HudRoot" node_paths=PackedStringArray("top_bar", "initial_logo")]
+script = ExtResource("2_8k27q")
+top_bar = NodePath("../SafeMargin/TopBar")
+initial_logo = NodePath("../InitialLogo")

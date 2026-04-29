@@ -14,16 +14,14 @@ const PLAYER_REPRESENTATION_COLORS: Array[Color] = [
 const DEFAULT_ICON_FRAME: int = 11
 const DEFAULT_COLOR_ID: int = 0
 
-@export var hexagon_texture: TextureRect
-@export var icon_sprite: Sprite2D
+@export var avatar_box: AvatarBox
 @export var display_name_label: Label
 @export var handle_label: Label
 
 var _identity_initialized: bool = false
 
 func _ready() -> void:
-    assert(hexagon_texture)
-    assert(icon_sprite)
+    assert(avatar_box)
     assert(display_name_label)
     assert(handle_label)
 
@@ -45,8 +43,8 @@ func set_identity(display_name: String, handle_text: String, icon_frame: int = D
     display_name_label.add_theme_color_override("font_color", NAME_COLOR)
     handle_label.add_theme_color_override("font_color", HANDLE_COLOR)
 
-    icon_sprite.frame = icon_frame
-    hexagon_texture.modulate = _color_from_id(color_id)
+    avatar_box.set_icon_id(icon_frame)
+    avatar_box.set_hexagon_modulate(_color_from_id(color_id))
 
 func _color_from_id(color_id: int) -> Color:
     if color_id < 0 or color_id >= PLAYER_REPRESENTATION_COLORS.size():

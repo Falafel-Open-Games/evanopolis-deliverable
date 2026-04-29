@@ -19,8 +19,8 @@ grow_vertical = 2
 script = ExtResource("1_waiting_room_view")
 waiting_room_title_label = NodePath("SafeMargin/BoxContainer/WaitingRoomTitle")
 ready_button = NodePath("SafeMargin/RootVBox/ReadyButton")
-info_body_label = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/BoxContainer/InfoBody")
-identity_card = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/PlayerIdentityCardRoot")
+info_body_label = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/InfoBody")
+identity_card = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/VBoxContainer/PlayerIdentityCardRoot")
 room_facts_label = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/RoomFactsLabel")
 seats_vbox = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/SeatsVBox")
 roster_footer_label = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/RosterFooterLabel")
@@ -29,7 +29,7 @@ identity_editor_ui = NodePath("SafeMargin/RootVBox/MainRow/MiddleColumn/EditIden
 [node name="WaitingRoomLayoutController" type="Node" parent="." unique_id=1560968820 node_paths=PackedStringArray("collapsible_info_column", "identity_edit_button", "middle_column_panel", "middle_column_close_button")]
 script = ExtResource("1_waiting_room_layout_controller")
 collapsible_info_column = NodePath("../SafeMargin/RootVBox/MainRow/InfoColumn")
-identity_edit_button = NodePath("../SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/EditIdentityButton")
+identity_edit_button = NodePath("../SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/VBoxContainer/EditIdentityButton")
 middle_column_panel = NodePath("../SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder")
 middle_column_close_button = NodePath("../SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder/PlayerIdentityEditorUI/vbox/HBoxContainer2/CloseButton")
 
@@ -87,31 +87,27 @@ theme_override_constants/margin_bottom = 10
 
 [node name="InfoVBox" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin" unique_id=1071227625]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 3
 
-[node name="BoxContainer" type="BoxContainer" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox" unique_id=1864966613]
-layout_mode = 2
-vertical = true
-
-[node name="InfoTitle" type="Label" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/BoxContainer" unique_id=559288140]
+[node name="InfoTitle" type="Label" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox" unique_id=559288140]
 layout_mode = 2
 theme = ExtResource("2_tq6v2")
 theme_type_variation = &"SectionTitle"
 text = "Game Info"
 uppercase = true
 
-[node name="HSeparator" type="HSeparator" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/BoxContainer" unique_id=495855394]
+[node name="HSeparator" type="HSeparator" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox" unique_id=495855394]
 layout_mode = 2
 theme_override_constants/separation = 1
 
-[node name="InfoBody" type="Label" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/BoxContainer" unique_id=1972957749]
+[node name="InfoBody" type="Label" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox" unique_id=1972957749]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 theme = ExtResource("2_tq6v2")
 text = "Buy energy-producing tiles, charge tolls when rivals land on them, and split your energy between selling for fiat or mining Bitcoin in a race to be the first player to reach 20 Bitcoin."
 autowrap_mode = 2
 
-[node name="MoreInfoButton" type="Button" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/BoxContainer" unique_id=2106814826]
+[node name="MoreInfoButton" type="Button" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox" unique_id=2106814826]
 visible = false
 custom_minimum_size = Vector2(43, 20)
 layout_mode = 2
@@ -124,7 +120,6 @@ text = "More"
 
 [node name="IdentityPanelBorder" type="Panel" parent="SafeMargin/RootVBox/MainRow/InfoColumn" unique_id=376993026]
 clip_contents = true
-custom_minimum_size = Vector2(0, 84)
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -157,10 +152,14 @@ text = "YOUR IDENTITY"
 layout_mode = 2
 theme_override_constants/separation = 1
 
-[node name="PlayerIdentityCardRoot" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox" unique_id=2110529576 instance=ExtResource("1_player_identity_card")]
+[node name="VBoxContainer" type="VBoxContainer" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox" unique_id=510044848]
+layout_mode = 2
+theme_override_constants/separation = -14
+
+[node name="PlayerIdentityCardRoot" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/VBoxContainer" unique_id=2110529576 instance=ExtResource("1_player_identity_card")]
 layout_mode = 2
 
-[node name="EditIdentityButton" type="Button" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox" unique_id=729670122]
+[node name="EditIdentityButton" type="Button" parent="SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/VBoxContainer" unique_id=729670122]
 custom_minimum_size = Vector2(43, 20)
 layout_mode = 2
 size_flags_horizontal = 8
