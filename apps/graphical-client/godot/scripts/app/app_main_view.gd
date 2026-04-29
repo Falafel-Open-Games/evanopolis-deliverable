@@ -2,6 +2,7 @@ extends Control
 
 const StatusCardState = preload("res://scripts/app/models/status_view_state.gd")
 const WaitingRoomState = preload("res://scripts/app/models/waiting_room_state.gd")
+const GameRootScene = preload("res://scenes/game/game_root.tscn")
 
 @export var boot_node: AppBoot
 @export var session_node: SessionCheck
@@ -9,8 +10,11 @@ const WaitingRoomState = preload("res://scripts/app/models/waiting_room_state.gd
 var _boot_state: StatusCardState
 var _session_state: StatusCardState
 var _waiting_room_state: WaitingRoomState = null
+var _game_root: Node3D = null
 
 @onready var waiting_room_view: Control = $WaitingRoomMount/WaitingRoomRoot
+@onready var background_texture: TextureRect = $BackgroundTexture
+@onready var background_shade: ColorRect = $BackgroundShade
 @onready var modal_shade: ColorRect = $ModalShade
 @onready var modal_panel: ColorRect = $ModalCenter/ModalPanel
 @onready var status_label: Label = $ModalCenter/ModalPanel/ModalMargin/ModalVBox/ModalStatusLabel
@@ -19,6 +23,8 @@ var _waiting_room_state: WaitingRoomState = null
 
 func _ready() -> void:
     assert(waiting_room_view)
+    assert(background_texture)
+    assert(background_shade)
     assert(modal_shade)
     assert(modal_panel)
     assert(status_label)
@@ -35,6 +41,7 @@ func _ready() -> void:
     assert(session_node.has_method("get_waiting_room_state"))
     assert(session_node.has_method("is_waiting_for_launch"))
     assert(session_node.has_method("is_waiting_room_active"))
+    assert(session_node.has_method("is_game_started"))
     assert(session_node.has_method("has_waiting_room_state"))
     assert(session_node.has_method("can_request_player_ready"))
     assert(session_node.has_method("request_player_ready"))
@@ -74,6 +81,13 @@ func _on_identity_save_requested(display_name: String, icon_id: int, color_id: i
     session_node.call("request_player_identity", display_name, icon_id, color_id)
 
 func _render_scene() -> void:
+    var gameplay_active: bool = session_node.call("is_game_started")
+    _render_shell(gameplay_active)
+    _render_gameplay(gameplay_active)
+
+    if gameplay_active:
+        return
+
     var status_state: StatusCardState = _boot_state
     if not session_node.call("is_waiting_for_launch"):
         status_state = _session_state
@@ -81,6 +95,20 @@ func _render_scene() -> void:
     var waiting_room_active: bool = session_node.call("is_waiting_room_active")
     _render_modal(waiting_room_active, status_state)
     _render_waiting_room(waiting_room_active)
+
+func _render_shell(gameplay_active: bool) -> void:
+    background_texture.visible = not gameplay_active
+    background_shade.visible = not gameplay_active
+    if gameplay_active:
+        modal_shade.visible = false
+        modal_panel.visible = false
+        waiting_room_view.call("set_waiting_room_active", false)
+
+func _render_gameplay(gameplay_active: bool) -> void:
+    if gameplay_active:
+        _ensure_game_root()
+    elif _game_root != null:
+        _game_root.visible = false
 
 func _render_modal(waiting_room_active: bool, status_state: StatusCardState) -> void:
     modal_shade.visible = not waiting_room_active
@@ -103,3 +131,11 @@ func _render_waiting_room(waiting_room_active: bool) -> void:
     waiting_room_view.call("set_waiting_room_state", _waiting_room_state)
     waiting_room_view.call("set_ready_enabled", session_node.call("can_request_player_ready"))
     waiting_room_view.call("set_identity_save_enabled", session_node.call("can_request_player_identity"))
+
+func _ensure_game_root() -> void:
+    if _game_root != null:
+        _game_root.visible = true
+        return
+
+    _game_root = GameRootScene.instantiate()
+    add_child(_game_root)

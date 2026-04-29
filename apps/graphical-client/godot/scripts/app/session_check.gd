@@ -109,6 +109,9 @@ func is_waiting_for_launch() -> bool:
 func is_waiting_room_active() -> bool:
     return _phase == SessionPhase.READY
 
+func is_game_started() -> bool:
+    return _phase == SessionPhase.GAME_STARTED
+
 func has_waiting_room_state() -> bool:
     return _waiting_room_state != null
 
@@ -346,8 +349,8 @@ func rpc_game_started(_seq: int, _new_game_id: String) -> void:
     _update_state(
         SessionPhase.GAME_STARTED,
         "Game starting",
-        "The server has started the match and the waiting room is handing off to the next client stage.",
-        "The next milestone will replace this handoff note with the actual gameplay root."
+        "The server has started the match and the waiting room is handing off to the gameplay scene.",
+        "The gameplay root now owns the player-facing match presentation."
     )
 
 func _update_state(
