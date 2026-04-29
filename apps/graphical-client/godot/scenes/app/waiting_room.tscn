@@ -108,10 +108,11 @@ theme_override_constants/separation = 1
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 theme = ExtResource("2_tq6v2")
-text = "Make strategic purchases to increase your hash power. Bitcoin mining containers brings block rewards. Properties bring energy toll from your opponents."
+text = "Buy energy-producing tiles, charge tolls when rivals land on them, and split your energy between selling for fiat or mining Bitcoin in a race to be the first player to reach 20 Bitcoin."
 autowrap_mode = 2
 
 [node name="MoreInfoButton" type="Button" parent="SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBorder/InfoMargin/InfoVBox/BoxContainer" unique_id=2106814826]
+visible = false
 custom_minimum_size = Vector2(43, 20)
 layout_mode = 2
 size_flags_horizontal = 8

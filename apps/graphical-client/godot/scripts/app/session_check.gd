@@ -77,6 +77,8 @@ var _waiting_room_state: WaitingRoomStateModel
 var _waiting_room_note: String = ""
 var _ready_request_pending: bool = false
 var _identity_request_pending: bool = false
+var _match_has_started: bool = false
+var _match_has_finished: bool = false
 
 func _ready() -> void:
     assert(boot_node)
@@ -191,6 +193,8 @@ func _on_launch_payload_received(payload: LaunchPayloadModel) -> void:
     _waiting_room_note = ""
     _ready_request_pending = false
     _identity_request_pending = false
+    _match_has_started = false
+    _match_has_finished = false
     _connect_to_server()
 
 func _connect_to_server() -> void:
@@ -296,6 +300,15 @@ func rpc_sync_complete(_seq: int, _final_seq: int) -> void:
         _fail_session("Received sync completion before state snapshot.")
         return
 
+    if _match_has_started:
+        _update_state(
+            SessionPhase.GAME_STARTED,
+            "Match resumed",
+            "The server snapshot shows this match has already started, so the client is skipping the waiting room.",
+            "Reconnect and restart flows now hand back directly to gameplay after sync."
+        )
+        return
+
     _update_state(
         SessionPhase.READY,
         "Waiting room ready",
@@ -365,6 +378,8 @@ func _update_state(
 
 func _apply_waiting_room_snapshot(snapshot: Dictionary) -> void:
     _room_game_id = str(snapshot.get("game_id", _room_game_id))
+    _match_has_started = bool(snapshot.get("has_started", false))
+    _match_has_finished = bool(snapshot.get("has_finished", false))
     var players: Array = snapshot.get("players", [])
     _room_capacity = max(_room_capacity, players.size())
     if _ready_players.size() < _room_capacity:
