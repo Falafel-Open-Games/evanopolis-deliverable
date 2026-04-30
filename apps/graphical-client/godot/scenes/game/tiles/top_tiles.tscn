@@ -1,0 +1,104 @@
+[gd_scene format=3 uid="uid://d0e787kgdf1op"]
+
+[ext_resource type="PackedScene" uid="uid://xjde2dq2y1bw" path="res://assets/tiles.glb" id="1_0jgw5"]
+[ext_resource type="Material" uid="uid://dlpt3r2ybtgig" path="res://assets/Material.005.tres" id="2_3ahh0"]
+[ext_resource type="Material" uid="uid://b6w1lys6otm4u" path="res://assets/Material.006.tres" id="3_1pit0"]
+[ext_resource type="Material" uid="uid://barkeomrhlrr6" path="res://assets/Material.001.tres" id="4_opiio"]
+[ext_resource type="Material" uid="uid://c5rm4loig0d7u" path="res://assets/Material.002.tres" id="5_u4hqu"]
+[ext_resource type="Material" uid="uid://cqjpxmc2cna0q" path="res://assets/Material.003.tres" id="6_0pxr5"]
+[ext_resource type="Material" uid="uid://br5ah2uacwsi5" path="res://assets/Material.004.tres" id="7_1yfxl"]
+
+[node name="tiles" unique_id=819160410 instance=ExtResource("1_0jgw5")]
+
+[node name="Tile Type A" parent="TileInstance_012" parent_id_path=PackedInt32Array(111200269) index="0" unique_id=674746750]
+material_override = ExtResource("2_3ahh0")
+
+[node name="Tile Type A2" parent="TileInstance_015" parent_id_path=PackedInt32Array(1223980933) index="0" unique_id=1458840456]
+material_override = ExtResource("3_1pit0")
+
+[node name="Tile Type A3" parent="TileInstance_000" parent_id_path=PackedInt32Array(1672635206) index="0" unique_id=638761976]
+material_override = ExtResource("4_opiio")
+
+[node name="Tile Type A4" parent="TileInstance_003" parent_id_path=PackedInt32Array(1152400768) index="0" unique_id=657618866]
+material_override = ExtResource("5_u4hqu")
+
+[node name="Tile Type A5" parent="TileInstance_006" parent_id_path=PackedInt32Array(1387559239) index="0" unique_id=738185070]
+material_override = ExtResource("6_0pxr5")
+
+[node name="Tile Type B" parent="TileInstance_013" parent_id_path=PackedInt32Array(269844732) index="0" unique_id=960821911]
+material_override = ExtResource("2_3ahh0")
+
+[node name="Tile Type B2" parent="TileInstance_016" parent_id_path=PackedInt32Array(1060901535) index="0" unique_id=968543601]
+material_override = ExtResource("3_1pit0")
+
+[node name="Tile Type B3" parent="TileInstance_001" parent_id_path=PackedInt32Array(1199278153) index="0" unique_id=1973687406]
+material_override = ExtResource("4_opiio")
+
+[node name="Tile Type B4" parent="TileInstance_007" parent_id_path=PackedInt32Array(485484260) index="0" unique_id=1446814734]
+material_override = ExtResource("6_0pxr5")
+
+[node name="Tile Type B5" parent="TileInstance_004" parent_id_path=PackedInt32Array(1894810306) index="0" unique_id=373669964]
+material_override = ExtResource("5_u4hqu")
+
+[node name="Tile Type C" parent="TileInstance_014" parent_id_path=PackedInt32Array(2004119363) index="0" unique_id=383923571]
+material_override = ExtResource("2_3ahh0")
+
+[node name="Tile Type C2" parent="TileInstance_017" parent_id_path=PackedInt32Array(1722611666) index="0" unique_id=606989651]
+material_override = ExtResource("3_1pit0")
+
+[node name="Tile Type C3" parent="TileInstance_008" parent_id_path=PackedInt32Array(155286518) index="0" unique_id=29144253]
+material_override = ExtResource("6_0pxr5")
+
+[node name="Tile Type C4" parent="TileInstance_005" parent_id_path=PackedInt32Array(141362147) index="0" unique_id=133065283]
+material_override = ExtResource("5_u4hqu")
+
+[node name="Tile Type C5" parent="TileInstance_002" parent_id_path=PackedInt32Array(186974762) index="0" unique_id=929894512]
+material_override = ExtResource("4_opiio")
+
+[node name="Tile Type A6" parent="TileInstance_009" parent_id_path=PackedInt32Array(579265746) index="0" unique_id=6197008]
+material_override = ExtResource("7_1yfxl")
+
+[node name="Tile Type B6" parent="TileInstance_010" parent_id_path=PackedInt32Array(240723281) index="0" unique_id=850860306]
+material_override = ExtResource("7_1yfxl")
+
+[node name="Tile Type C6" parent="TileInstance_011" parent_id_path=PackedInt32Array(1600385263) index="0" unique_id=79973280]
+material_override = ExtResource("7_1yfxl")
+
+[node name="HIDE NODES BELOW THIS ONE" type="Node3D" parent="." index="18" unique_id=1334635340]
+transform = Transform3D(-0.50000006, 0, -0.8660254, 0, 0.75, 0, 0.8660254, 0, -0.50000006, -0.44851032, 0, -0.2589476)
+
+[node name="BaseTileMaterial_004" parent="." index="19" unique_id=1702941595]
+visible = false
+
+[node name="BaseTileMaterial_003" parent="." index="20" unique_id=1849314821]
+visible = false
+
+[node name="BaseTileMaterial_005" parent="." index="21" unique_id=494251624]
+visible = false
+
+[node name="BaseTileMaterial_002" parent="." index="22" unique_id=1211450316]
+visible = false
+
+[node name="BaseTileMaterial_001" parent="." index="23" unique_id=352607833]
+visible = false
+
+[node name="BaseTileMaterial_000" parent="." index="24" unique_id=974812748]
+visible = false
+
+[node name="TopTileMaterial_000" parent="." index="25" unique_id=2080509422]
+visible = false
+
+[node name="TopTileMaterial_004" parent="." index="26" unique_id=516725513]
+visible = false
+
+[node name="TopTileMaterial_003" parent="." index="27" unique_id=1835365727]
+visible = false
+
+[node name="TopTileMaterial_005" parent="." index="28" unique_id=656324946]
+visible = false
+
+[node name="TopTileMaterial_002" parent="." index="29" unique_id=1540228517]
+visible = false
+
+[node name="TopTileMaterial_001" parent="." index="30" unique_id=791002539]
+visible = false

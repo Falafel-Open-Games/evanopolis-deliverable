@@ -1,8 +1,9 @@
 [gd_scene format=3 uid="uid://d2u5y5dj1ib6d"]
 
 [ext_resource type="Script" uid="uid://didc1soy01cg2" path="res://scripts/game/game_root.gd" id="1_game_root"]
-[ext_resource type="Script" path="res://scripts/game/hud/game_hud_intro_controller.gd" id="2_8k27q"]
+[ext_resource type="Script" uid="uid://cecddchs60cgo" path="res://scripts/game/hud/game_hud_intro_controller.gd" id="2_8k27q"]
 [ext_resource type="PackedScene" uid="uid://dlaj22qah2fc8" path="res://scenes/game/board/energy_diorama_pack.tscn" id="2_rx5uh"]
+[ext_resource type="PackedScene" uid="uid://d0e787kgdf1op" path="res://scenes/game/tiles/top_tiles.tscn" id="3_bca70"]
 [ext_resource type="PackedScene" uid="uid://ba7ecewut65r8" path="res://scenes/game/hud/top_bar.tscn" id="3_pevc5"]
 [ext_resource type="PackedScene" uid="uid://cpmxp51rnmgsr" path="res://scenes/app/main_logo.tscn" id="3_rx5uh"]
 
@@ -66,8 +67,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015847921, -0.5, 0)
 mesh = SubResource("BoxMesh_cylga")
 surface_material_override/0 = SubResource("StandardMaterial3D_agidj")
 
-[node name="energy-diorama-pack2" parent="BoardRoot" unique_id=625056848 instance=ExtResource("2_rx5uh")]
+[node name="energy-diorama-pack" parent="BoardRoot" unique_id=625056848 instance=ExtResource("2_rx5uh")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.9892778)
+
+[node name="tiles" parent="BoardRoot" unique_id=1178582862 instance=ExtResource("3_bca70")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.9350533)
 
 [node name="PawnRoot" type="Node3D" parent="." unique_id=979076114]
 
@@ -98,7 +102,7 @@ grow_horizontal = 2
 size_flags_vertical = 0
 theme_override_constants/margin_top = 16
 
-[node name="HudIntroController" type="Node" parent="HudRoot" node_paths=PackedStringArray("top_bar", "initial_logo")]
+[node name="HudIntroController" type="Node" parent="HudRoot" unique_id=1251668087 node_paths=PackedStringArray("top_bar", "initial_logo")]
 script = ExtResource("2_8k27q")
 top_bar = NodePath("../SafeMargin/TopBar")
 initial_logo = NodePath("../InitialLogo")
