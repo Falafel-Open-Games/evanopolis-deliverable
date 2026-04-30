@@ -22,7 +22,9 @@ Behavior:
 - `player_index` is the logical player owner.
 - `color_id` uses the same identity color contract as the waiting room and HUD.
 - position/transform are local to the `PawnCollection` scene.
-- the pawn mesh is a single reusable template; runtime color comes from the canonical player identity palette, not from Blender material order.
+- the pawn mesh is a single reusable template.
+- runtime material comes from the canonical exported pawn marker for that `color_id`.
+- if an exported marker material is missing, the runtime falls back to the canonical player identity palette tint.
 
 ## `PawnCollection`
 
@@ -43,6 +45,7 @@ Behavior:
 
 - the imported `pawns.glb` scene is now treated as source data, not the public API
 - one imported pawn mesh becomes the reusable geometry template
+- the six imported marker materials become the runtime material templates keyed by `color_id`
 - the six imported transforms become default spawn slots keyed by `color_id`
 - current game-scene handoff uses `sync_waiting_room_slots(...)` so known players appear automatically with the correct identity color
 

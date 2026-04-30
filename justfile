@@ -97,7 +97,7 @@ dev:
   ensure_node_app_deps apps/web-wrapper vite
   require_auth_health
 
-  local_rooms_data_file="${ROOMS_DATA_FILE:-/tmp/evanopolis-rooms.json}"
+  local_rooms_data_file="${ROOMS_DATA_FILE:-$HOME/.evanopolis/rooms.json}"
 
   printf 'Starting rooms-api on http://127.0.0.1:3001\n'
   printf 'Persisting local rooms to %s\n' "$local_rooms_data_file"
@@ -164,7 +164,7 @@ dev-game:
   cd apps/game-server && AUTH_BASE_URL="${AUTH_BASE_URL:-http://127.0.0.1:3000}" ROOMS_API_BASE_URL="${ROOMS_API_BASE_URL:-http://127.0.0.1:3001}" godot --headless --path . --log-file /tmp/evanopolis-game-server-dev.log --scene res://scenes/server_main.tscn
 
 dev-rooms:
-  cd apps/rooms-api && AUTH_BASE_URL="${AUTH_BASE_URL:-http://127.0.0.1:3000}" ROOMS_DATA_FILE="${ROOMS_DATA_FILE:-/tmp/evanopolis-rooms.json}" npm run dev
+  cd apps/rooms-api && AUTH_BASE_URL="${AUTH_BASE_URL:-http://127.0.0.1:3000}" ROOMS_DATA_FILE="${ROOMS_DATA_FILE:-$HOME/.evanopolis/rooms.json}" npm run dev
 
 dev-wrapper:
   cd apps/web-wrapper && npm run dev

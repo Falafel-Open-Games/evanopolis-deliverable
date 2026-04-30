@@ -76,7 +76,7 @@ Example with local persistence:
 
 ```bash
 AUTH_BASE_URL=http://127.0.0.1:3000 \
-ROOMS_DATA_FILE=/tmp/evanopolis-rooms.json \
+ROOMS_DATA_FILE="$HOME/.evanopolis/rooms.json" \
 npm start
 ```
 

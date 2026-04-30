@@ -84,7 +84,7 @@ This root recipe does three things:
   one-time import on fresh clones
 - otherwise falls back to the checked-in Docker game-server path
 - starts `rooms-api` on `http://127.0.0.1:3001` against the local auth API
-- persists local room definitions to `${ROOMS_DATA_FILE:-/tmp/evanopolis-rooms.json}`
+- persists local room definitions to `${ROOMS_DATA_FILE:-$HOME/.evanopolis/rooms.json}`
 - starts `game-server` and `web-wrapper` with the local defaults
 
 Expected endpoints:

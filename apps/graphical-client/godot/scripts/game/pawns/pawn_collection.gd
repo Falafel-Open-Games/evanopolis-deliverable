@@ -12,7 +12,7 @@ var _pawns_by_player_index: Dictionary = { }
 var _spawn_transforms_by_color_id: Array[Transform3D] = []
 var _legacy_color_slot_transforms: Array[Transform3D] = []
 var _template_mesh: Mesh = null
-var _template_material: Material = null
+var _template_materials_by_color_id: Array[Material] = []
 
 func _ready() -> void:
     assert(initial_positions)
@@ -51,7 +51,7 @@ func ensure_pawn(player_index: int, initial_color_id: int = PlayerIdentityCardVi
 
     var pawn: Pawn = PawnView.new()
     pawn.name = "Pawn%d" % player_index
-    pawn.set_mesh_template(_template_mesh, _template_material)
+    pawn.set_mesh_template(_template_mesh, _template_materials_by_color_id)
     pawn_instances.add_child(pawn)
     _pawns_by_player_index[player_index] = pawn
     pawn.configure(player_index, initial_color_id, get_default_spawn_transform(initial_color_id))
@@ -98,20 +98,20 @@ func _capture_template_and_spawn_positions() -> void:
 
     _spawn_transforms_by_color_id.clear()
     _legacy_color_slot_transforms.clear()
+    _template_materials_by_color_id.clear()
     _spawn_transforms_by_color_id.resize(PlayerIdentityCardView.PLAYER_REPRESENTATION_COLORS.size())
     _legacy_color_slot_transforms.resize(PlayerIdentityCardView.PLAYER_REPRESENTATION_COLORS.size())
+    _template_materials_by_color_id.resize(PlayerIdentityCardView.PLAYER_REPRESENTATION_COLORS.size())
     for marker in markers:
         var color_id: int = _marker_export_index(marker)
         assert(color_id >= 0 and color_id < PlayerIdentityCardView.PLAYER_REPRESENTATION_COLORS.size())
         _spawn_transforms_by_color_id[color_id] = marker.transform
         _legacy_color_slot_transforms[color_id] = marker.transform
+        _template_materials_by_color_id[color_id] = _marker_material(marker)
 
     var template_marker: MeshInstance3D = markers[0]
     _template_mesh = template_marker.mesh
     assert(_template_mesh != null)
-    _template_material = template_marker.get_active_material(0)
-    if _template_material == null and _template_mesh.get_surface_count() > 0:
-        _template_material = _template_mesh.surface_get_material(0)
     initial_positions.visible = false
 
 func _collect_marker_meshes(node: Node, result: Array[MeshInstance3D]) -> void:
@@ -130,6 +130,15 @@ func _marker_export_index(marker: MeshInstance3D) -> int:
     var export_index: int = int(suffix_text)
     assert(export_index >= 0)
     return export_index
+
+func _marker_material(marker: MeshInstance3D) -> Material:
+    var active_material: Material = marker.get_active_material(0)
+    if active_material != null:
+        return active_material
+    var marker_mesh: Mesh = marker.mesh
+    if marker_mesh != null and marker_mesh.get_surface_count() > 0:
+        return marker_mesh.surface_get_material(0)
+    return null
 
 func _resolved_color_id(requested_color_id: int) -> int:
     if (
