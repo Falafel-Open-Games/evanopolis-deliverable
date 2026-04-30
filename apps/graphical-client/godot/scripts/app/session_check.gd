@@ -33,6 +33,7 @@ const DEFAULT_IDENTITY_COLOR_ID: int = 0
 
 signal session_state_changed(state: StatusCardState)
 signal waiting_room_state_changed(state: WaitingRoomStateModel)
+signal gameplay_turn_state_changed(turn_state: Dictionary)
 
 enum SessionPhase {
     WAITING_FOR_LAUNCH,
@@ -73,6 +74,8 @@ var _known_player_display_names: Dictionary = { }
 var _known_player_icon_ids: Dictionary = { }
 var _known_player_color_ids: Dictionary = { }
 var _ready_players: Array = []
+var _current_turn_number: int = 1
+var _current_turn_player_index: int = 0
 var _waiting_room_state: WaitingRoomStateModel
 var _waiting_room_note: String = ""
 var _ready_request_pending: bool = false
@@ -104,6 +107,17 @@ func get_session_state() -> StatusCardState:
 func get_waiting_room_state() -> WaitingRoomStateModel:
     assert(_waiting_room_state)
     return _waiting_room_state.clone()
+
+func get_gameplay_turn_state() -> Dictionary:
+    var current_player_name: String = _player_display_name(_current_turn_player_index)
+    if current_player_name.is_empty():
+        current_player_name = "Player"
+    return {
+        "turn_number": _current_turn_number,
+        "current_player_index": _current_turn_player_index,
+        "current_player_name": current_player_name,
+        "is_local_turn": _current_turn_player_index == _local_player_index,
+    }
 
 func is_waiting_for_launch() -> bool:
     return _phase == SessionPhase.WAITING_FOR_LAUNCH
@@ -189,6 +203,8 @@ func _on_launch_payload_received(payload: LaunchPayloadModel) -> void:
     _known_player_icon_ids.clear()
     _known_player_color_ids.clear()
     _ready_players.clear()
+    _current_turn_number = 1
+    _current_turn_player_index = 0
     _waiting_room_state = null
     _waiting_room_note = ""
     _ready_request_pending = false
@@ -289,7 +305,10 @@ func rpc_action_rejected(_seq: int, reason: String) -> void:
 @rpc("authority")
 func rpc_state_snapshot(_seq: int, snapshot: Dictionary) -> void:
     _has_snapshot = true
+    _current_turn_number = int(snapshot.get("turn_number", _current_turn_number))
+    _current_turn_player_index = int(snapshot.get("current_player_index", _current_turn_player_index))
     _apply_waiting_room_snapshot(snapshot)
+    _emit_gameplay_turn_state()
 
 @rpc("authority")
 func rpc_sync_complete(_seq: int, _final_seq: int) -> void:
@@ -366,6 +385,13 @@ func rpc_game_started(_seq: int, _new_game_id: String) -> void:
         "The gameplay root now owns the player-facing match presentation."
     )
 
+@rpc("authority")
+func rpc_turn_started(_seq: int, player_index: int, turn_number: int, _cycle: int) -> void:
+    _current_turn_player_index = player_index
+    _current_turn_number = turn_number
+    _match_has_started = true
+    _emit_gameplay_turn_state()
+
 func _update_state(
     phase: int,
     title: String,
@@ -380,6 +406,8 @@ func _apply_waiting_room_snapshot(snapshot: Dictionary) -> void:
     _room_game_id = str(snapshot.get("game_id", _room_game_id))
     _match_has_started = bool(snapshot.get("has_started", false))
     _match_has_finished = bool(snapshot.get("has_finished", false))
+    _current_turn_number = int(snapshot.get("turn_number", _current_turn_number))
+    _current_turn_player_index = int(snapshot.get("current_player_index", _current_turn_player_index))
     var players: Array = snapshot.get("players", [])
     _room_capacity = max(_room_capacity, players.size())
     if _ready_players.size() < _room_capacity:
@@ -472,6 +500,9 @@ func _emit_waiting_room_state() -> void:
         _ready_request_pending
     )
     waiting_room_state_changed.emit(get_waiting_room_state())
+
+func _emit_gameplay_turn_state() -> void:
+    gameplay_turn_state_changed.emit(get_gameplay_turn_state())
 
 func _is_player_ready(player_index: int) -> bool:
     if player_index < 0 or player_index >= _ready_players.size():

@@ -6,6 +6,7 @@
 [ext_resource type="FontFile" uid="uid://dpa1k7vkx5kav" path="res://import/Inter,Manrope,Roboto_Mono/Inter/static/Inter_18pt-ExtraBold.ttf" id="2_3taad"]
 [ext_resource type="FontFile" uid="uid://4watmq74nnxs" path="res://import/Inter,Manrope,Roboto_Mono/Inter/static/Inter_18pt-Black.ttf" id="3_7j863"]
 [ext_resource type="FontFile" uid="uid://d2qevt5o88o4s" path="res://import/Noto_Sans/NotoSans-VariableFont_wdth,wght.ttf" id="4_ed8xq"]
+[ext_resource type="FontFile" uid="uid://djk2or1x8ndb7" path="res://fonts/JetBrains_Mono/static/JetBrainsMono-ExtraBold.ttf" id="4_u7cj8"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u7cj8"]
 bg_color = Color(0, 0.82, 0.6969999, 0.627451)
@@ -154,7 +155,7 @@ Label/fonts/font = ExtResource("1_3taad")
 Panel/styles/panel = SubResource("StyleBoxFlat_7j863")
 ResourceLabel/base_type = &"Label"
 ResourceLabel/font_sizes/font_size = 16
-ResourceLabel/fonts/font = ExtResource("4_ed8xq")
+ResourceLabel/fonts/font = ExtResource("4_u7cj8")
 ResourceSymbol/base_type = &"Label"
 ResourceSymbol/fonts/font = ExtResource("4_ed8xq")
 SecondaryButton/base_type = &"Button"

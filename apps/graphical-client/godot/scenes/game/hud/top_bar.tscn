@@ -65,7 +65,7 @@ layout_mode = 2
 theme = ExtResource("3_g1q52")
 theme_type_variation = &"SubsectionTitle"
 theme_override_colors/font_color = Color(0.015686275, 0.8, 0.68235296, 1)
-text = "Turn 6 - Your Turn"
+text = "Turn 1 - Your Turn"
 uppercase = true
 
 [node name="spacer" type="MarginContainer" parent="MarginContainer/HBoxContainer" unique_id=247265476]
@@ -79,7 +79,7 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="MarginContainer/HBoxContainer/GameGoal" unique_id=801494866]
-custom_minimum_size = Vector2(107, 0)
+custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 5
@@ -99,7 +99,7 @@ layout_mode = 2
 theme = ExtResource("3_g1q52")
 theme_type_variation = &"ResourceLabel"
 theme_override_colors/font_color = Color(0.9137255, 0.5372549, 0.3254902, 1)
-text = "₿ 4.2 / 20"
+text = "₿ 0/20"
 
 [node name="Label2" type="Label" parent="MarginContainer/HBoxContainer/GameGoal/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1502622976]
 layout_mode = 2
@@ -112,7 +112,6 @@ layout_mode = 2
 size_flags_vertical = 8
 theme_override_styles/fill = SubResource("StyleBoxFlat_f7370")
 max_value = 20.0
-value = 4.25
 show_percentage = false
 
 [node name="GameResources" type="MarginContainer" parent="MarginContainer" unique_id=2081011703]
@@ -148,7 +147,7 @@ size_flags_vertical = 6
 theme = ExtResource("3_g1q52")
 theme_type_variation = &"ResourceLabel"
 theme_override_colors/font_color = Color(0.015686275, 0.8, 0.68235296, 1)
-text = "$ 100 000"
+text = "$ 100_000"
 horizontal_alignment = 1
 
 [node name="FiatLabel" type="Label" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer/VBoxContainer" unique_id=866299398]
@@ -177,7 +176,7 @@ size_flags_vertical = 6
 theme = ExtResource("3_g1q52")
 theme_type_variation = &"ResourceLabel"
 theme_override_colors/font_color = Color(0.98039216, 0.68235296, 0.28627452, 1)
-text = "⚡ 9999"
+text = "⚡ 0"
 horizontal_alignment = 1
 
 [node name="EnergyLabel" type="Label" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer2/VBoxContainer2" unique_id=1869862282]

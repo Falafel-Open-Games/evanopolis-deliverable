@@ -27,6 +27,12 @@ func set_local_player_identity(icon_id: int, color_id: int) -> void:
         return
     top_bar.set_local_player_identity(icon_id, color_id)
 
+func set_turn_info(turn_number: int, player_name: String, is_local_turn: bool) -> void:
+    if not is_node_ready():
+        call_deferred("set_turn_info", turn_number, player_name, is_local_turn)
+        return
+    top_bar.set_turn_info(turn_number, player_name, is_local_turn)
+
 func set_player_slots(slots: Array) -> void:
     if not is_node_ready():
         call_deferred("set_player_slots", slots.duplicate())

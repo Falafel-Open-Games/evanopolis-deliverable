@@ -37,6 +37,7 @@ func _ready() -> void:
     assert(session_node)
     assert(session_node.has_signal("session_state_changed"))
     assert(session_node.has_signal("waiting_room_state_changed"))
+    assert(session_node.has_signal("gameplay_turn_state_changed"))
     assert(session_node.has_method("get_session_state"))
     assert(session_node.has_method("get_waiting_room_state"))
     assert(session_node.has_method("is_waiting_for_launch"))
@@ -54,6 +55,7 @@ func _ready() -> void:
     boot_node.connect("boot_state_changed", Callable(self, "_on_boot_state_changed"))
     session_node.connect("session_state_changed", Callable(self, "_on_session_state_changed"))
     session_node.connect("waiting_room_state_changed", Callable(self, "_on_waiting_room_state_changed"))
+    session_node.connect("gameplay_turn_state_changed", Callable(self, "_on_gameplay_turn_state_changed"))
 
     _boot_state = boot_node.call("get_boot_state")
     _session_state = session_node.call("get_session_state")
@@ -74,6 +76,9 @@ func _on_waiting_room_state_changed(state: WaitingRoomState) -> void:
     _waiting_room_state = state
     _sync_gameplay_identity()
     _render_scene()
+
+func _on_gameplay_turn_state_changed(_turn_state: Dictionary) -> void:
+    _sync_gameplay_turn_info()
 
 func _on_ready_button_pressed() -> void:
     session_node.call("request_player_ready")
@@ -154,3 +159,18 @@ func _sync_gameplay_identity() -> void:
         _waiting_room_state.local_color_id
     )
     _game_root.call("set_player_slots", _waiting_room_state.slots)
+    _sync_gameplay_turn_info()
+
+func _sync_gameplay_turn_info() -> void:
+    if _game_root == null:
+        return
+    if not session_node.call("has_waiting_room_state"):
+        return
+
+    var turn_state: Dictionary = session_node.call("get_gameplay_turn_state")
+    _game_root.call(
+        "set_turn_info",
+        int(turn_state.get("turn_number", 1)),
+        str(turn_state.get("current_player_name", "Player")),
+        bool(turn_state.get("is_local_turn", false))
+    )

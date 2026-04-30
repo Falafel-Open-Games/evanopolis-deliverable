@@ -72,6 +72,15 @@ Each turn follows this sequence:
    - ENERGY allocation is applied
    - FIAT and BITCOIN are generated
 
+TURN ORDER
+--------------------------------------------------
+
+- The first player in a match is the lowest occupied seat index.
+- Turn order then proceeds by seat index in ascending order.
+- After the last occupied seat, turn order wraps back to the first occupied seat.
+- In the current implementation, this means the match starts with player index 0
+  and then cycles through the seated players in order.
+
 --------------------------------------------------
 TILE STATES
 --------------------------------------------------
