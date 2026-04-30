@@ -1,5 +1,11 @@
 [gd_scene format=3 uid="uid://bs4isqdfffe5o"]
 
+[ext_resource type="Script" path="res://scripts/game/pawns/pawn_collection.gd" id="1_7j8o2"]
 [ext_resource type="PackedScene" uid="uid://dguko40ey566i" path="res://assets/pawns.glb" id="1_2dxd8"]
 
-[node name="pawns" unique_id=1452365867 instance=ExtResource("1_2dxd8")]
+[node name="pawns" type="Node3D" unique_id=1452365867]
+script = ExtResource("1_7j8o2")
+
+[node name="InitialPositions" parent="." instance=ExtResource("1_2dxd8")]
+
+[node name="PawnInstances" type="Node3D" parent="."]

@@ -153,3 +153,4 @@ func _sync_gameplay_identity() -> void:
         _waiting_room_state.local_icon_id,
         _waiting_room_state.local_color_id
     )
+    _game_root.call("set_player_slots", _waiting_room_state.slots)

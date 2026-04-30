@@ -1,0 +1,233 @@
+class_name PawnCollection
+extends Node3D
+
+const PawnView = preload("res://scripts/game/pawns/pawn.gd")
+const PlayerIdentityCardView = preload("res://scripts/app/player_identity_card.gd")
+const ANCHOR_EPSILON: float = 0.001
+
+@onready var initial_positions: Node3D = get_node(^"InitialPositions")
+@onready var pawn_instances: Node3D = get_node(^"PawnInstances")
+
+var _pawns_by_player_index: Dictionary = { }
+var _spawn_transforms_by_color_id: Array[Transform3D] = []
+var _legacy_color_slot_transforms: Array[Transform3D] = []
+var _template_mesh: Mesh = null
+var _template_material: Material = null
+
+func _ready() -> void:
+    assert(initial_positions)
+    assert(pawn_instances)
+    _capture_template_and_spawn_positions()
+
+func bind_board_tiles(board_tiles_root: Node3D) -> void:
+    assert(board_tiles_root != null)
+    _spawn_transforms_by_color_id = _resolve_start_transforms_from_tiles(board_tiles_root)
+
+func sync_waiting_room_slots(slots: Array) -> void:
+    assert(is_node_ready())
+    var active_player_indices: Dictionary = { }
+    for slot in slots:
+        if slot == null:
+            continue
+        if not bool(slot.is_known_player):
+            continue
+        var player_index: int = int(slot.player_index)
+        var color_id: int = int(slot.color_id)
+        var pawn: Pawn = ensure_pawn(player_index, color_id)
+        pawn.configure(player_index, color_id, get_default_spawn_transform(color_id))
+        active_player_indices[player_index] = true
+
+    var player_indices: Array = _pawns_by_player_index.keys()
+    for player_index_variant in player_indices:
+        var player_index: int = int(player_index_variant)
+        if active_player_indices.has(player_index):
+            continue
+        remove_pawn(player_index)
+
+func ensure_pawn(player_index: int, initial_color_id: int = PlayerIdentityCardView.DEFAULT_COLOR_ID) -> Pawn:
+    assert(is_node_ready())
+    if _pawns_by_player_index.has(player_index):
+        return _pawns_by_player_index[player_index] as Pawn
+
+    var pawn: Pawn = PawnView.new()
+    pawn.name = "Pawn%d" % player_index
+    pawn.set_mesh_template(_template_mesh, _template_material)
+    pawn_instances.add_child(pawn)
+    _pawns_by_player_index[player_index] = pawn
+    pawn.configure(player_index, initial_color_id, get_default_spawn_transform(initial_color_id))
+    return pawn
+
+func set_pawn_color(player_index: int, color_id: int) -> void:
+    var pawn: Pawn = ensure_pawn(player_index, color_id)
+    pawn.set_color_id(color_id)
+
+func set_pawn_position(player_index: int, board_position: Vector3, board_basis: Basis = Basis.IDENTITY) -> void:
+    var pawn: Pawn = ensure_pawn(player_index)
+    pawn.set_board_position(board_position, board_basis)
+
+func set_pawn_transform(player_index: int, board_transform: Transform3D) -> void:
+    var pawn: Pawn = ensure_pawn(player_index)
+    pawn.set_board_transform(board_transform)
+
+func get_default_spawn_transform(color_id: int) -> Transform3D:
+    assert(_spawn_transforms_by_color_id.size() > 0)
+    return _spawn_transforms_by_color_id[_resolved_color_id(color_id)]
+
+func remove_pawn(player_index: int) -> void:
+    var pawn: Pawn = _pawns_by_player_index.get(player_index, null) as Pawn
+    if pawn == null:
+        return
+    _pawns_by_player_index.erase(player_index)
+    pawn.queue_free()
+
+func clear_pawns() -> void:
+    for pawn_variant in _pawns_by_player_index.values():
+        var pawn: Pawn = pawn_variant as Pawn
+        if pawn == null:
+            continue
+        pawn.queue_free()
+    _pawns_by_player_index.clear()
+
+func _capture_template_and_spawn_positions() -> void:
+    var markers: Array[MeshInstance3D] = []
+    _collect_marker_meshes(initial_positions, markers)
+    assert(markers.size() == PlayerIdentityCardView.PLAYER_REPRESENTATION_COLORS.size())
+    markers.sort_custom(func(first: MeshInstance3D, second: MeshInstance3D) -> bool:
+        return _marker_export_index(first) < _marker_export_index(second)
+    )
+
+    _spawn_transforms_by_color_id.clear()
+    _legacy_color_slot_transforms.clear()
+    _spawn_transforms_by_color_id.resize(PlayerIdentityCardView.PLAYER_REPRESENTATION_COLORS.size())
+    _legacy_color_slot_transforms.resize(PlayerIdentityCardView.PLAYER_REPRESENTATION_COLORS.size())
+    for marker in markers:
+        var color_id: int = _marker_export_index(marker)
+        assert(color_id >= 0 and color_id < PlayerIdentityCardView.PLAYER_REPRESENTATION_COLORS.size())
+        _spawn_transforms_by_color_id[color_id] = marker.transform
+        _legacy_color_slot_transforms[color_id] = marker.transform
+
+    var template_marker: MeshInstance3D = markers[0]
+    _template_mesh = template_marker.mesh
+    assert(_template_mesh != null)
+    _template_material = template_marker.get_active_material(0)
+    if _template_material == null and _template_mesh.get_surface_count() > 0:
+        _template_material = _template_mesh.surface_get_material(0)
+    initial_positions.visible = false
+
+func _collect_marker_meshes(node: Node, result: Array[MeshInstance3D]) -> void:
+    for child in node.get_children():
+        var mesh_instance: MeshInstance3D = child as MeshInstance3D
+        if mesh_instance != null:
+            result.append(mesh_instance)
+            continue
+        _collect_marker_meshes(child, result)
+
+func _marker_export_index(marker: MeshInstance3D) -> int:
+    var marker_name: String = String(marker.name)
+    var marker_name_parts: PackedStringArray = marker_name.split("_")
+    assert(marker_name_parts.size() > 1)
+    var suffix_text: String = marker_name_parts[marker_name_parts.size() - 1]
+    var export_index: int = int(suffix_text)
+    assert(export_index >= 0)
+    return export_index
+
+func _resolved_color_id(requested_color_id: int) -> int:
+    if (
+        requested_color_id < 0
+        or requested_color_id >= PlayerIdentityCardView.PLAYER_REPRESENTATION_COLORS.size()
+    ):
+        return PlayerIdentityCardView.DEFAULT_COLOR_ID
+    return requested_color_id
+
+func _resolve_start_transforms_from_tiles(board_tiles_root: Node3D) -> Array[Transform3D]:
+    var ordered_tiles: Array[Dictionary] = _ordered_tile_entries(board_tiles_root)
+    var start_transforms: Array[Transform3D] = []
+    start_transforms.resize(PlayerIdentityCardView.PLAYER_REPRESENTATION_COLORS.size())
+    for color_id in range(PlayerIdentityCardView.PLAYER_REPRESENTATION_COLORS.size()):
+        var legacy_color_slot_transform: Transform3D = _legacy_color_slot_transforms[color_id]
+        var nearest_tile_index: int = _nearest_tile_index(legacy_color_slot_transform.origin, ordered_tiles)
+        assert(nearest_tile_index >= 0)
+        start_transforms[color_id] = ordered_tiles[nearest_tile_index].get("transform", Transform3D.IDENTITY)
+    return start_transforms
+
+func _ordered_tile_entries(board_tiles_root: Node3D) -> Array[Dictionary]:
+    var tile_entries: Array[Dictionary] = []
+    for child in board_tiles_root.get_children():
+        if not String(child.name).begins_with("TileInstance"):
+            continue
+        var tile_instance: Node3D = child as Node3D
+        assert(tile_instance != null)
+        tile_entries.append(_build_tile_entry(tile_instance))
+
+    tile_entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+        return float(a.get("angle", 0.0)) < float(b.get("angle", 0.0))
+    )
+
+    for tile_index in range(tile_entries.size()):
+        tile_entries[tile_index]["ring_index"] = tile_index
+    return tile_entries
+
+func _build_tile_entry(tile_instance: Node3D) -> Dictionary:
+    var tile_anchor: Node3D = _find_tile_anchor(tile_instance)
+    var tile_mesh: MeshInstance3D = _find_tile_mesh(tile_instance)
+    assert(tile_mesh != null)
+
+    var tile_point_global: Vector3 = _tile_point_global_position(tile_instance, tile_anchor, tile_mesh)
+    var pawn_origin_global: Vector3 = tile_point_global
+    var pawn_transform_global: Transform3D = Transform3D(tile_instance.global_basis, pawn_origin_global)
+    var pawn_transform_local: Transform3D = global_transform.affine_inverse() * pawn_transform_global
+    var tile_point_local: Vector3 = to_local(tile_point_global)
+    var angle: float = atan2(tile_point_local.z, tile_point_local.x)
+
+    return {
+        "tile_name": String(tile_instance.name),
+        "transform": pawn_transform_local,
+        "position": pawn_transform_local.origin,
+        "angle": angle,
+    }
+
+func _tile_point_global_position(
+    tile_instance: Node3D,
+    tile_anchor: Node3D,
+    tile_mesh: MeshInstance3D
+) -> Vector3:
+    if tile_anchor != null and tile_anchor.transform.origin.length() > ANCHOR_EPSILON:
+        return tile_anchor.global_transform.origin
+    var mesh_top_center_local: Vector3 = _mesh_top_center_local(tile_mesh)
+    return tile_mesh.global_transform * mesh_top_center_local
+
+func _mesh_top_center_local(tile_mesh: MeshInstance3D) -> Vector3:
+    var mesh_aabb: AABB = tile_mesh.get_aabb()
+    return Vector3(
+        mesh_aabb.get_center().x,
+        mesh_aabb.position.y + mesh_aabb.size.y,
+        mesh_aabb.get_center().z
+    )
+
+func _find_tile_anchor(tile_instance: Node3D) -> Node3D:
+    for child in tile_instance.get_children():
+        var node3d: Node3D = child as Node3D
+        if node3d == null:
+            continue
+        if String(node3d.name).contains("CentralAnchor"):
+            return node3d
+    return null
+
+func _find_tile_mesh(tile_instance: Node3D) -> MeshInstance3D:
+    for child in tile_instance.get_children():
+        var mesh_instance: MeshInstance3D = child as MeshInstance3D
+        if mesh_instance != null:
+            return mesh_instance
+    return null
+
+func _nearest_tile_index(target_position: Vector3, tile_entries: Array[Dictionary]) -> int:
+    var nearest_index: int = -1
+    var nearest_distance_squared: float = INF
+    for tile_index in range(tile_entries.size()):
+        var tile_position: Vector3 = tile_entries[tile_index].get("position", Vector3.ZERO)
+        var distance_squared: float = target_position.distance_squared_to(tile_position)
+        if distance_squared >= nearest_distance_squared:
+            continue
+        nearest_index = tile_index
+        nearest_distance_squared = distance_squared
+    return nearest_index

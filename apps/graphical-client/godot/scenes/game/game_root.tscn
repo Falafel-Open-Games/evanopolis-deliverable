@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://d0e787kgdf1op" path="res://scenes/game/tiles/top_tiles.tscn" id="3_bca70"]
 [ext_resource type="PackedScene" uid="uid://ba7ecewut65r8" path="res://scenes/game/hud/top_bar.tscn" id="3_pevc5"]
 [ext_resource type="PackedScene" uid="uid://cpmxp51rnmgsr" path="res://scenes/app/main_logo.tscn" id="3_rx5uh"]
+[ext_resource type="PackedScene" uid="uid://bs4isqdfffe5o" path="res://scenes/game/pawns/pawns.tscn" id="4_0krdv"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_f3gwi"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -75,7 +76,21 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.9350533)
 
 [node name="PawnRoot" type="Node3D" parent="." unique_id=979076114]
 
+[node name="pawns" parent="PawnRoot" unique_id=1452365867 instance=ExtResource("4_0krdv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.935)
+
 [node name="HudRoot" type="CanvasLayer" parent="." unique_id=1810049097]
+
+[node name="InitialLogo" parent="HudRoot" unique_id=2033182455 instance=ExtResource("3_rx5uh")]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -180.0
+offset_right = 180.0
+offset_bottom = 83.3
+grow_horizontal = 2
+size_flags_vertical = 0
+theme_override_constants/margin_top = 16
 
 [node name="SafeMargin" type="MarginContainer" parent="HudRoot" unique_id=109095849]
 anchors_preset = 15
@@ -90,17 +105,6 @@ theme_override_constants/margin_bottom = 16
 
 [node name="TopBar" parent="HudRoot/SafeMargin" unique_id=766824955 instance=ExtResource("3_pevc5")]
 layout_mode = 2
-
-[node name="InitialLogo" parent="HudRoot" unique_id=2033182455 instance=ExtResource("3_rx5uh")]
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -180.0
-offset_right = 180.0
-offset_bottom = 67.3
-grow_horizontal = 2
-size_flags_vertical = 0
-theme_override_constants/margin_top = 16
 
 [node name="HudIntroController" type="Node" parent="HudRoot" unique_id=1251668087 node_paths=PackedStringArray("top_bar", "initial_logo")]
 script = ExtResource("2_8k27q")

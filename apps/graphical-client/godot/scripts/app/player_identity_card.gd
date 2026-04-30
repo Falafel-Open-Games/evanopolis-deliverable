@@ -4,12 +4,12 @@ extends HBoxContainer
 const HANDLE_COLOR: Color = Color(0.823529, 0.831373, 0.756863, 1.0)
 const NAME_COLOR: Color = Color(0.980392, 0.94902, 0.870588, 1.0)
 const PLAYER_REPRESENTATION_COLORS: Array[Color] = [
+    Color(0.658824, 0.847059, 1.0, 1.0),
     Color(0.0, 0.784314, 0.32549, 1.0),
     Color(0.0, 0.690196, 1.0, 1.0),
-    Color(1.0, 0.839216, 0.0, 1.0),
-    Color(1.0, 0.419608, 0.207843, 1.0),
     Color(0.898039, 0.223529, 0.207843, 1.0),
     Color(0.556863, 0.141176, 0.666667, 1.0),
+    Color(1.0, 0.839216, 0.0, 1.0),
 ]
 const DEFAULT_ICON_FRAME: int = 11
 const DEFAULT_COLOR_ID: int = 0
