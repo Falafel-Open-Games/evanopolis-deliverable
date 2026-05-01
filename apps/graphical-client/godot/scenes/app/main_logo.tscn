@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cpmxp51rnmgsr"]
 
-[ext_resource type="Texture2D" uid="uid://fswqge4gw827" path="res://assets/wordmark_v4.png" id="1_vq8rc"]
-[ext_resource type="Texture2D" uid="uid://b02jfjlfjcyde" path="res://assets/avatar_sheet_shadows_removed.png" id="2_k5epq"]
+[ext_resource type="Texture2D" uid="uid://fswqge4gw827" path="res://assets/2d/wordmark_v4.png" id="1_vq8rc"]
+[ext_resource type="Texture2D" uid="uid://b02jfjlfjcyde" path="res://assets/2d/avatar_sheet_shadows_removed.png" id="2_k5epq"]
 
 [node name="MainLogo" type="MarginContainer" unique_id=2033182455]
 size_flags_horizontal = 4

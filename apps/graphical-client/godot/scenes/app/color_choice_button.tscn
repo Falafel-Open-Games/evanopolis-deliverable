@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bnus4dxwk52xs"]
 
-[ext_resource type="Texture2D" uid="uid://du3jhapf4vij1" path="res://assets/hexagon.png" id="1_n20uo"]
+[ext_resource type="Texture2D" uid="uid://du3jhapf4vij1" path="res://assets/2d/hexagon.png" id="1_n20uo"]
 [ext_resource type="Texture2D" uid="uid://n6xoyw3wqs5l" path="res://import/kenney_ui-pack/Green/icon_checkmark.svg" id="3_bkhvy"]
 
 [node name="ColorChoiceButton" type="Button" unique_id=1112465227]

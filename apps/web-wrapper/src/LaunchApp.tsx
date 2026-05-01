@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { clearLaunchPayload, loadLaunchPayload } from "./lib/launch";
+import { signInWithWallet } from "./lib/auth";
+import {
+  buildLaunchPayload,
+  clearLaunchPayload,
+  loadLaunchPayload,
+  saveLaunchPayload,
+} from "./lib/launch";
 import {
   buildLaunchPayloadMessage,
   parseOpenGameHostMessage,
@@ -15,9 +21,20 @@ function buildGraphicalClientUrl(configuredUrl: string): string {
   return new URL(configuredUrl, window.location.origin).toString();
 }
 
+function loadRequestedGameId(): string | null {
+  const gameId = new URL(window.location.href).searchParams.get("game_id");
+  if (gameId === null) {
+    return null;
+  }
+
+  const normalizedGameId = gameId.trim();
+  return normalizedGameId.length > 0 ? normalizedGameId : null;
+}
+
 export function LaunchApp() {
-  const launchPayload = useMemo(() => loadLaunchPayload(), []);
   const runtimeConfig = useMemo(() => getRuntimeConfig(), []);
+  const requestedGameId = useMemo(() => loadRequestedGameId(), []);
+  const [launchPayload, setLaunchPayload] = useState(() => loadLaunchPayload());
   const graphicalClientUrl = useMemo(() => {
     const configuredUrl = runtimeConfig.graphicalClientUrl.trim();
     if (configuredUrl.length === 0) {
@@ -31,6 +48,8 @@ export function LaunchApp() {
   );
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [isBridgeBound, setIsBridgeBound] = useState(false);
+  const [isRecoveringLaunch, setIsRecoveringLaunch] = useState(false);
+  const [recoveryMessage, setRecoveryMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setIsBridgeBound(true);
@@ -80,19 +99,73 @@ export function LaunchApp() {
     window.location.assign(buildLandingUrl());
   }
 
+  async function handleReconnectWallet() {
+    if (requestedGameId === null) {
+      return;
+    }
+
+    setIsRecoveringLaunch(true);
+    setRecoveryMessage("Reconnecting wallet and rebuilding launch session...");
+
+    try {
+      const session = await signInWithWallet(runtimeConfig);
+      const recoveredLaunchPayload = buildLaunchPayload({
+        runtimeConfig,
+        token: session.token,
+        gameId: requestedGameId,
+        playerAddress: session.address,
+      });
+      saveLaunchPayload(recoveredLaunchPayload);
+      setLaunchPayload(recoveredLaunchPayload);
+      setRecoveryMessage(null);
+    } catch (error) {
+      setRecoveryMessage(
+        error instanceof Error
+          ? error.message
+          : "Could not rebuild the launch session.",
+      );
+    } finally {
+      setIsRecoveringLaunch(false);
+    }
+  }
+
   return (
     <main className="launch-shell">
       {launchPayload === null ? (
         <section className="launch-fallback">
           <div className="status-block">
-            <p>The game session is not available anymore.</p>
-            <p>Return to the wrapper and launch the match again.</p>
+            {requestedGameId === null ? (
+              <>
+                <p>The game session is not available anymore.</p>
+                <p>Return to the wrapper and launch the match again.</p>
+              </>
+            ) : (
+              <>
+                <p>The saved launch session for this room is missing.</p>
+                <p>
+                  Reconnect the wallet to rebuild launch access for room{" "}
+                  <code>{requestedGameId}</code>.
+                </p>
+              </>
+            )}
           </div>
           <div className="button-row">
+            {requestedGameId !== null ? (
+              <button
+                type="button"
+                onClick={() => void handleReconnectWallet()}
+                disabled={isRecoveringLaunch}
+              >
+                {isRecoveringLaunch ? "Reconnecting..." : "Reconnect Wallet"}
+              </button>
+            ) : null}
             <button type="button" onClick={handleReturnHome}>
               Return Home
             </button>
           </div>
+          {recoveryMessage !== null ? (
+            <p className="inline-note">{recoveryMessage}</p>
+          ) : null}
         </section>
       ) : graphicalClientUrl === null ? (
         <section className="launch-fallback">

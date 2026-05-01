@@ -12,6 +12,9 @@ export default defineConfig({
     server: {
         host: "127.0.0.1",
         allowedHosts: [".falafel.com.br"],
+        headers: {
+            "Cache-Control": "no-store",
+        },
         proxy: {
             "/__auth_proxy__": {
                 target: authProxyTarget,

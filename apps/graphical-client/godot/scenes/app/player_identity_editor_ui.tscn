@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://bnus4dxwk52xs" path="res://scenes/app/color_choice_button.tscn" id="3_0htto"]
 [ext_resource type="Script" uid="uid://drhatq0d6t6wn" path="res://scripts/app/player_identity_editor_ui.gd" id="4_ui76g"]
 [ext_resource type="Texture2D" uid="uid://k2r3dp5lblhc" path="res://import/kenney_ui-pack/Green/arrow_basic_w_small.svg" id="6_jkqhr"]
-[ext_resource type="Texture2D" uid="uid://b02jfjlfjcyde" path="res://assets/avatar_sheet_shadows_removed.png" id="7_i4i5s"]
+[ext_resource type="Texture2D" uid="uid://b02jfjlfjcyde" path="res://assets/2d/avatar_sheet_shadows_removed.png" id="7_i4i5s"]
 [ext_resource type="Texture2D" uid="uid://chfimcj8ayfos" path="res://import/kenney_ui-pack/Green/arrow_basic_e_small.svg" id="7_oa7ob"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_0w0a0"]

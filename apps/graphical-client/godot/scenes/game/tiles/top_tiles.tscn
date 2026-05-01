@@ -1,12 +1,12 @@
 [gd_scene format=3 uid="uid://d0e787kgdf1op"]
 
-[ext_resource type="PackedScene" uid="uid://xjde2dq2y1bw" path="res://assets/tiles.glb" id="1_0jgw5"]
-[ext_resource type="Material" uid="uid://dlpt3r2ybtgig" path="res://assets/Material.005.tres" id="2_3ahh0"]
-[ext_resource type="Material" uid="uid://b6w1lys6otm4u" path="res://assets/Material.006.tres" id="3_1pit0"]
-[ext_resource type="Material" uid="uid://barkeomrhlrr6" path="res://assets/Material.001.tres" id="4_opiio"]
-[ext_resource type="Material" uid="uid://c5rm4loig0d7u" path="res://assets/Material.002.tres" id="5_u4hqu"]
-[ext_resource type="Material" uid="uid://cqjpxmc2cna0q" path="res://assets/Material.003.tres" id="6_0pxr5"]
-[ext_resource type="Material" uid="uid://br5ah2uacwsi5" path="res://assets/Material.004.tres" id="7_1yfxl"]
+[ext_resource type="PackedScene" uid="uid://xjde2dq2y1bw" path="res://assets/blender/tiles.glb" id="1_0jgw5"]
+[ext_resource type="Material" uid="uid://dlpt3r2ybtgig" path="res://assets/blender/Material.005.tres" id="2_3ahh0"]
+[ext_resource type="Material" uid="uid://b6w1lys6otm4u" path="res://assets/blender/Material.006.tres" id="3_1pit0"]
+[ext_resource type="Material" uid="uid://barkeomrhlrr6" path="res://assets/blender/Material.001.tres" id="4_opiio"]
+[ext_resource type="Material" uid="uid://c5rm4loig0d7u" path="res://assets/blender/Material.002.tres" id="5_u4hqu"]
+[ext_resource type="Material" uid="uid://cqjpxmc2cna0q" path="res://assets/blender/Material.003.tres" id="6_0pxr5"]
+[ext_resource type="Material" uid="uid://br5ah2uacwsi5" path="res://assets/blender/Material.004.tres" id="7_1yfxl"]
 
 [node name="tiles" unique_id=819160410 instance=ExtResource("1_0jgw5")]
 

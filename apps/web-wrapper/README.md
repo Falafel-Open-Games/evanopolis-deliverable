@@ -85,7 +85,8 @@ The wrapper currently reads these Vite env vars:
 - `VITE_DEV_SKIP_PAYMENT`
 
 `VITE_DEV_SKIP_PAYMENT=true` is a development-only quality-of-life flag that
-lets the wrapper show `Launch Game` without payment verification. It should not
+lets the wrapper show `Launch Game` without payment verification while keeping
+the payment actions available for demo and integration testing. It should not
 be enabled in staging or production.
 
 For the current repo-level local path, see

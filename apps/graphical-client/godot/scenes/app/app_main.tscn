@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://o3sbn02exjjd" path="res://scripts/app/app_boot.gd" id="1_5rii6"]
 [ext_resource type="Script" uid="uid://cjvsqspi84ux" path="res://scripts/app/session_check.gd" id="1_session"]
 [ext_resource type="Script" uid="uid://bjyq17k441t31" path="res://scripts/app/app_main_view.gd" id="3_app_main_view"]
-[ext_resource type="Texture2D" uid="uid://dhhnmhvyt71oy" path="res://assets/title_screen.png" id="4_title_screen"]
+[ext_resource type="Texture2D" uid="uid://dhhnmhvyt71oy" path="res://assets/2d/title_screen.png" id="4_title_screen"]
 [ext_resource type="PackedScene" uid="uid://cw4dp7gsv7jn4" path="res://scenes/app/waiting_room.tscn" id="5_waiting_room"]
 
 [node name="HeadlessRpc" type="Node" unique_id=1513789639 node_paths=PackedStringArray("boot_node")]
