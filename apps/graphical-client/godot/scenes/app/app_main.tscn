@@ -39,6 +39,15 @@ texture = ExtResource("4_title_screen")
 expand_mode = 1
 stretch_mode = 6
 
+[node name="ModalShade" type="ColorRect" parent="AppMainView" unique_id=421205389]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0156863, 0.0313726, 0.0470588, 0.68)
+
 [node name="BackgroundShade" type="ColorRect" parent="AppMainView" unique_id=678504966]
 layout_mode = 1
 anchors_preset = 15
@@ -107,12 +116,3 @@ grow_vertical = 2
 
 [node name="WaitingRoomRoot" parent="AppMainView/WaitingRoomMount" unique_id=1242303975 instance=ExtResource("5_waiting_room")]
 layout_mode = 1
-
-[node name="ModalShade" type="ColorRect" parent="AppMainView" unique_id=421205389]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.0156863, 0.0313726, 0.0470588, 0.68)

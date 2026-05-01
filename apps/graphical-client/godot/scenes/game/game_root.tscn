@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://bs4isqdfffe5o" path="res://scenes/game/pawns/pawns.tscn" id="4_0krdv"]
 [ext_resource type="PackedScene" uid="uid://dxfoynfa302k7" path="res://scenes/app/panel_blurried_bg.tscn" id="7_k63du"]
 [ext_resource type="FontFile" uid="uid://48vhvynb4wuw" path="res://fonts/Noto_Emoji/static/NotoEmoji-Light.ttf" id="8_k63du"]
+[ext_resource type="PackedScene" uid="uid://fgk2cmer2rch" path="res://scenes/game/hud/player_list_card.tscn" id="10_ndy65"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_f3gwi"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -111,6 +112,7 @@ layout_mode = 2
 
 [node name="PlayersList" type="MarginContainer" parent="HudRoot/SafeMargin" unique_id=1753560605]
 clip_contents = true
+custom_minimum_size = Vector2(210, 260)
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 8
@@ -120,6 +122,19 @@ script = ExtResource("2_players_list")
 layout_mode = 2
 
 [node name="Panel" type="Panel" parent="HudRoot/SafeMargin/PlayersList" unique_id=1839899662]
+layout_mode = 2
+
+[node name="MarginContainer2" type="MarginContainer" parent="HudRoot/SafeMargin/PlayersList" unique_id=1942591192]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+
+[node name="PlayerListSeats" type="VBoxContainer" parent="HudRoot/SafeMargin/PlayersList/MarginContainer2" unique_id=1565819270]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="PlayerListCard" parent="HudRoot/SafeMargin/PlayersList/MarginContainer2/PlayerListSeats" unique_id=797456748 instance=ExtResource("10_ndy65")]
 layout_mode = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="HudRoot/SafeMargin/PlayersList" unique_id=1183429703]

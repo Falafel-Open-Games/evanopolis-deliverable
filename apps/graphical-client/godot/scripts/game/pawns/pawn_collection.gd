@@ -196,7 +196,7 @@ func _build_tile_entry(tile_instance: Node3D) -> Dictionary:
     }
 
 func _tile_point_global_position(
-    tile_instance: Node3D,
+    _tile_instance: Node3D,
     tile_anchor: Node3D,
     tile_mesh: MeshInstance3D
 ) -> Vector3:

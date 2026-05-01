@@ -1,0 +1,76 @@
+[gd_scene format=3 uid="uid://fgk2cmer2rch"]
+
+[ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="1_a1b8l"]
+[ext_resource type="Script" uid="uid://cpa5t6lr0s6iy" path="res://scripts/game/hud/player_list_card.gd" id="1_player_list_card_script"]
+[ext_resource type="PackedScene" uid="uid://b330i3pu36cjv" path="res://scenes/app/avatar_box.tscn" id="2_y1p3n"]
+
+[node name="PlayerListCard" type="MarginContainer" unique_id=797456748]
+script = ExtResource("1_player_list_card_script")
+
+[node name="SlotIndex" type="Label" parent="." unique_id=1878024584]
+layout_mode = 2
+theme = ExtResource("1_a1b8l")
+theme_type_variation = &"SubsectionTitle"
+text = "1"
+
+[node name="SeatRow" type="HBoxContainer" parent="." unique_id=171814966]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 8
+
+[node name="AvatarBox" parent="SeatRow" unique_id=1845499584 instance=ExtResource("2_y1p3n")]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SeatRow" unique_id=158760046]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DisplayNameLabel" type="Label" parent="SeatRow/VBoxContainer" unique_id=392847265]
+layout_mode = 2
+size_flags_vertical = 10
+theme = ExtResource("1_a1b8l")
+theme_type_variation = &"SubsectionTitle"
+text = "Player"
+clip_text = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SeatRow/VBoxContainer" unique_id=146044422]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="FiatValue" type="Label" parent="SeatRow/VBoxContainer/HBoxContainer" unique_id=300054698]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 6
+theme = ExtResource("1_a1b8l")
+theme_type_variation = &"ResourceLabel"
+theme_override_colors/font_color = Color(0.015686275, 0.8, 0.68235296, 1)
+theme_override_font_sizes/font_size = 9
+text = "$ 100_000"
+
+[node name="VSeparator" type="VSeparator" parent="SeatRow/VBoxContainer/HBoxContainer" unique_id=1018820269]
+layout_mode = 2
+
+[node name="EnergyValue" type="Label" parent="SeatRow/VBoxContainer/HBoxContainer" unique_id=2115449414]
+layout_mode = 2
+size_flags_vertical = 6
+theme = ExtResource("1_a1b8l")
+theme_type_variation = &"ResourceLabel"
+theme_override_colors/font_color = Color(0.98039216, 0.68235296, 0.28627452, 1)
+theme_override_font_sizes/font_size = 9
+text = "⚡ 0"
+horizontal_alignment = 1
+
+[node name="VSeparator2" type="VSeparator" parent="SeatRow/VBoxContainer/HBoxContainer" unique_id=1349065794]
+layout_mode = 2
+
+[node name="BitcoinValue" type="Label" parent="SeatRow/VBoxContainer/HBoxContainer" unique_id=2100366553]
+layout_mode = 2
+size_flags_horizontal = 8
+theme = ExtResource("1_a1b8l")
+theme_type_variation = &"ResourceLabel"
+theme_override_colors/font_color = Color(0.9137255, 0.5372549, 0.3254902, 1)
+theme_override_font_sizes/font_size = 9
+text = "₿ 0/20"
+horizontal_alignment = 2

@@ -23,6 +23,7 @@ class_name SessionCheck
 ## expanding this file into a general-purpose match-state module.
 
 const StatusCardState = preload("res://scripts/app/models/status_view_state.gd")
+const GamePlayerHudStateModel = preload("res://scripts/app/models/game_player_hud_state.gd")
 const LaunchPayloadModel = preload("res://scripts/app/models/launch_payload.gd")
 const WaitingRoomStateModel = preload("res://scripts/app/models/waiting_room_state.gd")
 const WaitingRoomSlotModel = preload("res://scripts/app/models/waiting_room_slot.gd")
@@ -34,6 +35,7 @@ const DEFAULT_IDENTITY_COLOR_ID: int = 0
 signal session_state_changed(state: StatusCardState)
 signal waiting_room_state_changed(state: WaitingRoomStateModel)
 signal gameplay_turn_state_changed(turn_state: Dictionary)
+signal gameplay_player_states_changed(states: Array)
 
 enum SessionPhase {
     WAITING_FOR_LAUNCH,
@@ -70,9 +72,13 @@ var _session_transport: SessionTransport
 var _room_game_id: String
 var _room_capacity: int
 var _known_player_ids: Dictionary = { }
+var _joined_players: Dictionary = { }
 var _known_player_display_names: Dictionary = { }
 var _known_player_icon_ids: Dictionary = { }
 var _known_player_color_ids: Dictionary = { }
+var _player_fiat_balances: Dictionary = { }
+var _player_energy_balances: Dictionary = { }
+var _player_bitcoin_balances: Dictionary = { }
 var _ready_players: Array = []
 var _current_turn_number: int = 1
 var _current_turn_player_index: int = 0
@@ -118,6 +124,28 @@ func get_gameplay_turn_state() -> Dictionary:
         "current_player_name": current_player_name,
         "is_local_turn": _current_turn_player_index == _local_player_index,
     }
+
+func get_gameplay_player_states() -> Array:
+    var states: Array = []
+    var joined_player_indices: Array = _joined_players.keys()
+    joined_player_indices.sort()
+    for player_index_variant in joined_player_indices:
+        var player_index: int = int(player_index_variant)
+        if not bool(_joined_players.get(player_index, false)):
+            continue
+        states.append(
+            GamePlayerHudStateModel.new(
+                player_index,
+                _gameplay_display_name(player_index),
+                player_index == _local_player_index,
+                _player_icon_id(player_index),
+                _player_color_id(player_index),
+                float(_player_fiat_balances.get(player_index, 0.0)),
+                int(_player_energy_balances.get(player_index, 0)),
+                float(_player_bitcoin_balances.get(player_index, 0.0))
+            )
+        )
+    return _clone_gameplay_player_states(states)
 
 func is_waiting_for_launch() -> bool:
     return _phase == SessionPhase.WAITING_FOR_LAUNCH
@@ -199,9 +227,13 @@ func _on_launch_payload_received(payload: LaunchPayloadModel) -> void:
     _room_game_id = payload._game_id
     _room_capacity = 0
     _known_player_ids.clear()
+    _joined_players.clear()
     _known_player_display_names.clear()
     _known_player_icon_ids.clear()
     _known_player_color_ids.clear()
+    _player_fiat_balances.clear()
+    _player_energy_balances.clear()
+    _player_bitcoin_balances.clear()
     _ready_players.clear()
     _current_turn_number = 1
     _current_turn_player_index = 0
@@ -309,6 +341,7 @@ func rpc_state_snapshot(_seq: int, snapshot: Dictionary) -> void:
     _current_turn_player_index = int(snapshot.get("current_player_index", _current_turn_player_index))
     _apply_waiting_room_snapshot(snapshot)
     _emit_gameplay_turn_state()
+    _emit_gameplay_player_states()
 
 @rpc("authority")
 func rpc_sync_complete(_seq: int, _final_seq: int) -> void:
@@ -339,8 +372,10 @@ func rpc_sync_complete(_seq: int, _final_seq: int) -> void:
 @rpc("authority")
 func rpc_player_joined(_seq: int, player_id: String, player_index: int) -> void:
     _known_player_ids[player_index] = player_id
+    _joined_players[player_index] = true
     if _phase == SessionPhase.READY:
         _emit_waiting_room_state()
+    _emit_gameplay_player_states()
 
 @rpc("authority")
 func rpc_player_ready_state(
@@ -374,6 +409,19 @@ func rpc_player_identity_changed(
         _waiting_room_note = ""
     if _phase == SessionPhase.READY:
         _emit_waiting_room_state()
+    _emit_gameplay_player_states()
+
+@rpc("authority")
+func rpc_player_balance_changed(
+    _seq: int,
+    player_index: int,
+    fiat_delta: float,
+    btc_delta: float,
+    _reason: String
+) -> void:
+    _player_fiat_balances[player_index] = float(_player_fiat_balances.get(player_index, 0.0)) + fiat_delta
+    _player_bitcoin_balances[player_index] = float(_player_bitcoin_balances.get(player_index, 0.0)) + btc_delta
+    _emit_gameplay_player_states()
 
 @rpc("authority")
 func rpc_game_started(_seq: int, _new_game_id: String) -> void:
@@ -384,6 +432,7 @@ func rpc_game_started(_seq: int, _new_game_id: String) -> void:
         "The server has started the match and the waiting room is handing off to the gameplay scene.",
         "The gameplay root now owns the player-facing match presentation."
     )
+    _emit_gameplay_player_states()
 
 @rpc("authority")
 func rpc_turn_started(_seq: int, player_index: int, turn_number: int, _cycle: int) -> void:
@@ -421,13 +470,18 @@ func _apply_waiting_room_snapshot(snapshot: Dictionary) -> void:
         var player_index: int = int(player_in_snapshot.get("player_index", -1))
         if player_index < 0 or player_index >= _room_capacity:
             continue
-        if bool(player_in_snapshot.get("joined", false)):
+        var is_joined: bool = bool(player_in_snapshot.get("joined", false))
+        _joined_players[player_index] = is_joined
+        if is_joined:
             var player_id: String = str(player_in_snapshot.get("player_id", ""))
             if not player_id.is_empty():
                 _known_player_ids[player_index] = player_id
         _known_player_display_names[player_index] = str(player_in_snapshot.get("display_name", ""))
         _known_player_icon_ids[player_index] = int(player_in_snapshot.get("icon_id", -1))
         _known_player_color_ids[player_index] = int(player_in_snapshot.get("color_id", -1))
+        _player_fiat_balances[player_index] = float(player_in_snapshot.get("fiat_balance", 0.0))
+        _player_energy_balances[player_index] = int(player_in_snapshot.get("energy_balance", player_in_snapshot.get("energy", 0)))
+        _player_bitcoin_balances[player_index] = float(player_in_snapshot.get("bitcoin_balance", 0.0))
         if bool(player_in_snapshot.get("ready", false)):
             _ready_players[player_index] = true
     _emit_waiting_room_state()
@@ -504,6 +558,9 @@ func _emit_waiting_room_state() -> void:
 func _emit_gameplay_turn_state() -> void:
     gameplay_turn_state_changed.emit(get_gameplay_turn_state())
 
+func _emit_gameplay_player_states() -> void:
+    gameplay_player_states_changed.emit(get_gameplay_player_states())
+
 func _is_player_ready(player_index: int) -> bool:
     if player_index < 0 or player_index >= _ready_players.size():
         return false
@@ -538,6 +595,20 @@ func _player_color_id(player_index: int) -> int:
     if color_id < 0:
         return DEFAULT_IDENTITY_COLOR_ID
     return color_id
+
+func _gameplay_display_name(player_index: int) -> String:
+    var display_name: String = _player_display_name(player_index)
+    if not display_name.is_empty():
+        return display_name
+    if player_index == _local_player_index:
+        return "You"
+    return "Player %d" % (player_index + 1)
+
+func _clone_gameplay_player_states(states: Array) -> Array:
+    var cloned_states: Array = []
+    for state_variant in states:
+        cloned_states.append(state_variant.clone())
+    return cloned_states
 
 
 func _try_schedule_retry(message: String) -> bool:
