@@ -2,6 +2,7 @@ class_name HeadlessServer
 extends RefCounted
 
 const GameMatch = preload("res://scripts/match.gd")
+const MatchPersistence = preload("res://scripts/match_persistence.gd")
 const NetworkClient = preload("res://scripts/network_client.gd")
 const Config = preload("res://scripts/config.gd")
 
@@ -120,6 +121,7 @@ class NullClient:
 var matches: Dictionary
 var peer_slots: Dictionary
 var authorized_peers: Dictionary
+var match_persistence: MatchPersistence = null
 
 
 func _init() -> void:
@@ -131,6 +133,7 @@ func _init() -> void:
 func create_match(config: Config, require_explicit_ready: bool = false) -> GameMatch:
     var game_match: GameMatch = GameMatch.new(config, [], require_explicit_ready)
     matches[config.game_id] = game_match
+    _persist_match(game_match)
     return game_match
 
 
@@ -161,6 +164,7 @@ func register_remote_client(game_id: String, player_id: String, peer_id: int, se
         "player_id": player_id,
         "player_index": int(result.get("player_index", -1)),
     }
+    _persist_match(game_match)
     result["seq"] = 0
     return result
 
@@ -178,6 +182,7 @@ func revoke_peer(peer_id: int) -> void:
         var game_match: GameMatch = matches.get(game_id, null)
         if game_match != null:
             game_match.detach_client(player_id, player_index)
+            _persist_match(game_match)
     authorized_peers.erase(peer_id)
     peer_slots.erase(peer_id)
 
@@ -199,6 +204,7 @@ func rpc_roll_dice(game_id: String, player_id: String, sender_peer_id: int = -1)
         if str(slot.get("player_id", "")) != player_id:
             return { "reason": "peer_player_mismatch", "seq": 0 }
     game_match.rpc_roll_dice(game_id, player_id)
+    _persist_match(game_match)
     return { "reason": "", "seq": 0 }
 
 
@@ -217,6 +223,7 @@ func rpc_player_ready(game_id: String, player_id: String, sender_peer_id: int = 
     var reason: String = game_match.rpc_player_ready(game_id, player_id)
     if not reason.is_empty():
         return { "reason": reason, "seq": 0 }
+    _persist_match(game_match)
     return { "reason": "", "seq": 0 }
 
 
@@ -242,6 +249,7 @@ func rpc_set_player_identity(
     var reason: String = game_match.rpc_set_player_identity(game_id, player_id, display_name, icon_id, color_id)
     if not reason.is_empty():
         return { "reason": reason, "seq": 0 }
+    _persist_match(game_match)
     return { "reason": "", "seq": 0 }
 
 
@@ -260,6 +268,7 @@ func rpc_end_turn(game_id: String, player_id: String, sender_peer_id: int = -1) 
     var reason: String = game_match.rpc_end_turn(game_id, player_id)
     if not reason.is_empty():
         return { "reason": reason, "seq": 0 }
+    _persist_match(game_match)
     return { "reason": "", "seq": 0 }
 
 
@@ -278,6 +287,7 @@ func rpc_buy_property(game_id: String, player_id: String, tile_index: int, sende
     var reason: String = game_match.rpc_buy_property(game_id, player_id, tile_index)
     if not reason.is_empty():
         return { "reason": reason, "seq": 0 }
+    _persist_match(game_match)
     return { "reason": "", "seq": 0 }
 
 
@@ -296,6 +306,7 @@ func rpc_buy_miner_batch(game_id: String, player_id: String, tile_index: int, se
     var reason: String = game_match.rpc_buy_miner_batch(game_id, player_id, tile_index)
     if not reason.is_empty():
         return { "reason": reason, "seq": 0 }
+    _persist_match(game_match)
     return { "reason": "", "seq": 0 }
 
 
@@ -314,6 +325,7 @@ func rpc_pay_toll(game_id: String, player_id: String, sender_peer_id: int = -1) 
     var reason: String = game_match.rpc_pay_toll(game_id, player_id)
     if not reason.is_empty():
         return { "reason": reason, "seq": 0 }
+    _persist_match(game_match)
     return { "reason": "", "seq": 0 }
 
 
@@ -332,6 +344,7 @@ func rpc_pay_inspection_fee(game_id: String, player_id: String, sender_peer_id: 
     var reason: String = game_match.rpc_pay_inspection_fee(game_id, player_id)
     if not reason.is_empty():
         return { "reason": reason, "seq": 0 }
+    _persist_match(game_match)
     return { "reason": "", "seq": 0 }
 
 
@@ -350,6 +363,7 @@ func rpc_roll_inspection_exit(game_id: String, player_id: String, sender_peer_id
     var reason: String = game_match.rpc_roll_inspection_exit(game_id, player_id)
     if not reason.is_empty():
         return { "reason": reason, "seq": 0 }
+    _persist_match(game_match)
     return { "reason": "", "seq": 0 }
 
 
@@ -368,6 +382,7 @@ func rpc_use_inspection_voucher(game_id: String, player_id: String, sender_peer_
     var reason: String = game_match.rpc_use_inspection_voucher(game_id, player_id)
     if not reason.is_empty():
         return { "reason": reason, "seq": 0 }
+    _persist_match(game_match)
     return { "reason": "", "seq": 0 }
 
 
@@ -391,6 +406,18 @@ func rpc_sync_request(game_id: String, player_id: String, sender_peer_id: int = 
     }
 
 
+func load_persisted_snapshot(game_id: String) -> Dictionary:
+    if match_persistence == null:
+        return { }
+    return match_persistence.load_snapshot(game_id)
+
+
+func delete_persisted_snapshot(game_id: String) -> void:
+    if match_persistence == null:
+        return
+    match_persistence.delete_snapshot(game_id)
+
+
 func _remove_existing_peer_slot(game_id: String, player_id: String, new_peer_id: int) -> int:
     for existing_peer_id in peer_slots.keys():
         var peer_id_value: int = int(existing_peer_id)
@@ -404,3 +431,9 @@ func _remove_existing_peer_slot(game_id: String, player_id: String, new_peer_id:
         peer_slots.erase(existing_peer_id)
         return peer_id_value
     return -1
+
+
+func _persist_match(game_match: GameMatch) -> void:
+    if match_persistence == null:
+        return
+    match_persistence.save_snapshot(game_match.config.game_id, game_match.build_state_snapshot())

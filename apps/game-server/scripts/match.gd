@@ -803,6 +803,7 @@ func build_state_snapshot() -> Dictionary:
         )
     return {
         "game_id": state.game_id,
+        "last_sequence": last_sequence(),
         "turn_number": state.turn_number,
         "current_player_index": state.current_player_index,
         "current_cycle": state.current_cycle,
@@ -815,6 +816,45 @@ func build_state_snapshot() -> Dictionary:
         "pending_action": pending_action.duplicate(true),
         "ready_count": _ready_player_count(),
     }
+
+
+func restore_from_snapshot(snapshot: Dictionary) -> String:
+    if str(snapshot.get("game_id", "")) != state.game_id:
+        return "invalid_snapshot_game_id"
+    var players_snapshot: Array = snapshot.get("players", [])
+    if players_snapshot.size() != state.players.size():
+        return "invalid_snapshot_player_count"
+
+    state.turn_number = int(snapshot.get("turn_number", state.turn_number))
+    state.current_player_index = int(snapshot.get("current_player_index", state.current_player_index))
+    state.current_cycle = int(snapshot.get("current_cycle", state.current_cycle))
+    has_started = bool(snapshot.get("has_started", false))
+    has_finished = bool(snapshot.get("has_finished", false))
+    winner_index = int(snapshot.get("winner_index", -1))
+    end_reason = str(snapshot.get("end_reason", ""))
+    board_state = snapshot.get("board_state", { }).duplicate(true)
+    pending_action = snapshot.get("pending_action", { }).duplicate(true)
+    next_event_seq = int(snapshot.get("last_sequence", 0)) + 1
+    if next_event_seq < 1:
+        next_event_seq = 1
+
+    for player_index in range(players_snapshot.size()):
+        var player_in_snapshot: Dictionary = players_snapshot[player_index]
+        var restored_player: PlayerState = state.players[player_index]
+        player_ids[player_index] = str(player_in_snapshot.get("player_id", ""))
+        player_ready[player_index] = bool(player_in_snapshot.get("ready", false))
+        restored_player.display_name = str(player_in_snapshot.get("display_name", ""))
+        restored_player.icon_id = int(player_in_snapshot.get("icon_id", -1))
+        restored_player.color_id = int(player_in_snapshot.get("color_id", -1))
+        restored_player.fiat_balance = float(player_in_snapshot.get("fiat_balance", restored_player.fiat_balance))
+        restored_player.bitcoin_balance = float(player_in_snapshot.get("bitcoin_balance", restored_player.bitcoin_balance))
+        restored_player.position = int(player_in_snapshot.get("position", restored_player.position))
+        restored_player.laps = int(player_in_snapshot.get("laps", restored_player.laps))
+        restored_player.in_inspection = bool(player_in_snapshot.get("in_inspection", restored_player.in_inspection))
+        restored_player.inspection_free_exits = int(
+            player_in_snapshot.get("inspection_free_exits", restored_player.inspection_free_exits)
+        )
+    return ""
 
 func _set_pending_action(action_type: String, tile_index: int, metadata: Dictionary = { }) -> void:
     pending_action = {

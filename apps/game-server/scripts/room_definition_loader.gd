@@ -20,5 +20,12 @@ static func hydrate_match(
         return "invalid_room_definition"
     if server.matches.has(config.game_id):
         return ""
-    server.create_match(config, require_explicit_ready)
+    var persisted_snapshot: Dictionary = server.load_persisted_snapshot(config.game_id)
+    var game_match = server.create_match(config, require_explicit_ready)
+    if persisted_snapshot.is_empty():
+        return ""
+    var restore_reason: String = game_match.restore_from_snapshot(persisted_snapshot)
+    if restore_reason.is_empty():
+        return ""
+    server.delete_persisted_snapshot(config.game_id)
     return ""

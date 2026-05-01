@@ -1,6 +1,7 @@
 extends "res://scripts/headless_rpc.gd"
 
 const HeadlessServer = preload("res://scripts/server.gd")
+const MatchPersistence = preload("res://scripts/match_persistence.gd")
 const RoomDefinitionLoader = preload("res://scripts/room_definition_loader.gd")
 
 const DEFAULT_PORT: int = 9010
@@ -13,6 +14,7 @@ var auth_base_url: String = ""
 var auth_verify_path: String = DEFAULT_AUTH_VERIFY_PATH
 var rooms_api_base_url: String = ""
 var rooms_api_lookup_template: String = DEFAULT_ROOMS_API_LOOKUP_TEMPLATE
+var match_state_dir: String = "user://match_state"
 var pending_room_lookups: Dictionary = { }
 
 
@@ -54,6 +56,11 @@ func _parse_args(args: PackedStringArray) -> void:
         env_rooms_lookup_template = str(env_vars.get("ROOMS_API_LOOKUP_TEMPLATE", ""))
     if not env_rooms_lookup_template.is_empty():
         rooms_api_lookup_template = env_rooms_lookup_template
+    var env_match_state_dir: String = str(OS.get_environment("MATCH_STATE_DIR"))
+    if env_match_state_dir.is_empty() and env_vars.has("MATCH_STATE_DIR"):
+        env_match_state_dir = str(env_vars.get("MATCH_STATE_DIR", ""))
+    if not env_match_state_dir.is_empty():
+        match_state_dir = env_match_state_dir
     while index < args.size():
         var arg: String = args[index]
         if arg == "--port" and index + 1 < args.size():
@@ -74,6 +81,10 @@ func _parse_args(args: PackedStringArray) -> void:
             continue
         if arg == "--rooms-api-lookup-template" and index + 1 < args.size():
             rooms_api_lookup_template = args[index + 1]
+            index += 2
+            continue
+        if arg == "--match-state-dir" and index + 1 < args.size():
+            match_state_dir = args[index + 1]
             index += 2
             continue
         index += 1
@@ -108,10 +119,12 @@ func _log_auth_config() -> void:
     print("server: auth verify url=%s%s" % [auth_base_url, auth_verify_path])
     if not rooms_api_base_url.is_empty():
         print("server: rooms api lookup url=%s%s" % [rooms_api_base_url, rooms_api_lookup_template % ["<game_id>"]])
+    print("server: match state dir=%s" % match_state_dir)
 
 
 func _start_server() -> void:
     server = HeadlessServer.new()
+    server.match_persistence = MatchPersistence.new(match_state_dir)
     var peer: WebSocketMultiplayerPeer = WebSocketMultiplayerPeer.new()
     var result: int = peer.create_server(port, "0.0.0.0")
     assert(result == OK)
