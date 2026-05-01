@@ -50,9 +50,14 @@ function getInitialStatusMessage(args: {
   authSession: AuthSession | null;
   referrerAddress: string | null;
   hasPaymentConfig: boolean;
+  devSkipPayment: boolean;
 }): string {
   if (args.authSession === null) {
     return "Connect your wallet first. Entry payment is required before launch.";
+  }
+
+  if (args.devSkipPayment) {
+    return "Development payment bypass is enabled. You can launch without submitting entry payment.";
   }
 
   if (!args.hasPaymentConfig) {
@@ -107,6 +112,7 @@ export function JoinGamePanel({
     runtimeConfig.paymentTokenAddress.trim().length > 0 &&
     runtimeConfig.paymentHandlerAddress.trim().length > 0 &&
     runtimeConfig.paymentAdapterAddress.trim().length > 0;
+  const isPaymentBypassed = runtimeConfig.devSkipPayment;
   const requiredEntryFee = BigInt(entryFeeAmount);
   const [allowance, setAllowance] = useState<bigint | null>(null);
   const [tokenBalance, setTokenBalance] = useState<bigint | null>(null);
@@ -119,6 +125,7 @@ export function JoinGamePanel({
       authSession,
       referrerAddress: normalizedReferrerAddress,
       hasPaymentConfig,
+      devSkipPayment: isPaymentBypassed,
     }),
   );
   const [isRefreshingAllowance, setIsRefreshingAllowance] =
@@ -130,6 +137,7 @@ export function JoinGamePanel({
     tokenBalance !== null && tokenBalance >= requiredEntryFee;
   const canPay =
     allowance !== null && allowance >= requiredEntryFee && hasEnoughBalance;
+  const canLaunch = verifiedPayment !== null || isPaymentBypassed;
   const launchPayload =
     authSession === null
       ? null
@@ -157,6 +165,7 @@ export function JoinGamePanel({
           authSession,
           referrerAddress: normalizedReferrerAddress,
           hasPaymentConfig,
+          devSkipPayment: isPaymentBypassed,
         }),
       );
       return;
@@ -174,9 +183,10 @@ export function JoinGamePanel({
               authSession,
               referrerAddress: normalizedReferrerAddress,
               hasPaymentConfig,
+              devSkipPayment: isPaymentBypassed,
             }),
     );
-  }, [authSession, gameId, hasPaymentConfig, normalizedReferrerAddress]);
+  }, [authSession, gameId, hasPaymentConfig, isPaymentBypassed, normalizedReferrerAddress]);
 
   useEffect(() => {
     if (authSession === null) {
@@ -195,7 +205,7 @@ export function JoinGamePanel({
   }, [authSession, gameId, paymentTxHash, verifiedPayment]);
 
   useEffect(() => {
-    if (authSession === null || !hasPaymentConfig) {
+    if (authSession === null || !hasPaymentConfig || isPaymentBypassed) {
       return;
     }
 
@@ -237,7 +247,7 @@ export function JoinGamePanel({
     return () => {
       cancelled = true;
     };
-  }, [authSession, hasPaymentConfig, runtimeConfig]);
+  }, [authSession, hasPaymentConfig, isPaymentBypassed, runtimeConfig]);
 
   async function handleRefreshAllowance() {
     if (authSession === null) {
@@ -392,7 +402,12 @@ export function JoinGamePanel({
       <div className="button-row">
         <button
           type="button"
-          disabled={authSession === null || !hasPaymentConfig || isApproving}
+          disabled={
+            authSession === null ||
+            !hasPaymentConfig ||
+            isApproving ||
+            isPaymentBypassed
+          }
           onClick={() => void handleApproveEntryFee()}
         >
           {isApproving ? "Approving..." : "Approve Entry Fee"}
@@ -403,7 +418,8 @@ export function JoinGamePanel({
             authSession === null ||
             !hasPaymentConfig ||
             isPaying ||
-            !canPay
+            !canPay ||
+            isPaymentBypassed
           }
           onClick={() => void handlePayEntryFee()}
         >
@@ -413,7 +429,12 @@ export function JoinGamePanel({
       <div className="button-row">
         <button
           type="button"
-          disabled={authSession === null || !hasPaymentConfig || isRefreshingAllowance}
+          disabled={
+            authSession === null ||
+            !hasPaymentConfig ||
+            isRefreshingAllowance ||
+            isPaymentBypassed
+          }
           onClick={() => void handleRefreshAllowance()}
         >
           {isRefreshingAllowance ? "Checking..." : "Refresh Payment State"}
@@ -423,20 +444,24 @@ export function JoinGamePanel({
           disabled={
             authSession === null ||
             paymentTxHash.trim().length === 0 ||
-            isVerifying
+            isVerifying ||
+            isPaymentBypassed
           }
           onClick={() => void handleVerifyPayment()}
         >
           {isVerifying ? "Verifying..." : "Verify Payment"}
         </button>
       </div>
-      {verifiedPayment !== null ? (
+      {canLaunch ? (
         <>
           <div className="success-banner">
-            <p className="success-title">Payment verified.</p>
+            <p className="success-title">
+              {isPaymentBypassed ? "Development payment bypass enabled." : "Payment verified."}
+            </p>
             <p className="success-copy">
-              This wallet is cleared for room entry and can continue into the
-              match.
+              {isPaymentBypassed
+                ? "This wrapper build is allowing launch without entry payment verification."
+                : "This wallet is cleared for room entry and can continue into the match."}
             </p>
           </div>
           <div className="button-row">
@@ -445,7 +470,14 @@ export function JoinGamePanel({
             </button>
           </div>
           <p className="field-note">
-            Continue into the embedded game client for this room.
+            {isPaymentBypassed ? (
+              <>
+                Disable <code>VITE_DEV_SKIP_PAYMENT</code> to restore the normal
+                payment gate.
+              </>
+            ) : (
+              "Continue into the embedded game client for this room."
+            )}
           </p>
         </>
       ) : null}

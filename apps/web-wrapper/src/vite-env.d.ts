@@ -25,5 +25,6 @@ interface Window {
     paymentTokenAddress?: string;
     paymentHandlerAddress?: string;
     paymentAdapterAddress?: string;
+    devSkipPayment?: boolean;
   };
 }

@@ -7,9 +7,23 @@ export type RuntimeConfig = {
   paymentTokenAddress: string;
   paymentHandlerAddress: string;
   paymentAdapterAddress: string;
+  devSkipPayment: boolean;
 };
 
 type RuntimeConfigOverride = Partial<RuntimeConfig>;
+
+function parseBooleanFlag(value: string | boolean | undefined): boolean {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  const normalizedValue = value.trim().toLowerCase();
+  return normalizedValue === "1" || normalizedValue === "true" || normalizedValue === "yes";
+}
 
 function getDevProxyBaseUrl(proxyPath: string): string {
   return `${window.location.origin}${proxyPath}`;
@@ -112,5 +126,8 @@ export function getRuntimeConfig(): RuntimeConfig {
       runtimeOverride.paymentAdapterAddress?.trim() ||
       import.meta.env.VITE_PAYMENT_ADAPTER_ADDRESS ||
       defaultPaymentAddresses.paymentAdapterAddress,
+    devSkipPayment: parseBooleanFlag(
+      runtimeOverride.devSkipPayment ?? import.meta.env.VITE_DEV_SKIP_PAYMENT,
+    ),
   };
 }

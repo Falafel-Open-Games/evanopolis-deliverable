@@ -82,6 +82,11 @@ The wrapper currently reads these Vite env vars:
 - `VITE_PAYMENT_TOKEN_ADDRESS`
 - `VITE_PAYMENT_HANDLER_ADDRESS`
 - `VITE_PAYMENT_ADAPTER_ADDRESS`
+- `VITE_DEV_SKIP_PAYMENT`
+
+`VITE_DEV_SKIP_PAYMENT=true` is a development-only quality-of-life flag that
+lets the wrapper show `Launch Game` without payment verification. It should not
+be enabled in staging or production.
 
 For the current repo-level local path, see
 [docs/runbooks/local-stack.md](../../docs/runbooks/local-stack.md).
