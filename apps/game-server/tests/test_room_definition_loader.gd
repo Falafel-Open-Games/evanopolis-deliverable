@@ -6,7 +6,7 @@ const MatchPersistence = preload("res://scripts/match_persistence.gd")
 const RoomDefinitionLoader = preload("res://scripts/room_definition_loader.gd")
 
 
-func test_config_load_from_dictionary_uses_experimental_board_size() -> void:
+func test_config_load_from_dictionary_normalizes_board_size_to_18() -> void:
     var config: Config = Config.new("")
     config.load_from_dictionary(
         {
@@ -20,7 +20,7 @@ func test_config_load_from_dictionary_uses_experimental_board_size() -> void:
 
     assert_eq(config.game_id, "room-123", "dictionary load keeps game id")
     assert_eq(config.player_count, 4, "dictionary load keeps player count")
-    assert_eq(config.board_size, 30, "dictionary load uses experimental board size")
+    assert_eq(config.board_size, 18, "dictionary load normalizes to the supported board size")
 
 
 func test_config_load_from_dictionary_falls_back_to_default_board_size() -> void:
@@ -56,7 +56,7 @@ func test_room_definition_loader_creates_missing_match() -> void:
     var game_match = server.matches.get("room-123")
     assert_eq(game_match.config.game_id, "room-123", "hydrated match keeps game id")
     assert_eq(game_match.config.player_count, 3, "hydrated match keeps player count")
-    assert_eq(game_match.config.board_size, 30, "hydrated match keeps board size")
+    assert_eq(game_match.config.board_size, 18, "hydrated match normalizes board size")
     assert_true(game_match.require_explicit_ready, "hydrated matches keep explicit ready flow")
 
 
@@ -99,7 +99,7 @@ func test_room_definition_loader_restores_persisted_match_state_after_restart() 
         "game_id": "room-123",
         "player_count": 2,
         "experimental": {
-            "board_size": 24,
+            "board_size": 18,
         },
     }
 

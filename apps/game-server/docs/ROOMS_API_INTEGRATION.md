@@ -29,7 +29,7 @@ the live match:
 
 - `game_id`
 - `player_count`
-- `experimental.board_size` when present
+- `experimental.turn_duration_seconds` when present
 - `created_at` if room expiration policy later depends on it
 
 The game server should not depend on `rooms-api` for:

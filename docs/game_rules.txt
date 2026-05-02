@@ -50,12 +50,25 @@ BOARD STRUCTURE
 
 Cities / Energy Types:
 
-1. Patagonia → Wind
-2. Ciudad del Este → Hydro
-3. El Salvador → Geothermal (Volcano)
-4. Angra dos Reis → Nuclear
-5. Atacama → Solar
-6. Irkutsk / Iceland → Cold Geothermal
+1. Irkutsk → Cold Geothermal
+2. Patagonia → Wind
+3. Ciudad del Este → Hydro
+4. El Salvador → Geothermal (Volcano)
+5. Angra dos Reis → Nuclear
+6. Atacama → Solar
+
+Hex ring tile order:
+
+- 0-2: Irkutsk
+- 3-5: Patagonia
+- 6-8: Ciudad del Este
+- 9-11: El Salvador
+- 12-14: Angra dos Reis
+- 15-17: Atacama
+
+The ring advances in that city order around the board. Tile naming in the
+server should always follow these six canonical region names, not the legacy
+placeholders from the old board prototype.
 
 --------------------------------------------------
 TURN STRUCTURE

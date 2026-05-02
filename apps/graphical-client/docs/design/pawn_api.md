@@ -47,6 +47,7 @@ Behavior:
 - one imported pawn mesh becomes the reusable geometry template
 - the six imported marker materials become the runtime material templates keyed by `color_id`
 - the six imported transforms become default spawn slots keyed by `color_id`
+- tile indices are resolved from exported `TileInstance_###` node names, never from imported child order
 - current game-scene handoff uses `sync_waiting_room_slots(...)` so known players appear automatically with the correct identity color
 
 ## Current Placement Rule

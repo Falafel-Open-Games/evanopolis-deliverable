@@ -11,7 +11,7 @@ It currently contains:
 
 - the Godot headless server entrypoint
 - the rules engine and match state logic
-- GUT-based tests for match flow, reconnect, incidents, inspection, and auth integration points
+- GUT-based tests for match flow, reconnect, and auth integration points
 - the canonical RPC contract in `docs/RPC_API.md`
 - the rooms-api dependency note in `docs/ROOMS_API_INTEGRATION.md`
 

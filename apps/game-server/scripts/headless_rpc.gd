@@ -27,28 +27,8 @@ func rpc_buy_property(game_id: String, player_id: String, tile_index: int) -> vo
 
 
 @rpc("any_peer")
-func rpc_buy_miner_batch(game_id: String, player_id: String, tile_index: int) -> void:
-    _handle_buy_miner_batch(game_id, player_id, tile_index)
-
-
-@rpc("any_peer")
 func rpc_pay_toll(game_id: String, player_id: String) -> void:
     _handle_pay_toll(game_id, player_id)
-
-
-@rpc("any_peer")
-func rpc_pay_inspection_fee(game_id: String, player_id: String) -> void:
-    _handle_pay_inspection_fee(game_id, player_id)
-
-
-@rpc("any_peer")
-func rpc_roll_inspection_exit(game_id: String, player_id: String) -> void:
-    _handle_roll_inspection_exit(game_id, player_id)
-
-
-@rpc("any_peer")
-func rpc_use_inspection_voucher(game_id: String, player_id: String) -> void:
-    _handle_use_inspection_voucher(game_id, player_id)
 
 
 @rpc("any_peer")
@@ -141,11 +121,6 @@ func rpc_tile_landed(
 
 
 @rpc("authority")
-func rpc_incident_drawn(seq: int, tile_index: int, incident_kind: String, card_id: String, card_text: String) -> void:
-    _handle_incident_drawn(seq, tile_index, incident_kind, card_id, card_text)
-
-
-@rpc("authority")
 func rpc_player_balance_changed(seq: int, player_index: int, fiat_delta: float, btc_delta: float, reason: String) -> void:
     _handle_player_balance_changed(seq, player_index, fiat_delta, btc_delta, reason)
 
@@ -156,45 +131,13 @@ func rpc_cycle_started(seq: int, cycle: int, inflation_active: bool) -> void:
 
 
 @rpc("authority")
-func rpc_incident_type_changed(seq: int, tile_index: int, incident_kind: String) -> void:
-    _handle_incident_type_changed(seq, tile_index, incident_kind)
-
-
-@rpc("authority")
 func rpc_property_acquired(seq: int, player_index: int, tile_index: int, price: float) -> void:
     _handle_property_acquired(seq, player_index, tile_index, price)
 
 
 @rpc("authority")
-func rpc_miner_batches_added(seq: int, player_index: int, tile_index: int, count: int) -> void:
-    _handle_miner_batches_added(seq, player_index, tile_index, count)
-
-
-@rpc("authority")
-func rpc_mining_reward(
-        seq: int,
-        owner_index: int,
-        tile_index: int,
-        miner_batches: int,
-        btc_reward: float,
-        reason: String,
-) -> void:
-    _handle_mining_reward(seq, owner_index, tile_index, miner_batches, btc_reward, reason)
-
-
-@rpc("authority")
 func rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float) -> void:
     _handle_toll_paid(seq, payer_index, owner_index, amount)
-
-
-@rpc("authority")
-func rpc_player_sent_to_inspection(seq: int, player_index: int, reason: String) -> void:
-    _handle_player_sent_to_inspection(seq, player_index, reason)
-
-
-@rpc("authority")
-func rpc_inspection_voucher_granted(seq: int, player_index: int, amount: int, reason: String) -> void:
-    _handle_inspection_voucher_granted(seq, player_index, amount, reason)
 
 
 @rpc("authority")
@@ -232,23 +175,7 @@ func _handle_buy_property(game_id: String, player_id: String, tile_index: int) -
     pass
 
 
-func _handle_buy_miner_batch(game_id: String, player_id: String, tile_index: int) -> void:
-    pass
-
-
 func _handle_pay_toll(game_id: String, player_id: String) -> void:
-    pass
-
-
-func _handle_pay_inspection_fee(game_id: String, player_id: String) -> void:
-    pass
-
-
-func _handle_roll_inspection_exit(game_id: String, player_id: String) -> void:
-    pass
-
-
-func _handle_use_inspection_voucher(game_id: String, player_id: String) -> void:
     pass
 
 
@@ -325,10 +252,6 @@ func _handle_tile_landed(
     pass
 
 
-func _handle_incident_drawn(seq: int, tile_index: int, incident_kind: String, card_id: String, card_text: String) -> void:
-    pass
-
-
 func _handle_player_balance_changed(seq: int, player_index: int, fiat_delta: float, btc_delta: float, reason: String) -> void:
     pass
 
@@ -337,38 +260,11 @@ func _handle_cycle_started(seq: int, cycle: int, inflation_active: bool) -> void
     pass
 
 
-func _handle_incident_type_changed(seq: int, tile_index: int, incident_kind: String) -> void:
-    pass
-
-
 func _handle_property_acquired(seq: int, player_index: int, tile_index: int, price: float) -> void:
     pass
 
 
-func _handle_miner_batches_added(seq: int, player_index: int, tile_index: int, count: int) -> void:
-    pass
-
-
-func _handle_mining_reward(
-        seq: int,
-        owner_index: int,
-        tile_index: int,
-        miner_batches: int,
-        btc_reward: float,
-        reason: String,
-) -> void:
-    pass
-
-
 func _handle_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float) -> void:
-    pass
-
-
-func _handle_player_sent_to_inspection(seq: int, player_index: int, reason: String) -> void:
-    pass
-
-
-func _handle_inspection_voucher_granted(seq: int, player_index: int, amount: int, reason: String) -> void:
     pass
 
 

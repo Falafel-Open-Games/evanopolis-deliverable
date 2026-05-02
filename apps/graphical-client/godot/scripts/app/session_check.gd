@@ -38,6 +38,7 @@ signal waiting_room_state_changed(state: WaitingRoomStateModel)
 signal gameplay_turn_state_changed(turn_state: Dictionary)
 signal gameplay_player_states_changed(states: Array)
 signal gameplay_event_log_changed(messages: Array)
+signal gameplay_pawn_positions_changed(tile_positions_by_player_index: Dictionary)
 
 enum SessionPhase {
     WAITING_FOR_LAUNCH,
@@ -91,6 +92,13 @@ var _identity_request_pending: bool = false
 var _match_has_started: bool = false
 var _match_has_finished: bool = false
 var _gameplay_event_log_messages: Array = []
+var _board_state: Dictionary = { }
+var _player_tile_positions: Dictionary = { }
+var _pending_action_type: String = ""
+var _pending_action_tile_index: int = -1
+var _has_rolled_current_turn: bool = false
+var _roll_request_pending: bool = false
+var _end_turn_request_pending: bool = false
 
 func _ready() -> void:
     assert(boot_node)
@@ -126,6 +134,10 @@ func get_gameplay_turn_state() -> Dictionary:
         "current_player_index": _current_turn_player_index,
         "current_player_name": current_player_name,
         "is_local_turn": _current_turn_player_index == _local_player_index,
+        "can_roll_dice": can_request_roll_dice(),
+        "can_end_turn": can_request_end_turn(),
+        "pending_action_type": _pending_action_type,
+        "pending_action_tile_index": _pending_action_tile_index,
     }
 
 func get_gameplay_player_states() -> Array:
@@ -152,6 +164,9 @@ func get_gameplay_player_states() -> Array:
 
 func get_gameplay_event_log_messages() -> Array:
     return _gameplay_event_log_messages.duplicate()
+
+func get_gameplay_pawn_positions() -> Dictionary:
+    return _player_tile_positions.duplicate()
 
 func is_waiting_for_launch() -> bool:
     return _phase == SessionPhase.WAITING_FOR_LAUNCH
@@ -181,6 +196,48 @@ func can_request_player_identity() -> bool:
         return false
     return not _identity_request_pending
 
+func can_request_roll_dice() -> bool:
+    if _phase != SessionPhase.GAME_STARTED:
+        return false
+    if _launch_payload == null:
+        return false
+    if _current_player_id.is_empty():
+        return false
+    if _local_player_index < 0:
+        return false
+    if _match_has_finished:
+        return false
+    if _roll_request_pending:
+        return false
+    if _has_rolled_current_turn:
+        return false
+    if _current_turn_player_index != _local_player_index:
+        return false
+    return _pending_action_type.is_empty()
+
+func can_request_end_turn() -> bool:
+    if _phase != SessionPhase.GAME_STARTED:
+        return false
+    if _launch_payload == null:
+        return false
+    if _current_player_id.is_empty():
+        return false
+    if _local_player_index < 0:
+        return false
+    if _match_has_finished:
+        return false
+    if _end_turn_request_pending:
+        return false
+    if _current_turn_player_index != _local_player_index:
+        return false
+    if can_request_roll_dice():
+        return false
+    if _pending_action_type == "pay_toll":
+        return false
+    if _pending_action_type == "resolve_incident":
+        return false
+    return true
+
 func request_player_ready() -> void:
     assert(_launch_payload)
     assert(_current_player_id != "")
@@ -192,6 +249,30 @@ func request_player_ready() -> void:
     _waiting_room_note = "Sending ready signal to the game server."
     _emit_waiting_room_state()
     rpc_id(1, "rpc_player_ready", _launch_payload._game_id, _current_player_id)
+
+func request_roll_dice() -> void:
+    assert(_launch_payload)
+    assert(not _current_player_id.is_empty())
+    assert(_local_player_index >= 0)
+    if not can_request_roll_dice():
+        _emit_gameplay_turn_state()
+        return
+
+    _roll_request_pending = true
+    _emit_gameplay_turn_state()
+    rpc_id(1, "rpc_roll_dice", _launch_payload._game_id, _current_player_id)
+
+func request_end_turn() -> void:
+    assert(_launch_payload)
+    assert(not _current_player_id.is_empty())
+    assert(_local_player_index >= 0)
+    if not can_request_end_turn():
+        _emit_gameplay_turn_state()
+        return
+
+    _end_turn_request_pending = true
+    _emit_gameplay_turn_state()
+    rpc_id(1, "rpc_end_turn", _launch_payload._game_id, _current_player_id)
 
 func request_player_identity(display_name: String, icon_id: int, color_id: int) -> void:
     assert(_launch_payload)
@@ -250,6 +331,13 @@ func _on_launch_payload_received(payload: LaunchPayloadModel) -> void:
     _match_has_started = false
     _match_has_finished = false
     _gameplay_event_log_messages.clear()
+    _board_state.clear()
+    _player_tile_positions.clear()
+    _pending_action_type = ""
+    _pending_action_tile_index = -1
+    _has_rolled_current_turn = false
+    _roll_request_pending = false
+    _end_turn_request_pending = false
     _connect_to_server()
 
 func _connect_to_server() -> void:
@@ -339,6 +427,12 @@ func rpc_action_rejected(_seq: int, reason: String) -> void:
         _waiting_room_note = "Ready action rejected: %s" % reason
         _emit_waiting_room_state()
         return
+    if _phase == SessionPhase.GAME_STARTED:
+        _roll_request_pending = false
+        _end_turn_request_pending = false
+        _append_gameplay_event_log_message("Action rejected: %s" % reason)
+        _emit_gameplay_turn_state()
+        return
     _fail_session("The game server rejected the session: %s" % reason)
 
 @rpc("authority")
@@ -346,10 +440,22 @@ func rpc_state_snapshot(_seq: int, snapshot: Dictionary) -> void:
     _has_snapshot = true
     _current_turn_number = int(snapshot.get("turn_number", _current_turn_number))
     _current_turn_player_index = int(snapshot.get("current_player_index", _current_turn_player_index))
+    _has_rolled_current_turn = bool(snapshot.get("has_rolled_current_turn", false))
+    _pending_action_type = ""
+    _pending_action_tile_index = -1
+    var pending_action: Dictionary = snapshot.get("pending_action", { })
+    if not pending_action.is_empty():
+        _pending_action_type = str(pending_action.get("type", ""))
+        _pending_action_tile_index = int(pending_action.get("tile_index", -1))
+    _board_state = snapshot.get("board_state", { }).duplicate(true)
+    _apply_player_positions_snapshot(snapshot)
     _apply_waiting_room_snapshot(snapshot)
-    _rebuild_gameplay_event_log_from_state()
+    _gameplay_event_log_messages.clear()
+    _append_gameplay_event_log_message("🔄 Game state updated from snapshot")
     _emit_gameplay_turn_state()
+    _emit_gameplay_pawn_positions()
     _emit_gameplay_player_states()
+    _debug_print_authoritative_gameplay_state("state_snapshot")
 
 @rpc("authority")
 func rpc_sync_complete(_seq: int, _final_seq: int) -> void:
@@ -418,6 +524,7 @@ func rpc_player_identity_changed(
     if _phase == SessionPhase.READY:
         _emit_waiting_room_state()
     _emit_gameplay_player_states()
+    _debug_print_authoritative_gameplay_state("player_identity_changed")
 
 @rpc("authority")
 func rpc_player_balance_changed(
@@ -432,6 +539,10 @@ func rpc_player_balance_changed(
     _emit_gameplay_player_states()
 
 @rpc("authority")
+func rpc_board_state(_seq: int, board: Dictionary) -> void:
+    _board_state = board.duplicate(true)
+
+@rpc("authority")
 func rpc_game_started(_seq: int, _new_game_id: String) -> void:
     _ready_request_pending = false
     _match_has_started = true
@@ -443,13 +554,73 @@ func rpc_game_started(_seq: int, _new_game_id: String) -> void:
         "The gameplay root now owns the player-facing match presentation."
     )
     _emit_gameplay_player_states()
+    _debug_print_authoritative_gameplay_state("game_started")
 
 @rpc("authority")
 func rpc_turn_started(_seq: int, player_index: int, turn_number: int, _cycle: int) -> void:
     _current_turn_player_index = player_index
     _current_turn_number = turn_number
     _match_has_started = true
+    _has_rolled_current_turn = false
+    _roll_request_pending = false
+    _end_turn_request_pending = false
+    _pending_action_type = ""
+    _pending_action_tile_index = -1
     _append_gameplay_event_log_message("🔄 %s turn started" % _event_log_player_name(player_index))
+    _emit_gameplay_turn_state()
+    _debug_print_authoritative_gameplay_state("turn_started")
+
+@rpc("authority")
+func rpc_dice_rolled(_seq: int, die_1: int, die_2: int, total: int) -> void:
+    _roll_request_pending = false
+    _has_rolled_current_turn = true
+    _append_gameplay_event_log_message(
+        "%s rolled %d + %d = %d" % [
+            _event_log_player_name(_current_turn_player_index),
+            die_1,
+            die_2,
+            total,
+        ]
+    )
+    _emit_gameplay_turn_state()
+
+@rpc("authority")
+func rpc_pawn_moved(_seq: int, _from_tile: int, to_tile: int, _passed_tiles: Array[int]) -> void:
+    _player_tile_positions[_current_turn_player_index] = to_tile
+    _append_gameplay_event_log_message(
+        "%s moved to tile %d" % [_event_log_player_name(_current_turn_player_index), to_tile]
+    )
+    _emit_gameplay_pawn_positions()
+    _debug_print_authoritative_gameplay_state("pawn_moved")
+
+@rpc("authority")
+func rpc_tile_landed(
+        _seq: int,
+        tile_index: int,
+        tile_type: String,
+        city: String,
+        _owner_index: int,
+        _toll_due: float,
+        _buy_price: float,
+        action_required: String
+) -> void:
+    _pending_action_type = action_required
+    _pending_action_tile_index = tile_index
+    if action_required == "end_turn":
+        _pending_action_type = ""
+        _pending_action_tile_index = -1
+    var tile_label: String = city.strip_edges()
+    if tile_label.is_empty():
+        tile_label = tile_type
+    if tile_label.is_empty():
+        tile_label = "tile"
+    _append_gameplay_event_log_message(
+        "%s landed on %s (%d)" % [
+            _event_log_player_name(_current_turn_player_index),
+            tile_label,
+            tile_index,
+        ]
+    )
     _emit_gameplay_turn_state()
 
 func _update_state(
@@ -584,6 +755,9 @@ func _emit_gameplay_player_states() -> void:
 func _emit_gameplay_event_log_messages() -> void:
     gameplay_event_log_changed.emit(get_gameplay_event_log_messages())
 
+func _emit_gameplay_pawn_positions() -> void:
+    gameplay_pawn_positions_changed.emit(get_gameplay_pawn_positions())
+
 func _is_player_ready(player_index: int) -> bool:
     if player_index < 0 or player_index >= _ready_players.size():
         return false
@@ -648,21 +822,73 @@ func _clone_gameplay_player_states(states: Array) -> Array:
         cloned_states.append(state_variant.clone())
     return cloned_states
 
-func _rebuild_gameplay_event_log_from_state() -> void:
-    _gameplay_event_log_messages.clear()
-    if not _match_has_started:
-        _emit_gameplay_event_log_messages()
-        return
-
-    _gameplay_event_log_messages.append("🎮️ Game started")
-    _gameplay_event_log_messages.append(
-        "🔄 %s turn started" % _event_log_player_name(_current_turn_player_index)
-    )
-    _emit_gameplay_event_log_messages()
-
 func _append_gameplay_event_log_message(message: String) -> void:
     _gameplay_event_log_messages.append(message)
     _emit_gameplay_event_log_messages()
+
+func _apply_player_positions_snapshot(snapshot: Dictionary) -> void:
+    _player_tile_positions.clear()
+    var players: Array = snapshot.get("players", [])
+    for player_variant in players:
+        var player_in_snapshot: Dictionary = player_variant
+        var player_index: int = int(player_in_snapshot.get("player_index", -1))
+        if player_index < 0:
+            continue
+        var tile_index: int = int(player_in_snapshot.get("position", -1))
+        if tile_index < 0:
+            continue
+        _player_tile_positions[player_index] = tile_index
+
+func _debug_print_authoritative_gameplay_state(context: String) -> void:
+    if not _should_print_debug_gameplay_state():
+        return
+    var player_states: Array = get_gameplay_player_states()
+    var player_summaries: Array[String] = []
+    for state_variant in player_states:
+        if state_variant == null:
+            continue
+        var player_state: GamePlayerHudStateModel = state_variant
+        player_summaries.append(
+            "p%d%s color=%d icon=%d fiat=%.2f energy=%d btc=%.8f" % [
+                player_state.player_index,
+                " local" if player_state.is_local else "",
+                player_state.color_id,
+                player_state.icon_id,
+                player_state.fiat_balance,
+                player_state.energy_amount,
+                player_state.bitcoin_balance,
+            ]
+        )
+
+    var pawn_summaries: Array[String] = []
+    var pawn_player_indices: Array = _player_tile_positions.keys()
+    pawn_player_indices.sort()
+    for player_index_variant in pawn_player_indices:
+        var player_index: int = int(player_index_variant)
+        pawn_summaries.append("p%d->%d" % [player_index, int(_player_tile_positions[player_index_variant])])
+
+    var board_size: int = int(_board_state.get("size", -1))
+    var tile_count: int = int((_board_state.get("tiles", []) as Array).size())
+    print_debug(
+        "[session:%s] started=%s finished=%s turn=%d current=%d local=%d board=%d tiles=%d pending=%s/%d players=[%s] pawns=[%s]" % [
+            context,
+            _match_has_started,
+            _match_has_finished,
+            _current_turn_number,
+            _current_turn_player_index,
+            _local_player_index,
+            board_size,
+            tile_count,
+            _pending_action_type if not _pending_action_type.is_empty() else "-",
+            _pending_action_tile_index,
+            ", ".join(player_summaries),
+            ", ".join(pawn_summaries),
+        ]
+    )
+
+
+func _should_print_debug_gameplay_state() -> bool:
+    return OS.has_environment("EVANOPOLIS_DEBUG_GAMEPLAY")
 
 
 func _try_schedule_retry(message: String) -> bool:

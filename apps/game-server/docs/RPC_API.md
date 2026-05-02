@@ -126,17 +126,6 @@ Success:
 Failure:
 - `rpc_action_rejected(0, reason)`
 
-### `rpc_buy_miner_batch(game_id: String, player_id: String, tile_index: int)`
-
-Buys one miner batch on an already-owned property when there is no conflicting pending landing action.
-
-Success:
-- `rpc_player_balance_changed(seq, player_index, fiat_delta, btc_delta, reason="miner_batch_purchased")`
-- `rpc_miner_batches_added(seq, player_index, tile_index, count)`
-
-Failure:
-- `rpc_action_rejected(0, reason)`
-
 ### `rpc_pay_toll(game_id: String, player_id: String)`
 
 Pays a pending toll using server-stored pending-action metadata.
@@ -146,44 +135,7 @@ Success:
 - `rpc_turn_started(seq, next_player_index, turn_number, cycle)`
 
 Insufficient fiat path:
-- `rpc_player_sent_to_inspection(seq, player_index, reason)`
-- `rpc_turn_started(seq, next_player_index, turn_number, cycle)`
-
-Failure:
-- `rpc_action_rejected(0, reason)`
-
-### `rpc_pay_inspection_fee(game_id: String, player_id: String)`
-
-Pays the inspection fee to exit inspection.
-
-Success:
-- `rpc_player_balance_changed(seq, player_index, fiat_delta, btc_delta, reason="inspection_fee_paid")`
-
-Failure:
-- `rpc_action_rejected(0, reason)`
-
-### `rpc_roll_inspection_exit(game_id: String, player_id: String)`
-
-Attempts to leave inspection by rolling doubles.
-
-Success if doubles:
-- `rpc_dice_rolled`
-- `rpc_player_balance_changed(seq, player_index, fiat_delta, btc_delta, reason="inspection_exit_doubles")`
-- then normal move and landing events
-
-Success if not doubles:
-- `rpc_dice_rolled`
-- `rpc_turn_started(seq, next_player_index, turn_number, cycle)`
-
-Failure:
-- `rpc_action_rejected(0, reason)`
-
-### `rpc_use_inspection_voucher(game_id: String, player_id: String)`
-
-Uses one free inspection exit voucher.
-
-Success:
-- `rpc_player_balance_changed(seq, player_index, fiat_delta, btc_delta, reason="inspection_voucher_used")`
+- `rpc_action_rejected(0, "insufficient_fiat")`
 
 Failure:
 - `rpc_action_rejected(0, reason)`
@@ -216,7 +168,6 @@ Failure:
 `action_required` values currently used by the server:
 - `buy_or_end_turn`
 - `pay_toll`
-- `resolve_incident`
 - `end_turn`
 
 ### Economy / board mutation
@@ -224,16 +175,7 @@ Failure:
 - `rpc_player_balance_changed(seq: int, player_index: int, fiat_delta: float, btc_delta: float, reason: String)`
 - `rpc_cycle_started(seq: int, cycle: int, inflation_active: bool)`
 - `rpc_property_acquired(seq: int, player_index: int, tile_index: int, price: float)`
-- `rpc_miner_batches_added(seq: int, player_index: int, tile_index: int, count: int)`
-- `rpc_mining_reward(seq: int, owner_index: int, tile_index: int, miner_batches: int, btc_reward: float, reason: String)`
 - `rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float)`
-
-### Incidents / inspection
-
-- `rpc_incident_drawn(seq: int, tile_index: int, incident_kind: String, card_id: String, card_text: String)`
-- `rpc_incident_type_changed(seq: int, tile_index: int, incident_kind: String)`
-- `rpc_player_sent_to_inspection(seq: int, player_index: int, reason: String)`
-- `rpc_inspection_voucher_granted(seq: int, player_index: int, amount: int, reason: String)`
 
 ### Reconnect / sync
 
@@ -246,8 +188,7 @@ Failure:
 state needed for reconnect:
 
 - player identities, seat occupancy, and balances
-- inspection state and voucher counts
-- board/tile state including ownership, miners, and incident face
+- board/tile state including ownership
 - pawn positions
 - current player, turn number, and cycle
 - pending action metadata
@@ -281,8 +222,6 @@ Each `players` entry is authoritative per-seat state and currently includes:
 - `bitcoin_balance: float`
 - `position: int`
 - `laps: int`
-- `in_inspection: bool`
-- `inspection_free_exits: int`
 
 Clients should treat `players[*].joined` and `players[*].ready` as the
 canonical waiting-room seat state and should not depend on a separate

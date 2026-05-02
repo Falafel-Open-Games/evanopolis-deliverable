@@ -136,19 +136,6 @@ func rpc_tile_landed(
     )
 
 
-func rpc_incident_drawn(seq: int, tile_index: int, incident_kind: String, card_id: String, card_text: String) -> void:
-    events.append(
-        {
-            "method": "rpc_incident_drawn",
-            "seq": seq,
-            "tile_index": tile_index,
-            "incident_kind": incident_kind,
-            "card_id": card_id,
-            "card_text": card_text,
-        },
-    )
-
-
 func rpc_player_balance_changed(seq: int, player_index: int, fiat_delta: float, btc_delta: float, reason: String) -> void:
     events.append(
         {
@@ -173,17 +160,6 @@ func rpc_cycle_started(seq: int, cycle: int, inflation_active: bool) -> void:
     )
 
 
-func rpc_incident_type_changed(seq: int, tile_index: int, incident_kind: String) -> void:
-    events.append(
-        {
-            "method": "rpc_incident_type_changed",
-            "seq": seq,
-            "tile_index": tile_index,
-            "incident_kind": incident_kind,
-        },
-    )
-
-
 func rpc_property_acquired(seq: int, player_index: int, tile_index: int, price: float) -> void:
     events.append(
         {
@@ -196,39 +172,6 @@ func rpc_property_acquired(seq: int, player_index: int, tile_index: int, price: 
     )
 
 
-func rpc_miner_batches_added(seq: int, player_index: int, tile_index: int, count: int) -> void:
-    events.append(
-        {
-            "method": "rpc_miner_batches_added",
-            "seq": seq,
-            "player_index": player_index,
-            "tile_index": tile_index,
-            "count": count,
-        },
-    )
-
-
-func rpc_mining_reward(
-        seq: int,
-        owner_index: int,
-        tile_index: int,
-        miner_batches: int,
-        btc_reward: float,
-        reason: String,
-) -> void:
-    events.append(
-        {
-            "method": "rpc_mining_reward",
-            "seq": seq,
-            "owner_index": owner_index,
-            "tile_index": tile_index,
-            "miner_batches": miner_batches,
-            "btc_reward": btc_reward,
-            "reason": reason,
-        },
-    )
-
-
 func rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float) -> void:
     events.append(
         {
@@ -237,29 +180,6 @@ func rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float) 
             "payer_index": payer_index,
             "owner_index": owner_index,
             "amount": amount,
-        },
-    )
-
-
-func rpc_player_sent_to_inspection(seq: int, player_index: int, reason: String) -> void:
-    events.append(
-        {
-            "method": "rpc_player_sent_to_inspection",
-            "seq": seq,
-            "player_index": player_index,
-            "reason": reason,
-        },
-    )
-
-
-func rpc_inspection_voucher_granted(seq: int, player_index: int, amount: int, reason: String) -> void:
-    events.append(
-        {
-            "method": "rpc_inspection_voucher_granted",
-            "seq": seq,
-            "player_index": player_index,
-            "amount": amount,
-            "reason": reason,
         },
     )
 

@@ -12,6 +12,7 @@ var _session_state: StatusCardState
 var _waiting_room_state: WaitingRoomState = null
 var _gameplay_player_states: Array = []
 var _gameplay_event_log_messages: Array = []
+var _gameplay_pawn_positions: Dictionary = { }
 var _game_root: Node3D = null
 
 @onready var waiting_room_view: Control = $WaitingRoomMount/WaitingRoomRoot
@@ -42,16 +43,22 @@ func _ready() -> void:
     assert(session_node.has_signal("gameplay_turn_state_changed"))
     assert(session_node.has_signal("gameplay_player_states_changed"))
     assert(session_node.has_signal("gameplay_event_log_changed"))
+    assert(session_node.has_signal("gameplay_pawn_positions_changed"))
     assert(session_node.has_method("get_session_state"))
     assert(session_node.has_method("get_waiting_room_state"))
     assert(session_node.has_method("get_gameplay_player_states"))
     assert(session_node.has_method("get_gameplay_event_log_messages"))
+    assert(session_node.has_method("get_gameplay_pawn_positions"))
     assert(session_node.has_method("is_waiting_for_launch"))
     assert(session_node.has_method("is_waiting_room_active"))
     assert(session_node.has_method("is_game_started"))
     assert(session_node.has_method("has_waiting_room_state"))
     assert(session_node.has_method("can_request_player_ready"))
     assert(session_node.has_method("request_player_ready"))
+    assert(session_node.has_method("can_request_roll_dice"))
+    assert(session_node.has_method("request_roll_dice"))
+    assert(session_node.has_method("can_request_end_turn"))
+    assert(session_node.has_method("request_end_turn"))
     assert(session_node.has_method("can_request_player_identity"))
     assert(session_node.has_method("request_player_identity"))
 
@@ -64,6 +71,7 @@ func _ready() -> void:
     session_node.connect("gameplay_turn_state_changed", Callable(self, "_on_gameplay_turn_state_changed"))
     session_node.connect("gameplay_player_states_changed", Callable(self, "_on_gameplay_player_states_changed"))
     session_node.connect("gameplay_event_log_changed", Callable(self, "_on_gameplay_event_log_changed"))
+    session_node.connect("gameplay_pawn_positions_changed", Callable(self, "_on_gameplay_pawn_positions_changed"))
 
     _boot_state = boot_node.call("get_boot_state")
     _session_state = session_node.call("get_session_state")
@@ -71,6 +79,7 @@ func _ready() -> void:
         _waiting_room_state = session_node.call("get_waiting_room_state")
     _gameplay_player_states = session_node.call("get_gameplay_player_states")
     _gameplay_event_log_messages = session_node.call("get_gameplay_event_log_messages")
+    _gameplay_pawn_positions = session_node.call("get_gameplay_pawn_positions")
 
     _render_scene()
 
@@ -98,11 +107,21 @@ func _on_gameplay_event_log_changed(messages: Array) -> void:
     _gameplay_event_log_messages = messages
     _sync_gameplay_event_log()
 
+func _on_gameplay_pawn_positions_changed(tile_positions_by_player_index: Dictionary) -> void:
+    _gameplay_pawn_positions = tile_positions_by_player_index
+    _sync_gameplay_pawn_positions()
+
 func _on_ready_button_pressed() -> void:
     session_node.call("request_player_ready")
 
 func _on_identity_save_requested(display_name: String, icon_id: int, color_id: int) -> void:
     session_node.call("request_player_identity", display_name, icon_id, color_id)
+
+func _on_roll_dice_requested() -> void:
+    session_node.call("request_roll_dice")
+
+func _on_end_turn_requested() -> void:
+    session_node.call("request_end_turn")
 
 func _render_scene() -> void:
     var gameplay_active: bool = session_node.call("is_game_started")
@@ -164,6 +183,8 @@ func _ensure_game_root() -> void:
 
     _game_root = GameRootScene.instantiate()
     add_child(_game_root)
+    _game_root.connect("roll_dice_requested", Callable(self, "_on_roll_dice_requested"))
+    _game_root.connect("end_turn_requested", Callable(self, "_on_end_turn_requested"))
     _sync_gameplay_identity()
 
 func _sync_gameplay_identity() -> void:
@@ -176,20 +197,30 @@ func _sync_gameplay_identity() -> void:
         _waiting_room_state.local_icon_id,
         _waiting_room_state.local_color_id
     )
+    _sync_gameplay_pawn_positions()
     _game_root.call("set_player_slots", _waiting_room_state.slots)
     _sync_gameplay_player_states()
     _sync_gameplay_turn_info()
     _sync_gameplay_event_log()
+    _debug_print_gameplay_state("identity")
 
 func _sync_gameplay_player_states() -> void:
     if _game_root == null:
         return
     _game_root.call("set_player_states", _gameplay_player_states)
+    _debug_print_gameplay_state("player_states")
 
 func _sync_gameplay_event_log() -> void:
     if _game_root == null:
         return
     _game_root.call("set_event_log_messages", _gameplay_event_log_messages)
+    _debug_print_gameplay_state("event_log")
+
+func _sync_gameplay_pawn_positions() -> void:
+    if _game_root == null:
+        return
+    _game_root.call("set_pawn_tile_positions", _gameplay_pawn_positions)
+    _debug_print_gameplay_state("pawn_positions")
 
 func _sync_gameplay_turn_info() -> void:
     if _game_root == null:
@@ -205,3 +236,31 @@ func _sync_gameplay_turn_info() -> void:
         bool(turn_state.get("is_local_turn", false)),
         int(turn_state.get("current_player_index", -1))
     )
+    _game_root.call(
+        "set_turn_action_state",
+        bool(turn_state.get("can_roll_dice", false)),
+        bool(turn_state.get("can_end_turn", false))
+    )
+    _debug_print_gameplay_state("turn_info")
+
+func _debug_print_gameplay_state(context: String) -> void:
+    if _game_root == null:
+        return
+    if not _should_print_debug_gameplay_state():
+        return
+    var turn_state: Dictionary = session_node.call("get_gameplay_turn_state")
+    _game_root.call(
+        "debug_print_visible_state",
+        context,
+        _waiting_room_state.local_player_id if _waiting_room_state != null else "",
+        _waiting_room_state.local_icon_id if _waiting_room_state != null else -1,
+        _waiting_room_state.local_color_id if _waiting_room_state != null else -1,
+        turn_state,
+        _gameplay_player_states,
+        _gameplay_event_log_messages,
+        _gameplay_pawn_positions
+    )
+
+
+func _should_print_debug_gameplay_state() -> bool:
+    return OS.has_environment("EVANOPOLIS_DEBUG_GAMEPLAY")

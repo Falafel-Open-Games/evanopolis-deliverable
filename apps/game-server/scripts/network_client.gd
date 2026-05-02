@@ -61,10 +61,6 @@ func rpc_tile_landed(
     server_node.rpc_id(peer_id, "rpc_tile_landed", seq, tile_index, tile_type, city, owner_index, toll_due, buy_price, action_required)
 
 
-func rpc_incident_drawn(seq: int, tile_index: int, incident_kind: String, card_id: String, card_text: String) -> void:
-    server_node.rpc_id(peer_id, "rpc_incident_drawn", seq, tile_index, incident_kind, card_id, card_text)
-
-
 func rpc_player_balance_changed(seq: int, player_index: int, fiat_delta: float, btc_delta: float, reason: String) -> void:
     server_node.rpc_id(peer_id, "rpc_player_balance_changed", seq, player_index, fiat_delta, btc_delta, reason)
 
@@ -73,39 +69,12 @@ func rpc_cycle_started(seq: int, cycle: int, inflation_active: bool) -> void:
     server_node.rpc_id(peer_id, "rpc_cycle_started", seq, cycle, inflation_active)
 
 
-func rpc_incident_type_changed(seq: int, tile_index: int, incident_kind: String) -> void:
-    server_node.rpc_id(peer_id, "rpc_incident_type_changed", seq, tile_index, incident_kind)
-
-
 func rpc_property_acquired(seq: int, player_index: int, tile_index: int, price: float) -> void:
     server_node.rpc_id(peer_id, "rpc_property_acquired", seq, player_index, tile_index, price)
 
 
-func rpc_miner_batches_added(seq: int, player_index: int, tile_index: int, count: int) -> void:
-    server_node.rpc_id(peer_id, "rpc_miner_batches_added", seq, player_index, tile_index, count)
-
-
-func rpc_mining_reward(
-        seq: int,
-        owner_index: int,
-        tile_index: int,
-        miner_batches: int,
-        btc_reward: float,
-        reason: String,
-) -> void:
-    server_node.rpc_id(peer_id, "rpc_mining_reward", seq, owner_index, tile_index, miner_batches, btc_reward, reason)
-
-
 func rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float) -> void:
     server_node.rpc_id(peer_id, "rpc_toll_paid", seq, payer_index, owner_index, amount)
-
-
-func rpc_player_sent_to_inspection(seq: int, player_index: int, reason: String) -> void:
-    server_node.rpc_id(peer_id, "rpc_player_sent_to_inspection", seq, player_index, reason)
-
-
-func rpc_inspection_voucher_granted(seq: int, player_index: int, amount: int, reason: String) -> void:
-    server_node.rpc_id(peer_id, "rpc_inspection_voucher_granted", seq, player_index, amount, reason)
 
 
 func rpc_state_snapshot(seq: int, snapshot: Dictionary) -> void:

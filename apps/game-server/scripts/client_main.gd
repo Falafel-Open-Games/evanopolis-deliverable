@@ -2,7 +2,6 @@ extends "res://scripts/headless_rpc.gd"
 
 const DEFAULT_HOST: String = "127.0.0.1"
 const DEFAULT_PORT: int = 9010
-const EconomyV0 = preload("res://scripts/rules/economy_v0.gd")
 const ANSI_RESET: String = "\u001b[0m"
 const ANSI_BOLD: String = "\u001b[1m"
 const ANSI_RED: String = "\u001b[31m"
@@ -36,8 +35,6 @@ var connected_player_indexes: Dictionary = { }
 var player_fiat_balances: Dictionary = { }
 var player_bitcoin_balances: Dictionary = { }
 var player_positions: Dictionary = { }
-var player_in_inspection: Dictionary = { }
-var player_inspection_free_exits: Dictionary = { }
 var player_ready_states: Dictionary = { }
 var player_display_names: Dictionary = { }
 var player_icon_ids: Dictionary = { }
@@ -171,10 +168,6 @@ func _handle_tile_landed(
     _queue_event(seq, "_apply_tile_landed", [tile_index, tile_type, city, owner_index, toll_due, buy_price, action_required])
 
 
-func _handle_incident_drawn(seq: int, tile_index: int, incident_kind: String, card_id: String, card_text: String) -> void:
-    _queue_event(seq, "_apply_incident_drawn", [tile_index, incident_kind, card_id, card_text])
-
-
 func _handle_player_balance_changed(seq: int, player_index_value: int, fiat_delta: float, btc_delta: float, reason: String) -> void:
     _queue_event(seq, "_apply_player_balance_changed", [player_index_value, fiat_delta, btc_delta, reason])
 
@@ -183,39 +176,12 @@ func _handle_cycle_started(seq: int, cycle: int, inflation_active: bool) -> void
     _queue_event(seq, "_apply_cycle_started", [cycle, inflation_active])
 
 
-func _handle_incident_type_changed(seq: int, tile_index: int, incident_kind: String) -> void:
-    _queue_event(seq, "_apply_incident_type_changed", [tile_index, incident_kind])
-
-
 func _handle_property_acquired(seq: int, owner_player_index: int, tile_index: int, price: float) -> void:
     _queue_event(seq, "_apply_property_acquired", [owner_player_index, tile_index, price])
 
 
-func _handle_miner_batches_added(seq: int, owner_player_index: int, tile_index: int, count: int) -> void:
-    _queue_event(seq, "_apply_miner_batches_added", [owner_player_index, tile_index, count])
-
-
-func _handle_mining_reward(
-        seq: int,
-        owner_index: int,
-        tile_index: int,
-        miner_batches: int,
-        btc_reward: float,
-        reason: String,
-) -> void:
-    _queue_event(seq, "_apply_mining_reward", [owner_index, tile_index, miner_batches, btc_reward, reason])
-
-
 func _handle_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float) -> void:
     _queue_event(seq, "_apply_toll_paid", [payer_index, owner_index, amount])
-
-
-func _handle_player_sent_to_inspection(seq: int, player_index_value: int, reason: String) -> void:
-    _queue_event(seq, "_apply_player_sent_to_inspection", [player_index_value, reason])
-
-
-func _handle_inspection_voucher_granted(seq: int, player_index_value: int, amount: int, reason: String) -> void:
-    _queue_event(seq, "_apply_inspection_voucher_granted", [player_index_value, amount, reason])
 
 
 func _handle_state_snapshot(seq: int, snapshot: Dictionary) -> void:
@@ -317,9 +283,6 @@ func _apply_turn_started(player_index_value: int, turn_number: int, cycle: int) 
         % [ANSI_GREEN, ANSI_RESET, player_index_value, turn_number, cycle, connected_players_summary],
     )
     if player_index_value != player_index:
-        return
-    if bool(player_in_inspection.get(player_index_value, false)):
-        await _start_inspection_resolution_prompt()
         return
     await _start_turn_prompt()
 
@@ -431,14 +394,6 @@ func _apply_tile_landed(
         await _start_pay_toll_prompt(tile_index, city, owner_index, toll_due)
 
 
-func _apply_incident_drawn(tile_index: int, incident_kind: String, card_id: String, card_text: String) -> void:
-    var highlighted_card_text: String = "%s%s%s" % [ANSI_YELLOW, card_text, ANSI_RESET]
-    _log_server(
-        "%sincident drawn%s: tile=%d kind=%s card_id=%s card_text=%s"
-        % [ANSI_GREEN, ANSI_RESET, tile_index, incident_kind, card_id, highlighted_card_text],
-    )
-
-
 func _apply_player_balance_changed(player_index_value: int, fiat_delta: float, btc_delta: float, reason: String) -> void:
     connected_player_indexes[player_index_value] = true
     var fiat_balance: float = float(player_fiat_balances.get(player_index_value, 0.0))
@@ -447,12 +402,6 @@ func _apply_player_balance_changed(player_index_value: int, fiat_delta: float, b
     var bitcoin_balance: float = float(player_bitcoin_balances.get(player_index_value, 0.0))
     bitcoin_balance += btc_delta
     player_bitcoin_balances[player_index_value] = bitcoin_balance
-    if reason == "inspection_fee_paid":
-        player_in_inspection[player_index_value] = false
-    if reason == "inspection_voucher_used":
-        player_in_inspection[player_index_value] = false
-    if reason == "inspection_exit_doubles":
-        player_in_inspection[player_index_value] = false
     _log_server(
         "player balance changed: player=%d fiat_delta=%.2f btc_delta=%.8f reason=%s"
         % [player_index_value, fiat_delta, btc_delta, reason],
@@ -472,13 +421,6 @@ func _apply_cycle_started(cycle: int, inflation_active: bool) -> void:
     _log_server("cycle started: cycle=%d, inflation_active=%s" % [cycle, inflation_active])
 
 
-func _apply_incident_type_changed(tile_index: int, incident_kind: String) -> void:
-    var tile: Dictionary = _tile_info_from_index(tile_index)
-    if not tile.is_empty():
-        tile["incident_kind"] = incident_kind
-    _log_server("incident type changed: tile=%d incident_kind=%s" % [tile_index, incident_kind])
-
-
 func _apply_property_acquired(owner_player_index: int, tile_index: int, price: float) -> void:
     connected_player_indexes[owner_player_index] = true
     var owner_fiat_balance: float = float(player_fiat_balances.get(owner_player_index, 0.0))
@@ -493,23 +435,6 @@ func _apply_property_acquired(owner_player_index: int, tile_index: int, price: f
     pending_action_amount = 0.0
     pending_action_buy_price = 0.0
     _log_server("property acquired: player=%d tile=%d price=%.2f" % [owner_player_index, tile_index, price])
-
-
-func _apply_miner_batches_added(owner_player_index: int, tile_index: int, count: int) -> void:
-    connected_player_indexes[owner_player_index] = true
-    var tile: Dictionary = _tile_info_from_index(tile_index)
-    if not tile.is_empty():
-        var miner_batches: int = int(tile.get("miner_batches", 0))
-        tile["miner_batches"] = miner_batches + count
-    _log_server("miner batches added: player=%d tile=%d count=%d" % [owner_player_index, tile_index, count])
-
-
-func _apply_mining_reward(owner_index: int, tile_index: int, miner_batches: int, btc_reward: float, reason: String) -> void:
-    connected_player_indexes[owner_index] = true
-    _log_server(
-        "%smining reward%s: owner=%d tile=%d miner_batches=%d btc_reward=%s%.8f%s reason=%s"
-        % [ANSI_GREEN, ANSI_RESET, owner_index, tile_index, miner_batches, ANSI_GREEN, btc_reward, ANSI_RESET, reason],
-    )
 
 
 func _apply_toll_paid(payer_index: int, owner_index: int, amount: float) -> void:
@@ -527,22 +452,6 @@ func _apply_toll_paid(payer_index: int, owner_index: int, amount: float) -> void
     pending_action_amount = 0.0
     pending_action_buy_price = 0.0
     _log_server("toll paid: payer=%d owner=%d amount=%.2f" % [payer_index, owner_index, amount])
-
-
-func _apply_player_sent_to_inspection(player_index_value: int, reason: String) -> void:
-    player_in_inspection[player_index_value] = true
-    _log_server(
-        "%splayer sent to inspection: player=%d reason=%s%s"
-        % [ANSI_RED, player_index_value, reason, ANSI_RESET],
-    )
-
-
-func _apply_inspection_voucher_granted(player_index_value: int, amount: int, reason: String) -> void:
-    connected_player_indexes[player_index_value] = true
-    var free_exits: int = int(player_inspection_free_exits.get(player_index_value, 0))
-    free_exits += amount
-    player_inspection_free_exits[player_index_value] = free_exits
-    _log_server("inspection voucher granted: player=%d amount=%d reason=%s" % [player_index_value, amount, reason])
 
 
 func _apply_state_snapshot(snapshot: Dictionary) -> void:
@@ -568,8 +477,6 @@ func _apply_state_snapshot(snapshot: Dictionary) -> void:
     player_positions.clear()
     player_fiat_balances.clear()
     player_bitcoin_balances.clear()
-    player_in_inspection.clear()
-    player_inspection_free_exits.clear()
     player_ready_states.clear()
     player_display_names.clear()
     player_icon_ids.clear()
@@ -584,8 +491,6 @@ func _apply_state_snapshot(snapshot: Dictionary) -> void:
         player_positions[player_index_value] = int(player_in_snapshot.get("position", -1))
         player_fiat_balances[player_index_value] = float(player_in_snapshot.get("fiat_balance", 0.0))
         player_bitcoin_balances[player_index_value] = float(player_in_snapshot.get("bitcoin_balance", 0.0))
-        player_in_inspection[player_index_value] = bool(player_in_snapshot.get("in_inspection", false))
-        player_inspection_free_exits[player_index_value] = int(player_in_snapshot.get("inspection_free_exits", 0))
         player_ready_states[player_index_value] = bool(player_in_snapshot.get("ready", false))
         player_display_names[player_index_value] = str(player_in_snapshot.get("display_name", ""))
         player_icon_ids[player_index_value] = int(player_in_snapshot.get("icon_id", -1))
@@ -614,7 +519,7 @@ func _apply_state_snapshot(snapshot: Dictionary) -> void:
     for player_variant in players:
         var player: Dictionary = player_variant
         player_summaries.append(
-            "p%d(id=%s joined=%s ready=%s name=%s icon=%d color=%d pos=%d laps=%d fiat=%.2f btc=%.8f inspection=%s free_exits=%d)" % [
+            "p%d(id=%s joined=%s ready=%s name=%s icon=%d color=%d pos=%d laps=%d fiat=%.2f btc=%.8f)" % [
                 int(player.get("player_index", -1)),
                 str(player.get("player_id", "")),
                 bool(player.get("joined", false)),
@@ -626,8 +531,6 @@ func _apply_state_snapshot(snapshot: Dictionary) -> void:
                 int(player.get("laps", 0)),
                 float(player.get("fiat_balance", 0.0)),
                 float(player.get("bitcoin_balance", 0.0)),
-                bool(player.get("in_inspection", false)),
-                int(player.get("inspection_free_exits", 0)),
             ],
         )
     if not player_summaries.is_empty():
@@ -645,10 +548,9 @@ func _build_connected_players_summary() -> String:
         if owner_index < 0:
             continue
         if not holdings_by_player.has(owner_index):
-            holdings_by_player[owner_index] = { "properties": 0, "miners": 0 }
+            holdings_by_player[owner_index] = { "properties": 0 }
         var owner_holdings: Dictionary = holdings_by_player[owner_index]
         owner_holdings["properties"] = int(owner_holdings.get("properties", 0)) + 1
-        owner_holdings["miners"] = int(owner_holdings.get("miners", 0)) + int(tile.get("miner_batches", 0))
         holdings_by_player[owner_index] = owner_holdings
     var connected_player_indexes_sorted: Array[int] = []
     for player_index_key in connected_player_indexes.keys():
@@ -658,7 +560,7 @@ func _build_connected_players_summary() -> String:
     for player_index_value in connected_player_indexes_sorted:
         var player_holdings: Dictionary = holdings_by_player.get(player_index_value, { })
         player_summaries.append(
-            "p%d(tile=%d fiat=%s%s%.2f%s btc=%s%.8f%s properties=%d miners=%d)" % [
+            "p%d(tile=%d fiat=%s%s%.2f%s btc=%s%.8f%s properties=%d)" % [
                 player_index_value,
                 int(player_positions.get(player_index_value, -1)),
                 ANSI_BOLD,
@@ -669,7 +571,6 @@ func _build_connected_players_summary() -> String:
                 float(player_bitcoin_balances.get(player_index_value, 0.0)),
                 ANSI_RESET,
                 int(player_holdings.get("properties", 0)),
-                int(player_holdings.get("miners", 0)),
             ],
         )
     return ", ".join(player_summaries)
@@ -698,7 +599,6 @@ func _apply_action_rejected(reason: String) -> void:
 
 
 func _start_turn_prompt() -> void:
-    await _start_buy_miner_batch_prompt()
     _log_prompt("press enter to roll dice")
     await _wait_for_enter()
     _request_roll()
@@ -714,11 +614,6 @@ func _request_buy_property(tile_index: int) -> void:
     _rpc_to_server("rpc_buy_property", [game_id, player_id, tile_index])
 
 
-func _request_buy_miner_batch(tile_index: int) -> void:
-    _log_client("buy miner batch: game_id=%s, player_id=%s, tile_index=%d" % [game_id, player_id, tile_index])
-    _rpc_to_server("rpc_buy_miner_batch", [game_id, player_id, tile_index])
-
-
 func _request_end_turn() -> void:
     _log_client("end turn: game_id=%s, player_id=%s" % [game_id, player_id])
     _rpc_to_server("rpc_end_turn", [game_id, player_id])
@@ -730,21 +625,6 @@ func _request_pay_toll() -> void:
         % [game_id, player_id, pending_action_tile_index, pending_action_owner_index, pending_action_amount],
     )
     _rpc_to_server("rpc_pay_toll", [game_id, player_id])
-
-
-func _request_pay_inspection_fee() -> void:
-    _log_client("pay inspection fee: game_id=%s, player_id=%s" % [game_id, player_id])
-    _rpc_to_server("rpc_pay_inspection_fee", [game_id, player_id])
-
-
-func _request_roll_inspection_exit() -> void:
-    _log_client("roll inspection exit: game_id=%s, player_id=%s" % [game_id, player_id])
-    _rpc_to_server("rpc_roll_inspection_exit", [game_id, player_id])
-
-
-func _request_use_inspection_voucher() -> void:
-    _log_client("use inspection voucher: game_id=%s, player_id=%s" % [game_id, player_id])
-    _rpc_to_server("rpc_use_inspection_voucher", [game_id, player_id])
 
 
 func _request_player_ready() -> void:
@@ -828,10 +708,6 @@ func _resume_after_sync_from_snapshot() -> void:
         _log_server("sync resume: pending end_turn")
         _request_end_turn()
         return
-    if bool(player_in_inspection.get(player_index, false)):
-        _log_server("sync resume: current player in inspection; prompting inspection resolution")
-        await _start_inspection_resolution_prompt()
-        return
     _log_server("sync resume: prompting roll for current turn=%d" % current_turn_number)
     await _start_turn_prompt()
 
@@ -867,77 +743,6 @@ func _start_pay_toll_prompt(tile_index: int, city: String, owner_index: int, amo
     _request_pay_toll()
 
 
-func _start_buy_miner_batch_prompt() -> void:
-    var miner_price: float = EconomyV0.MINER_BATCH_PRICE
-    var available_fiat: float = float(player_fiat_balances.get(player_index, 0.0))
-    if available_fiat < miner_price:
-        _log_note(
-            "skipping miner prompt: fiat=%.2f below miner price=%.2f"
-            % [available_fiat, miner_price],
-        )
-        return
-    var owned_tile_indexes: Array[int] = []
-    var tiles: Array = board_state.get("tiles", [])
-    for tile_variant in tiles:
-        var tile: Dictionary = tile_variant
-        var tile_type: String = str(tile.get("tile_type", ""))
-        if tile_type != "property" and tile_type != "special_property":
-            continue
-        if int(tile.get("owner_index", -1)) != player_index:
-            continue
-        var miner_batches: int = int(tile.get("miner_batches", 0))
-        if miner_batches >= EconomyV0.MAX_MINER_BATCHES_PER_PROPERTY:
-            continue
-        owned_tile_indexes.append(int(tile.get("index", -1)))
-    if owned_tile_indexes.is_empty():
-        _log_note("skipping miner prompt: no owned property with available miner slots")
-        return
-    owned_tile_indexes.sort()
-    var tile_choices: PackedStringArray = []
-    for tile_index in owned_tile_indexes:
-        tile_choices.append(str(tile_index))
-    _log_prompt(
-        "buy miner batch price=%.2f choose owned tile index [%s] or press enter to skip"
-        % [miner_price, ", ".join(tile_choices)],
-    )
-    var selected_tile: int = _wait_for_tile_choice(owned_tile_indexes)
-    if selected_tile < 0:
-        return
-    _request_buy_miner_batch(selected_tile)
-
-
-func _start_inspection_resolution_prompt() -> void:
-    var fee: float = EconomyV0.INSPECTION_FEE
-    while true:
-        var free_exits: int = int(player_inspection_free_exits.get(player_index, 0))
-        if free_exits > 0:
-            _log_prompt("in inspection: use free exit voucher=%d? [y/n]" % [free_exits])
-            var use_voucher: bool = _wait_for_buy_choice()
-            if use_voucher:
-                player_inspection_free_exits[player_index] = free_exits - 1
-                player_in_inspection[player_index] = false
-                _request_use_inspection_voucher()
-                await _start_turn_prompt()
-                return
-        _log_prompt("in inspection: try doubles roll? [y/n]")
-        var roll_exit: bool = _wait_for_buy_choice()
-        if roll_exit:
-            _request_roll_inspection_exit()
-            return
-        var available_fiat: float = float(player_fiat_balances.get(player_index, 0.0))
-        if available_fiat < fee:
-            _log_note(
-                "cannot pay inspection fee: fiat=%.2f required=%.2f; choose doubles roll to continue"
-                % [available_fiat, fee],
-            )
-            continue
-        _log_prompt("in inspection: pay fee amount=%.2f [enter]" % [fee])
-        await _wait_for_enter()
-        _request_pay_inspection_fee()
-        await _start_turn_prompt()
-        return
-
-
 func _wait_for_buy_choice() -> bool:
     if not OS.has_method("read_string_from_stdin"):
         _log_note("stdin not available; defaulting to end turn")
@@ -956,22 +761,6 @@ func _wait_for_enter() -> void:
         OS.read_string_from_stdin()
         return
     _log_note("stdin not available; continuing")
-
-
-func _wait_for_tile_choice(valid_tile_indexes: Array[int]) -> int:
-    if not OS.has_method("read_string_from_stdin"):
-        return -1
-    var input_text: String = OS.read_string_from_stdin().strip_edges().to_lower()
-    if input_text.is_empty():
-        return -1
-    if not input_text.is_valid_int():
-        _log_note("invalid tile index '%s'; skipping miner purchase" % input_text)
-        return -1
-    var tile_index: int = int(input_text)
-    if not valid_tile_indexes.has(tile_index):
-        _log_note("tile index %d is not a valid owned property; skipping miner purchase" % tile_index)
-        return -1
-    return tile_index
 
 
 func _log_server(message: String) -> void:

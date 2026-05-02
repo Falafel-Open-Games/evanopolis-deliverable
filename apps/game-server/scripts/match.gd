@@ -5,13 +5,14 @@ const GameState = preload("res://scripts/state/game_state.gd")
 const PlayerState = preload("res://scripts/state/player_state.gd")
 const Client = preload("res://scripts/client.gd")
 const Config = preload("res://scripts/config.gd")
-const BearV0Deck = preload("res://scripts/incidents/bear_v0_deck.gd")
-const BullV0Deck = preload("res://scripts/incidents/bull_v0_deck.gd")
 const EconomyV0 = preload("res://scripts/rules/economy_v0.gd")
 
 const MAX_WAITING_ROOM_NAME_LENGTH: int = 16
 const MAX_WAITING_ROOM_ICON_COUNT: int = 16
 const MAX_WAITING_ROOM_COLOR_COUNT: int = 6
+const VISUAL_RING_BOARD_SIZE: int = 18
+const VISUAL_RING_START_TILES_BY_COLOR_ID: Array[int] = [12, 15, 0, 3, 6, 9]
+const LEGACY_MECHANIC_REMOVED_REASON: String = "legacy_mechanic_removed"
 
 var config: Config
 var clients: Array[Client]
@@ -26,8 +27,7 @@ var player_ids: Array[String]
 var next_event_seq: int = 1
 var board_state: Dictionary = { }
 var pending_action: Dictionary = { }
-var bear_card_cursor: int = 0
-var bull_card_cursor: int = 0
+var has_rolled_current_turn: bool = false
 var require_explicit_ready: bool = false
 
 
@@ -56,6 +56,7 @@ func start_game() -> void:
     if has_started:
         return
     has_started = true
+    has_rolled_current_turn = false
     _broadcast("rpc_game_started", [state.game_id])
     _broadcast("rpc_board_state", [board_state])
     _broadcast("rpc_turn_started", [state.current_player_index, state.turn_number, state.current_cycle])
@@ -76,6 +77,7 @@ func register_client_at_index(player_id: String, player_index: int, client: Clie
     var player: PlayerState = state.players[player_index]
     if player.color_id < 0:
         player.color_id = player_index
+    player.position = _starting_tile_for_color(player.color_id)
     _broadcast("rpc_player_joined", [player_id, player_index])
     if _has_all_clients() and not require_explicit_ready:
         start_game()
@@ -151,6 +153,7 @@ func rpc_set_player_identity(game_id: String, player_id: String, display_name: S
     player.display_name = normalized_display_name
     player.icon_id = icon_id
     player.color_id = color_id
+    player.position = _starting_tile_for_color(color_id)
     _broadcast("rpc_player_identity_changed", [resolved_index, player.display_name, player.icon_id, player.color_id])
     return ""
 
@@ -217,18 +220,18 @@ func rpc_roll_dice(game_id: String, player_id: String) -> void:
     if resolved_index != state.current_player_index:
         _send_to_player(resolved_index, "rpc_action_rejected", ["not_current_player"])
         return
-    var current_player: PlayerState = state.players[resolved_index]
-    if current_player.in_inspection:
-        _send_to_player(resolved_index, "rpc_action_rejected", ["inspection_resolution_required"])
-        return
     if not pending_action.is_empty():
         _send_to_player(resolved_index, "rpc_action_rejected", ["pending_action_required"])
+        return
+    if has_rolled_current_turn:
+        _send_to_player(resolved_index, "rpc_action_rejected", ["turn_already_rolled"])
         return
     var die_1: int = rng.randi_range(1, 6)
     var die_2: int = rng.randi_range(1, 6)
     var total: int = die_1 + die_2
     _broadcast("rpc_dice_rolled", [die_1, die_2, total])
     _server_move_pawn(total)
+    has_rolled_current_turn = true
 
 
 func _server_move_pawn(steps: int) -> void:
@@ -252,12 +255,8 @@ func _server_move_pawn(steps: int) -> void:
             str(landing_context.get("action_required", "")),
         ],
     )
-    _apply_property_landing_mining_reward(landing_context)
     if has_finished:
         return
-    var tile_type: String = str(landing_context.get("tile_type", ""))
-    if tile_type == "inspection":
-        _apply_inspection_to_player(state.current_player_index, "tile_inspection")
     var action_required: String = str(landing_context.get("action_required", ""))
     if action_required == "buy_or_end_turn":
         _set_pending_action(
@@ -280,10 +279,6 @@ func _server_move_pawn(steps: int) -> void:
         return
     if action_required == "end_turn":
         _set_pending_action("end_turn", to_tile)
-        _advance_turn()
-        return
-    if action_required == "resolve_incident":
-        _resolve_incident(to_tile)
         return
     _set_pending_action(action_required, to_tile)
 
@@ -300,6 +295,8 @@ func rpc_end_turn(game_id: String, player_id: String) -> String:
         return "invalid_player_id"
     if resolved_index != state.current_player_index:
         return "not_current_player"
+    if not has_rolled_current_turn:
+        return "roll_required"
     if pending_action.is_empty():
         return "no_pending_action"
     var pending_type: String = str(pending_action.get("type", ""))
@@ -349,48 +346,6 @@ func rpc_buy_property(game_id: String, player_id: String, tile_index: int) -> St
     return ""
 
 
-func rpc_buy_miner_batch(game_id: String, player_id: String, tile_index: int) -> String:
-    if not has_started:
-        return "match_not_started"
-    if has_finished:
-        return "match_finished"
-    if game_id != state.game_id:
-        return "invalid_game_id"
-    var resolved_index: int = _player_index_from_id(player_id)
-    if resolved_index < 0:
-        return "invalid_player_id"
-    if resolved_index != state.current_player_index:
-        return "not_current_player"
-    var player: PlayerState = state.players[resolved_index]
-    if player.in_inspection:
-        return "inspection_resolution_required"
-    if not pending_action.is_empty():
-        return "pending_action_required"
-    var tiles: Array = board_state.get("tiles", [])
-    if tile_index < 0 or tile_index >= tiles.size():
-        return "invalid_tile_index"
-    var tile: Dictionary = tiles[tile_index]
-    var tile_type: String = str(tile.get("tile_type", ""))
-    if not _is_property_tile(tile_type):
-        return "tile_not_mineable"
-    var owner_index: int = int(tile.get("owner_index", -1))
-    if owner_index != resolved_index:
-        return "not_property_owner"
-    var miner_batches: int = int(tile.get("miner_batches", 0))
-    if miner_batches >= EconomyV0.MAX_MINER_BATCHES_PER_PROPERTY:
-        return "max_miner_batches_reached"
-    var miner_price: float = EconomyV0.MINER_BATCH_PRICE
-    if player.fiat_balance < miner_price:
-        return "insufficient_fiat"
-    player.fiat_balance -= miner_price
-    tile["miner_batches"] = miner_batches + 1
-    tiles[tile_index] = tile
-    board_state["tiles"] = tiles
-    _broadcast("rpc_player_balance_changed", [resolved_index, -miner_price, 0.0, "miner_batch_purchased"])
-    _broadcast("rpc_miner_batches_added", [resolved_index, tile_index, 1])
-    return ""
-
-
 func rpc_pay_toll(game_id: String, player_id: String) -> String:
     if not has_started:
         return "match_not_started"
@@ -417,91 +372,12 @@ func rpc_pay_toll(game_id: String, player_id: String) -> String:
         return "invalid_toll_amount"
     var payer: PlayerState = state.players[resolved_index]
     if payer.fiat_balance < amount:
-        _apply_inspection_to_player(resolved_index, "insufficient_fiat_toll")
-        _advance_turn()
-        return ""
+        return "insufficient_fiat"
     var owner: PlayerState = state.players[owner_index]
     payer.fiat_balance -= amount
     owner.fiat_balance += amount
     _broadcast("rpc_toll_paid", [resolved_index, owner_index, amount])
     _advance_turn()
-    return ""
-
-
-func rpc_pay_inspection_fee(game_id: String, player_id: String) -> String:
-    if not has_started:
-        return "match_not_started"
-    if has_finished:
-        return "match_finished"
-    if game_id != state.game_id:
-        return "invalid_game_id"
-    var resolved_index: int = _player_index_from_id(player_id)
-    if resolved_index < 0:
-        return "invalid_player_id"
-    if resolved_index != state.current_player_index:
-        return "not_current_player"
-    var player: PlayerState = state.players[resolved_index]
-    if not player.in_inspection:
-        return "not_in_inspection"
-    var fee: float = EconomyV0.INSPECTION_FEE
-    if player.fiat_balance < fee:
-        return "insufficient_fiat"
-    player.fiat_balance -= fee
-    player.in_inspection = false
-    _broadcast("rpc_player_balance_changed", [resolved_index, -fee, 0.0, "inspection_fee_paid"])
-    return ""
-
-
-func rpc_roll_inspection_exit(game_id: String, player_id: String) -> String:
-    if not has_started:
-        return "match_not_started"
-    if has_finished:
-        return "match_finished"
-    if game_id != state.game_id:
-        return "invalid_game_id"
-    var resolved_index: int = _player_index_from_id(player_id)
-    if resolved_index < 0:
-        return "invalid_player_id"
-    if resolved_index != state.current_player_index:
-        return "not_current_player"
-    if not pending_action.is_empty():
-        return "pending_action_required"
-    var player: PlayerState = state.players[resolved_index]
-    if not player.in_inspection:
-        return "not_in_inspection"
-    var die_1: int = rng.randi_range(1, 6)
-    var die_2: int = rng.randi_range(1, 6)
-    var total: int = die_1 + die_2
-    _broadcast("rpc_dice_rolled", [die_1, die_2, total])
-    if die_1 == die_2:
-        player.in_inspection = false
-        _broadcast("rpc_player_balance_changed", [resolved_index, 0.0, 0.0, "inspection_exit_doubles"])
-        _server_move_pawn(total)
-        return ""
-    _advance_turn()
-    return ""
-
-
-func rpc_use_inspection_voucher(game_id: String, player_id: String) -> String:
-    if not has_started:
-        return "match_not_started"
-    if has_finished:
-        return "match_finished"
-    if game_id != state.game_id:
-        return "invalid_game_id"
-    var resolved_index: int = _player_index_from_id(player_id)
-    if resolved_index < 0:
-        return "invalid_player_id"
-    if resolved_index != state.current_player_index:
-        return "not_current_player"
-    var player: PlayerState = state.players[resolved_index]
-    if not player.in_inspection:
-        return "not_in_inspection"
-    if player.inspection_free_exits <= 0:
-        return "no_inspection_voucher"
-    player.inspection_free_exits -= 1
-    player.in_inspection = false
-    _broadcast("rpc_player_balance_changed", [resolved_index, 0.0, 0.0, "inspection_voucher_used"])
     return ""
 
 
@@ -531,13 +407,12 @@ func _build_landing_context(tile_index: int, landing_player_index: int) -> Dicti
     var tile_type: String = str(tile.get("tile_type", ""))
     var city: String = str(tile.get("city", ""))
     var owner_index: int = int(tile.get("owner_index", -1))
-    var miner_batches: int = int(tile.get("miner_batches", 0))
     var toll_due: float = 0.0
     var buy_price: float = 0.0
     if _is_property_tile(tile_type) and owner_index < 0:
         buy_price = _compute_property_price(city)
     if _is_property_tile(tile_type) and owner_index >= 0 and owner_index != landing_player_index:
-        toll_due = _compute_toll(city, miner_batches)
+        toll_due = _compute_toll(city)
     return {
         "tile_index": tile_index,
         "tile_type": tile_type,
@@ -550,8 +425,6 @@ func _build_landing_context(tile_index: int, landing_player_index: int) -> Dicti
 
 
 func _action_required_for_tile(tile_type: String, owner_index: int, landing_player_index: int) -> String:
-    if tile_type == "incident":
-        return "resolve_incident"
     if _is_property_tile(tile_type):
         if owner_index < 0:
             return "buy_or_end_turn"
@@ -571,39 +444,9 @@ func _tile_from_index(tile_index: int) -> Dictionary:
     return tiles[tile_index]
 
 
-func _compute_toll(city: String, miner_batches: int) -> float:
+func _compute_toll(city: String) -> float:
     var property_price: float = _compute_property_price(city)
-    return property_price * (0.10 + (0.025 * float(miner_batches)))
-
-
-func _apply_property_landing_mining_reward(landing_context: Dictionary) -> void:
-    var tile_type: String = str(landing_context.get("tile_type", ""))
-    if not _is_property_tile(tile_type):
-        return
-    var owner_index: int = int(landing_context.get("owner_index", -1))
-    if owner_index < 0 or owner_index >= state.players.size():
-        return
-    var tile_index: int = int(landing_context.get("tile_index", -1))
-    if tile_index < 0:
-        return
-    var tile: Dictionary = _tile_from_index(tile_index)
-    var miner_batches: int = int(tile.get("miner_batches", 0))
-    var reason: String = "no_miners"
-    var btc_payout: float = 0.0
-    var should_check_goal: bool = false
-    var owner: PlayerState = state.players[owner_index]
-    if miner_batches > 0:
-        if owner.in_inspection:
-            reason = "owner_in_inspection"
-        else:
-            btc_payout = EconomyV0.MINER_BTC_PAYOUT_PER_BATCH * float(miner_batches)
-            owner.bitcoin_balance += btc_payout
-            reason = "rewarded"
-            should_check_goal = true
-            _broadcast("rpc_player_balance_changed", [owner_index, 0.0, btc_payout, "property_landing_mining_reward"])
-    _broadcast("rpc_mining_reward", [owner_index, tile_index, miner_batches, btc_payout, reason])
-    if should_check_goal:
-        _check_btc_goal_victory(owner_index)
+    return property_price * 0.10
 
 
 func _compute_property_price(city: String) -> float:
@@ -618,43 +461,16 @@ func _base_property_price(city: String) -> float:
 
 
 func _build_board_state(board_size: int) -> Dictionary:
-    assert(board_size >= 24)
-    assert((board_size - 6) % 6 == 0)
-    var properties_per_city: int = int((board_size - 6) / 6)
+    assert(board_size == VISUAL_RING_BOARD_SIZE)
+    var properties_per_city: int = 3
     var tiles: Array[Dictionary] = []
     var index: int = 0
-    tiles.append(
-        {
-            "index": index,
-            "tile_type": "start",
-            "city": "",
-            "incident_kind": "",
-            "owner_index": -1,
-            "miner_batches": 0,
-        },
-    )
-    index += 1
-    index = _append_city_tiles(tiles, index, properties_per_city, "caracas")
-    index = _append_incident_tile(tiles, index, "bear")
-    index = _append_city_tiles(tiles, index, properties_per_city, "assuncion")
-    index = _append_incident_tile(tiles, index, "bear")
-    index = _append_city_tiles(tiles, index, properties_per_city, "ciudad_del_este")
-    tiles.append(
-        {
-            "index": index,
-            "tile_type": "inspection",
-            "city": "",
-            "incident_kind": "",
-            "owner_index": -1,
-            "miner_batches": 0,
-        },
-    )
-    index += 1
-    index = _append_city_tiles(tiles, index, properties_per_city, "minsk")
-    index = _append_incident_tile(tiles, index, "bear")
-    index = _append_city_tiles(tiles, index, properties_per_city, "irkutsk")
-    index = _append_incident_tile(tiles, index, "bear")
-    index = _append_city_tiles(tiles, index, properties_per_city, "rockdale")
+    index = _append_city_tiles(tiles, index, properties_per_city, "Irkutsk")
+    index = _append_city_tiles(tiles, index, properties_per_city, "Patagonia")
+    index = _append_city_tiles(tiles, index, properties_per_city, "Ciudad del Este")
+    index = _append_city_tiles(tiles, index, properties_per_city, "El Salvador")
+    index = _append_city_tiles(tiles, index, properties_per_city, "Angra dos Reis")
+    index = _append_city_tiles(tiles, index, properties_per_city, "Atacama")
     assert(index == board_size)
     assert(tiles.size() == board_size)
     return {
@@ -671,103 +487,11 @@ func _append_city_tiles(tiles: Array[Dictionary], start_index: int, count: int, 
                 "index": index,
                 "tile_type": "property",
                 "city": city_slug,
-                "incident_kind": "",
                 "owner_index": -1,
-                "miner_batches": 0,
             },
         )
         index += 1
     return index
-
-
-func _append_incident_tile(tiles: Array[Dictionary], start_index: int, kind: String) -> int:
-    tiles.append(
-        {
-            "index": start_index,
-            "tile_type": "incident",
-            "city": "",
-            "incident_kind": kind,
-            "owner_index": -1,
-            "miner_batches": 0,
-        },
-    )
-    return start_index + 1
-
-
-func _resolve_incident(tile_index: int) -> void:
-    _set_pending_action("resolve_incident", tile_index)
-    var tile: Dictionary = _tile_from_index(tile_index)
-    var incident_kind: String = str(tile.get("incident_kind", ""))
-    assert(not incident_kind.is_empty())
-    var card: Dictionary = _draw_incident_card(incident_kind)
-    var card_id: String = str(card.get("card_id", ""))
-    var card_text: String = str(card.get("card_text", ""))
-    _broadcast("rpc_incident_drawn", [tile_index, incident_kind, card_id, card_text])
-    _apply_incident_effect(card, state.current_player_index)
-    var next_incident_kind: String = _flip_incident_kind(incident_kind)
-    tile["incident_kind"] = next_incident_kind
-    var tiles: Array = board_state.get("tiles", [])
-    tiles[tile_index] = tile
-    board_state["tiles"] = tiles
-    _broadcast("rpc_incident_type_changed", [tile_index, next_incident_kind])
-    _advance_turn()
-
-
-func _draw_incident_card(incident_kind: String) -> Dictionary:
-    var bear_cards: Array[Dictionary] = BearV0Deck.CARDS
-    var bull_cards: Array[Dictionary] = BullV0Deck.CARDS
-    if incident_kind == "bear":
-        assert(not bear_cards.is_empty())
-        var bear_index: int = bear_card_cursor % bear_cards.size()
-        bear_card_cursor += 1
-        return bear_cards[bear_index]
-    assert(incident_kind == "bull")
-    assert(not bull_cards.is_empty())
-    var bull_index: int = bull_card_cursor % bull_cards.size()
-    bull_card_cursor += 1
-    return bull_cards[bull_index]
-
-
-func _apply_incident_effect(card: Dictionary, player_index: int) -> void:
-    assert(player_index >= 0 and player_index < state.players.size())
-    var effect: String = str(card.get("effect", ""))
-    var card_id: String = str(card.get("card_id", ""))
-    var player: PlayerState = state.players[player_index]
-    if effect == "balance_delta":
-        var fiat_delta: float = float(card.get("fiat_delta", 0.0))
-        var btc_delta: float = float(card.get("btc_delta", 0.0))
-        if fiat_delta < 0.0 and player.fiat_balance < abs(fiat_delta):
-            _apply_inspection_to_player(player_index, "insufficient_fiat_incident")
-            return
-        player.fiat_balance += fiat_delta
-        player.bitcoin_balance += btc_delta
-        _broadcast("rpc_player_balance_changed", [player_index, fiat_delta, btc_delta, card_id])
-        _check_btc_goal_victory(player_index)
-        return
-    if effect == "send_to_inspection":
-        _apply_inspection_to_player(player_index, card_id)
-        return
-    if effect == "grant_inspection_voucher":
-        player.inspection_free_exits += 1
-        _broadcast("rpc_inspection_voucher_granted", [player_index, 1, card_id])
-        return
-    assert(false)
-
-
-func _apply_inspection_to_player(player_index: int, reason: String) -> void:
-    assert(player_index >= 0 and player_index < state.players.size())
-    var player: PlayerState = state.players[player_index]
-    player.in_inspection = true
-    _broadcast("rpc_player_sent_to_inspection", [player_index, reason])
-
-
-func _flip_incident_kind(incident_kind: String) -> String:
-    if incident_kind == "bear":
-        return "bull"
-    if incident_kind == "bull":
-        return "bear"
-    assert(false)
-    return ""
 
 
 func next_sequence() -> int:
@@ -797,8 +521,6 @@ func build_state_snapshot() -> Dictionary:
                 "bitcoin_balance": player.bitcoin_balance,
                 "position": player.position,
                 "laps": player.laps,
-                "in_inspection": player.in_inspection,
-                "inspection_free_exits": player.inspection_free_exits,
             },
         )
     return {
@@ -814,6 +536,7 @@ func build_state_snapshot() -> Dictionary:
         "board_state": board_state.duplicate(true),
         "players": players_snapshot,
         "pending_action": pending_action.duplicate(true),
+        "has_rolled_current_turn": has_rolled_current_turn,
         "ready_count": _ready_player_count(),
     }
 
@@ -824,6 +547,14 @@ func restore_from_snapshot(snapshot: Dictionary) -> String:
     var players_snapshot: Array = snapshot.get("players", [])
     if players_snapshot.size() != state.players.size():
         return "invalid_snapshot_player_count"
+    var snapshot_board_state: Dictionary = snapshot.get("board_state", { })
+    if snapshot_board_state.is_empty():
+        return "invalid_snapshot_board_state"
+    if int(snapshot_board_state.get("size", -1)) != VISUAL_RING_BOARD_SIZE:
+        return "invalid_snapshot_board_size"
+    var snapshot_tiles: Array = snapshot_board_state.get("tiles", [])
+    if snapshot_tiles.size() != VISUAL_RING_BOARD_SIZE:
+        return "invalid_snapshot_board_tile_count"
 
     state.turn_number = int(snapshot.get("turn_number", state.turn_number))
     state.current_player_index = int(snapshot.get("current_player_index", state.current_player_index))
@@ -832,8 +563,9 @@ func restore_from_snapshot(snapshot: Dictionary) -> String:
     has_finished = bool(snapshot.get("has_finished", false))
     winner_index = int(snapshot.get("winner_index", -1))
     end_reason = str(snapshot.get("end_reason", ""))
-    board_state = snapshot.get("board_state", { }).duplicate(true)
+    board_state = snapshot_board_state.duplicate(true)
     pending_action = snapshot.get("pending_action", { }).duplicate(true)
+    has_rolled_current_turn = bool(snapshot.get("has_rolled_current_turn", false))
     next_event_seq = int(snapshot.get("last_sequence", 0)) + 1
     if next_event_seq < 1:
         next_event_seq = 1
@@ -850,10 +582,6 @@ func restore_from_snapshot(snapshot: Dictionary) -> String:
         restored_player.bitcoin_balance = float(player_in_snapshot.get("bitcoin_balance", restored_player.bitcoin_balance))
         restored_player.position = int(player_in_snapshot.get("position", restored_player.position))
         restored_player.laps = int(player_in_snapshot.get("laps", restored_player.laps))
-        restored_player.in_inspection = bool(player_in_snapshot.get("in_inspection", restored_player.in_inspection))
-        restored_player.inspection_free_exits = int(
-            player_in_snapshot.get("inspection_free_exits", restored_player.inspection_free_exits)
-        )
     return ""
 
 func _set_pending_action(action_type: String, tile_index: int, metadata: Dictionary = { }) -> void:
@@ -875,6 +603,7 @@ func _advance_turn() -> void:
     if has_finished:
         return
     _clear_pending_action()
+    has_rolled_current_turn = false
     var next_player_index: int = state.current_player_index + 1
     if next_player_index >= clients.size():
         next_player_index = 0
@@ -941,6 +670,21 @@ func _validate_identity_color_id(color_id: int) -> String:
     if color_id < 0 or color_id >= MAX_WAITING_ROOM_COLOR_COUNT:
         return "invalid_color_id"
     return ""
+
+
+func _starting_tile_for_color(color_id: int) -> int:
+    if config.board_size != VISUAL_RING_BOARD_SIZE:
+        return 0
+    var normalized_color_id: int = color_id
+    if normalized_color_id < 0:
+        normalized_color_id = 0
+    normalized_color_id = normalized_color_id % MAX_WAITING_ROOM_COLOR_COUNT
+    # The six color slots follow the board's named tile order, not importer order.
+    return VISUAL_RING_START_TILES_BY_COLOR_ID[normalized_color_id]
+
+
+func _wrap_tile_index(tile_index: int) -> int:
+    return ((tile_index % config.board_size) + config.board_size) % config.board_size
 
 
 func _identity_color_conflict_index(player_index: int, color_id: int) -> int:

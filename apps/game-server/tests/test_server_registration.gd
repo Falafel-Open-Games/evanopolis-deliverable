@@ -67,7 +67,7 @@ func test_sync_request_returns_snapshot_for_registered_peer() -> void:
     assert_eq(str(snapshot.get("game_id", "")), "demo_002", "snapshot includes game id")
     assert_eq(players.size(), 2, "snapshot includes player states")
     assert_false(snapshot.has("ready_players"), "snapshot no longer exposes top-level ready_players")
-    assert_eq(int(board.get("size", 0)), 24, "snapshot includes board state")
+    assert_eq(int(board.get("size", 0)), 18, "snapshot includes board state")
     assert_true(int(sync_result.get("final_seq", -1)) > 0, "sync includes latest broadcast sequence")
 
     var first_player: Dictionary = players[0]
@@ -207,10 +207,10 @@ func test_sync_snapshot_reflects_moved_pawn_state() -> void:
     var players: Array = snapshot.get("players", [])
     assert_eq(players.size(), 2, "snapshot includes both players")
     var player_zero: Dictionary = players[0]
-    assert_true(int(player_zero.get("position", 0)) > 0, "snapshot position reflects moved pawn")
+    assert_eq(int(player_zero.get("position", 0)), 0, "snapshot position reflects moved pawn")
 
 
-func test_reconnect_sync_includes_incident_mutated_player_balances() -> void:
+func test_reconnect_sync_includes_authoritative_player_balance_changes() -> void:
     var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
     var game_match = server.create_match(config)
@@ -219,13 +219,13 @@ func test_reconnect_sync_includes_incident_mutated_player_balances() -> void:
     assert_eq(str(server.register_remote_client("demo_002", "alice", 11, null).get("reason", "")), "", "alice joins")
     assert_eq(str(server.register_remote_client("demo_002", "bob", 12, null).get("reason", "")), "", "bob joins")
 
-    # Simulate bob going offline before alice triggers an incident effect.
+    # Simulate bob going offline before alice changes state.
     server.handle_peer_disconnected(12)
     assert_false(server.peer_slots.has(12), "bob peer slot removed on disconnect")
 
-    # Alice lands on first bear incident card: -1 fiat.
-    game_match._server_move_pawn(4)
-    assert_true(is_equal_approx(game_match.state.players[0].fiat_balance, 119.0), "incident effect applied to alice while bob offline")
+    # Alice changes authoritative balance while bob is offline.
+    game_match.state.players[0].fiat_balance = 117.0
+    assert_true(is_equal_approx(game_match.state.players[0].fiat_balance, 117.0), "balance applied to alice while bob offline")
 
     # Bob reconnects with a new peer and requests sync snapshot.
     server.authorize_peer(22, "bob")
@@ -240,7 +240,7 @@ func test_reconnect_sync_includes_incident_mutated_player_balances() -> void:
     assert_eq(players.size(), 2, "snapshot includes two players")
     if players.size() == 2:
         var alice: Dictionary = players[0]
-        assert_true(is_equal_approx(float(alice.get("fiat_balance", 0.0)), 119.0), "reconnected player sees alice updated fiat balance")
+        assert_true(is_equal_approx(float(alice.get("fiat_balance", 0.0)), 117.0), "reconnected player sees alice updated fiat balance")
         assert_true(is_equal_approx(float(alice.get("bitcoin_balance", 0.0)), 0.0), "reconnected player sees alice updated btc balance")
 
 
@@ -380,46 +380,6 @@ func test_pay_toll_rejects_peer_player_mismatch() -> void:
     assert_eq(str(result.get("reason", "")), "peer_player_mismatch", "pay toll rejects peer player mismatch")
 
 
-func test_buy_miner_batch_rejects_invalid_game_id() -> void:
-    var server: HeadlessServer = HeadlessServer.new()
-    var result: Dictionary = server.rpc_buy_miner_batch("missing_game", "alice", 6, 1)
-    assert_eq(str(result.get("reason", "")), "invalid_game_id", "buy miner rejects invalid game id")
-
-
-func test_buy_miner_batch_rejects_unregistered_peer() -> void:
-    var config: Config = Config.from_values("demo_002", 2, 24)
-    var server: HeadlessServer = HeadlessServer.new()
-    server.create_match(config)
-    var result: Dictionary = server.rpc_buy_miner_batch("demo_002", "alice", 6, 1)
-    assert_eq(str(result.get("reason", "")), "unregistered_peer", "buy miner rejects unknown peer")
-
-
-func test_buy_miner_batch_rejects_peer_game_id_mismatch() -> void:
-    var config: Config = Config.from_values("demo_002", 2, 24)
-    var server: HeadlessServer = HeadlessServer.new()
-    server.create_match(config)
-    server.peer_slots[1] = {
-        "game_id": "demo_003",
-        "player_id": "alice",
-        "player_index": 0,
-    }
-    var result: Dictionary = server.rpc_buy_miner_batch("demo_002", "alice", 6, 1)
-    assert_eq(str(result.get("reason", "")), "peer_game_id_mismatch", "buy miner rejects peer game mismatch")
-
-
-func test_buy_miner_batch_rejects_peer_player_mismatch() -> void:
-    var config: Config = Config.from_values("demo_002", 2, 24)
-    var server: HeadlessServer = HeadlessServer.new()
-    server.create_match(config)
-    server.peer_slots[1] = {
-        "game_id": "demo_002",
-        "player_id": "alice",
-        "player_index": 0,
-    }
-    var result: Dictionary = server.rpc_buy_miner_batch("demo_002", "bob", 6, 1)
-    assert_eq(str(result.get("reason", "")), "peer_player_mismatch", "buy miner rejects peer player mismatch")
-
-
 func test_sync_snapshot_includes_pending_action() -> void:
     var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()
@@ -435,8 +395,8 @@ func test_sync_snapshot_includes_pending_action() -> void:
     var snapshot: Dictionary = sync_result.get("snapshot", { })
     var pending_action: Dictionary = snapshot.get("pending_action", { })
     assert_eq(str(pending_action.get("type", "")), "buy_or_end_turn", "snapshot includes pending action type")
-    assert_eq(int(pending_action.get("tile_index", -1)), 6, "snapshot includes pending tile index")
-    assert_true(is_equal_approx(float(pending_action.get("buy_price", 0.0)), 4.0), "snapshot includes buy price for buy_or_end_turn")
+    assert_eq(int(pending_action.get("tile_index", -1)), 0, "snapshot includes pending tile index")
+    assert_true(is_equal_approx(float(pending_action.get("buy_price", 0.0)), 8.8), "snapshot includes buy price for buy_or_end_turn")
 
 
 func test_sync_snapshot_includes_pay_toll_pending_action_metadata() -> void:
@@ -449,10 +409,9 @@ func test_sync_snapshot_includes_pay_toll_pending_action_metadata() -> void:
     assert_eq(str(server.register_remote_client("demo_002", "bob", 12, null).get("reason", "")), "", "bob joins")
 
     var tiles: Array = game_match.board_state.get("tiles", [])
-    var tile: Dictionary = tiles[6]
+    var tile: Dictionary = tiles[0]
     tile["owner_index"] = 1
-    tile["miner_batches"] = 2
-    tiles[6] = tile
+    tiles[0] = tile
     game_match.board_state["tiles"] = tiles
 
     assert_eq(str(server.rpc_roll_dice("demo_002", "alice", 11).get("reason", "")), "", "roll succeeds")
@@ -461,9 +420,9 @@ func test_sync_snapshot_includes_pay_toll_pending_action_metadata() -> void:
     var snapshot: Dictionary = sync_result.get("snapshot", { })
     var pending_action: Dictionary = snapshot.get("pending_action", { })
     assert_eq(str(pending_action.get("type", "")), "pay_toll", "snapshot includes pay_toll pending action type")
-    assert_eq(int(pending_action.get("tile_index", -1)), 6, "snapshot includes pay_toll tile index")
+    assert_eq(int(pending_action.get("tile_index", -1)), 0, "snapshot includes pay_toll tile index")
     assert_eq(int(pending_action.get("owner_index", -1)), 1, "snapshot includes pay_toll owner index")
-    assert_true(is_equal_approx(float(pending_action.get("amount", 0.0)), 0.6), "snapshot includes pay_toll amount")
+    assert_true(is_equal_approx(float(pending_action.get("amount", 0.0)), 0.88), "snapshot includes pay_toll amount")
 
 
 func test_sync_snapshot_includes_finished_match_metadata() -> void:
@@ -476,14 +435,13 @@ func test_sync_snapshot_includes_finished_match_metadata() -> void:
     assert_eq(str(server.register_remote_client("demo_002", "bob", 12, null).get("reason", "")), "", "bob joins")
 
     var tiles: Array = game_match.board_state.get("tiles", [])
-    var tile: Dictionary = tiles[6]
+    var tile: Dictionary = tiles[0]
     tile["owner_index"] = 1
-    tile["miner_batches"] = 1
-    tiles[6] = tile
+    tiles[0] = tile
     game_match.board_state["tiles"] = tiles
-    game_match.state.players[1].bitcoin_balance = 19.0
-
-    assert_eq(str(server.rpc_roll_dice("demo_002", "alice", 11).get("reason", "")), "", "roll succeeds and ends match")
+    game_match.has_finished = true
+    game_match.winner_index = 1
+    game_match.end_reason = "btc_goal_reached"
 
     var sync_result: Dictionary = server.rpc_sync_request("demo_002", "alice", 11)
     assert_eq(str(sync_result.get("reason", "")), "", "sync succeeds")

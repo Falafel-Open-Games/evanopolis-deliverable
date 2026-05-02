@@ -2,18 +2,13 @@
 
 [ext_resource type="Script" uid="uid://didc1soy01cg2" path="res://scripts/game/game_root.gd" id="1_game_root"]
 [ext_resource type="Script" uid="uid://cecddchs60cgo" path="res://scripts/game/hud/game_hud_intro_controller.gd" id="2_8k27q"]
-[ext_resource type="Script" uid="uid://dn0dknmykby1v" path="res://scripts/game/hud/event_log_panel.gd" id="2_event_log_panel"]
-[ext_resource type="Script" uid="uid://bgneirixn2gn3" path="res://scripts/game/hud/players_list_panel.gd" id="2_players_list"]
 [ext_resource type="PackedScene" uid="uid://dlaj22qah2fc8" path="res://scenes/game/board/energy_diorama_pack.tscn" id="2_rx5uh"]
 [ext_resource type="PackedScene" uid="uid://d0e787kgdf1op" path="res://scenes/game/tiles/top_tiles.tscn" id="3_bca70"]
 [ext_resource type="PackedScene" uid="uid://ba7ecewut65r8" path="res://scenes/game/hud/top_bar.tscn" id="3_pevc5"]
 [ext_resource type="PackedScene" uid="uid://cpmxp51rnmgsr" path="res://scenes/app/main_logo.tscn" id="3_rx5uh"]
 [ext_resource type="PackedScene" uid="uid://bs4isqdfffe5o" path="res://scenes/game/pawns/pawns.tscn" id="4_0krdv"]
-[ext_resource type="PackedScene" uid="uid://dxfoynfa302k7" path="res://scenes/app/panel_blurried_bg.tscn" id="7_k63du"]
-[ext_resource type="FontFile" uid="uid://48vhvynb4wuw" path="res://fonts/Noto_Emoji/static/NotoEmoji-Light.ttf" id="8_k63du"]
-[ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="9_c2lvh"]
-[ext_resource type="PackedScene" uid="uid://fgk2cmer2rch" path="res://scenes/game/hud/player_list_card.tscn" id="10_ndy65"]
-[ext_resource type="PackedScene" uid="uid://12tkpljdw221" path="res://scenes/game/hud/event_log_item.tscn" id="13_i88f8"]
+[ext_resource type="PackedScene" uid="uid://5hkh50ulk56t" path="res://scenes/game/hud/players_list.tscn" id="7_k63du"]
+[ext_resource type="PackedScene" uid="uid://do5yn138o8j4l" path="res://scenes/game/hud/event_log.tscn" id="8_cylga"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_f3gwi"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -117,142 +112,34 @@ theme_override_constants/separation = 8
 [node name="TopBar" parent="HudRoot/SafeMargin/VBoxContainer" unique_id=766824955 instance=ExtResource("3_pevc5")]
 layout_mode = 2
 
-[node name="PlayersList" type="MarginContainer" parent="HudRoot/SafeMargin/VBoxContainer" unique_id=1753560605]
-clip_contents = true
+[node name="PlayersList" parent="HudRoot/SafeMargin/VBoxContainer" unique_id=1938680914 instance=ExtResource("7_k63du")]
 layout_mode = 2
-size_flags_horizontal = 8
-size_flags_vertical = 0
-script = ExtResource("2_players_list")
+size_flags_vertical = 1
 
-[node name="PanelBlurriedBg" parent="HudRoot/SafeMargin/VBoxContainer/PlayersList" unique_id=1137042040 instance=ExtResource("7_k63du")]
-layout_mode = 2
-
-[node name="Panel" type="Panel" parent="HudRoot/SafeMargin/VBoxContainer/PlayersList" unique_id=1839899662]
-clip_contents = true
-layout_mode = 2
-theme = ExtResource("9_c2lvh")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="HudRoot/SafeMargin/VBoxContainer/PlayersList" unique_id=1088718070]
-layout_mode = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="HudRoot/SafeMargin/VBoxContainer/PlayersList/VBoxContainer" unique_id=1183429703]
-layout_mode = 2
-size_flags_horizontal = 8
-size_flags_vertical = 0
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 4
-
-[node name="ListToggleButton" type="Button" parent="HudRoot/SafeMargin/VBoxContainer/PlayersList/VBoxContainer/MarginContainer" unique_id=183947229]
-layout_mode = 2
-mouse_default_cursor_shape = 2
-theme_override_fonts/font = ExtResource("8_k63du")
-theme_override_font_sizes/font_size = 17
-text = "👥"
-flat = true
-
-[node name="PlayerListSeats" type="MarginContainer" parent="HudRoot/SafeMargin/VBoxContainer/PlayersList/VBoxContainer" unique_id=1942591192]
-layout_mode = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = -8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="VBoxContainer" type="VBoxContainer" parent="HudRoot/SafeMargin/VBoxContainer/PlayersList/VBoxContainer/PlayerListSeats" unique_id=1565819270]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="PlayerListCard" parent="HudRoot/SafeMargin/VBoxContainer/PlayersList/VBoxContainer/PlayerListSeats/VBoxContainer" unique_id=797456748 instance=ExtResource("10_ndy65")]
-visible = false
-layout_mode = 2
-
-[node name="PlayerListCard2" parent="HudRoot/SafeMargin/VBoxContainer/PlayersList/VBoxContainer/PlayerListSeats/VBoxContainer" unique_id=426410266 instance=ExtResource("10_ndy65")]
-visible = false
-layout_mode = 2
-
-[node name="PlayerListCard3" parent="HudRoot/SafeMargin/VBoxContainer/PlayersList/VBoxContainer/PlayerListSeats/VBoxContainer" unique_id=552507721 instance=ExtResource("10_ndy65")]
-visible = false
-layout_mode = 2
-
-[node name="PlayerListCard4" parent="HudRoot/SafeMargin/VBoxContainer/PlayersList/VBoxContainer/PlayerListSeats/VBoxContainer" unique_id=778358958 instance=ExtResource("10_ndy65")]
-visible = false
-layout_mode = 2
-
-[node name="PlayerListCard5" parent="HudRoot/SafeMargin/VBoxContainer/PlayersList/VBoxContainer/PlayerListSeats/VBoxContainer" unique_id=900510592 instance=ExtResource("10_ndy65")]
-layout_mode = 2
-
-[node name="PlayerListCard6" parent="HudRoot/SafeMargin/VBoxContainer/PlayersList/VBoxContainer/PlayerListSeats/VBoxContainer" unique_id=1314885357 instance=ExtResource("10_ndy65")]
-layout_mode = 2
-
-[node name="EventLog" type="MarginContainer" parent="HudRoot/SafeMargin/VBoxContainer" unique_id=2142050146]
-layout_mode = 2
-size_flags_horizontal = 8
-size_flags_vertical = 2
-script = ExtResource("2_event_log_panel")
-
-[node name="PanelBlurriedBg" parent="HudRoot/SafeMargin/VBoxContainer/EventLog" unique_id=2033109942 instance=ExtResource("7_k63du")]
-layout_mode = 2
-
-[node name="Panel" type="Panel" parent="HudRoot/SafeMargin/VBoxContainer/EventLog" unique_id=607734954]
-layout_mode = 2
-theme = ExtResource("9_c2lvh")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="HudRoot/SafeMargin/VBoxContainer/EventLog" unique_id=1177638003]
-layout_mode = 2
-
-[node name="ContainerIcon" type="MarginContainer" parent="HudRoot/SafeMargin/VBoxContainer/EventLog/VBoxContainer" unique_id=619453559]
-layout_mode = 2
-size_flags_horizontal = 8
-size_flags_vertical = 8
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 4
-
-[node name="EventLogToggleButton" type="Button" parent="HudRoot/SafeMargin/VBoxContainer/EventLog/VBoxContainer/ContainerIcon" unique_id=7943256]
-layout_mode = 2
-mouse_default_cursor_shape = 2
-theme_override_fonts/font = ExtResource("8_k63du")
-theme_override_font_sizes/font_size = 17
-text = "📃"
-flat = true
-
-[node name="EventList" type="MarginContainer" parent="HudRoot/SafeMargin/VBoxContainer/EventLog/VBoxContainer" unique_id=1386343401]
-visible = false
-custom_minimum_size = Vector2(212, 0)
+[node name="EventLog" parent="HudRoot/SafeMargin/VBoxContainer" unique_id=1558601936 instance=ExtResource("8_cylga")]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = -8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
 
-[node name="ScrollContainer" type="ScrollContainer" parent="HudRoot/SafeMargin/VBoxContainer/EventLog/VBoxContainer/EventList" unique_id=1178013249]
-custom_minimum_size = Vector2(173, 60)
+[node name="TurnActions" type="MarginContainer" parent="HudRoot/SafeMargin/VBoxContainer" unique_id=1641847805]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HudRoot/SafeMargin/VBoxContainer/TurnActions" unique_id=2103199]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HudRoot/SafeMargin/VBoxContainer/EventLog/VBoxContainer/EventList/ScrollContainer" unique_id=927230261]
+[node name="RollDice" type="Button" parent="HudRoot/SafeMargin/VBoxContainer/TurnActions/HBoxContainer" unique_id=1091890019]
 layout_mode = 2
-theme_override_constants/separation = 4
+text = "Roll Dice"
 
-[node name="EventLogItem" parent="HudRoot/SafeMargin/VBoxContainer/EventLog/VBoxContainer/EventList/ScrollContainer/VBoxContainer" unique_id=1446434861 instance=ExtResource("13_i88f8")]
+[node name="SellVsMineSlider" type="HSlider" parent="HudRoot/SafeMargin/VBoxContainer/TurnActions/HBoxContainer" unique_id=1269343488]
+custom_minimum_size = Vector2(146, 0)
 layout_mode = 2
+value = 50.0
 
-[node name="EventLogItem2" parent="HudRoot/SafeMargin/VBoxContainer/EventLog/VBoxContainer/EventList/ScrollContainer/VBoxContainer" unique_id=1080302883 instance=ExtResource("13_i88f8")]
+[node name="EndTurn" type="Button" parent="HudRoot/SafeMargin/VBoxContainer/TurnActions/HBoxContainer" unique_id=1567234429]
 layout_mode = 2
-
-[node name="EventLogItem3" parent="HudRoot/SafeMargin/VBoxContainer/EventLog/VBoxContainer/EventList/ScrollContainer/VBoxContainer" unique_id=483931715 instance=ExtResource("13_i88f8")]
-layout_mode = 2
-
-[node name="EventLogItem4" parent="HudRoot/SafeMargin/VBoxContainer/EventLog/VBoxContainer/EventList/ScrollContainer/VBoxContainer" unique_id=1948597580 instance=ExtResource("13_i88f8")]
-layout_mode = 2
-
-[node name="EventLogItem5" parent="HudRoot/SafeMargin/VBoxContainer/EventLog/VBoxContainer/EventList/ScrollContainer/VBoxContainer" unique_id=1334276265 instance=ExtResource("13_i88f8")]
-layout_mode = 2
-
-[node name="EventLogItem6" parent="HudRoot/SafeMargin/VBoxContainer/EventLog/VBoxContainer/EventList/ScrollContainer/VBoxContainer" unique_id=1646965126 instance=ExtResource("13_i88f8")]
-layout_mode = 2
+text = "End Turn"
 
 [node name="HudIntroController" type="Node" parent="HudRoot" unique_id=1251668087 node_paths=PackedStringArray("top_bar", "players_list", "event_log", "initial_logo")]
 script = ExtResource("2_8k27q")

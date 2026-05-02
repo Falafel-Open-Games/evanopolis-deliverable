@@ -62,7 +62,7 @@ describe("rooms-api", () => {
         entry_fee_tier: "average",
         player_count: 4,
         experimental: {
-          board_size: 30,
+          turn_duration_seconds: 60,
         },
       },
     });
@@ -75,7 +75,7 @@ describe("rooms-api", () => {
       entry_fee_amount: "500000000000000000",
       player_count: 4,
       experimental: {
-        board_size: 30,
+        turn_duration_seconds: 60,
       },
       created_at: "2026-03-17T12:00:00.000Z",
     });

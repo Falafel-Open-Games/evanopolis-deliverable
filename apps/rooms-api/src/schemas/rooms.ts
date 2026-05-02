@@ -2,7 +2,6 @@ import { z } from "zod";
 
 const experimentalSchema = z
   .object({
-    board_size: z.number().int().positive().optional(),
     turn_duration_seconds: z.number().int().positive().optional(),
   })
   .strict();

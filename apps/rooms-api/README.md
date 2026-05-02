@@ -27,6 +27,7 @@ The current room contract includes:
   characters after trimming
 - `entry_fee_tier` and derived `entry_fee_amount` for room-level payment policy
 - `player_count` for the intended room size
+- optional `experimental.turn_duration_seconds` for test-only timing overrides
 
 The public room lookup response currently returns:
 

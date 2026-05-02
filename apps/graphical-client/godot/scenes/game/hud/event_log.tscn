@@ -1,0 +1,74 @@
+[gd_scene format=3 uid="uid://do5yn138o8j4l"]
+
+[ext_resource type="Script" uid="uid://dn0dknmykby1v" path="res://scripts/game/hud/event_log_panel.gd" id="1_bd4m2"]
+[ext_resource type="PackedScene" uid="uid://dxfoynfa302k7" path="res://scenes/app/panel_blurried_bg.tscn" id="2_rbb66"]
+[ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="3_qyssl"]
+[ext_resource type="FontFile" uid="uid://48vhvynb4wuw" path="res://fonts/Noto_Emoji/static/NotoEmoji-Light.ttf" id="4_2gcyc"]
+[ext_resource type="PackedScene" uid="uid://12tkpljdw221" path="res://scenes/game/hud/event_log_item.tscn" id="5_7t5kf"]
+
+[node name="EventLog" type="MarginContainer" unique_id=1558601936]
+size_flags_horizontal = 8
+size_flags_vertical = 2
+script = ExtResource("1_bd4m2")
+
+[node name="PanelBlurriedBg" parent="." unique_id=1137042040 instance=ExtResource("2_rbb66")]
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="." unique_id=1234675540]
+layout_mode = 2
+theme = ExtResource("3_qyssl")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1880622881]
+layout_mode = 2
+
+[node name="ContainerIcon" type="MarginContainer" parent="VBoxContainer" unique_id=1008187251]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 4
+
+[node name="EventLogToggleButton" type="Button" parent="VBoxContainer/ContainerIcon" unique_id=46038832]
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme_override_fonts/font = ExtResource("4_2gcyc")
+theme_override_font_sizes/font_size = 17
+text = "📃"
+flat = true
+
+[node name="EventList" type="MarginContainer" parent="VBoxContainer" unique_id=1980208631]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = -8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/EventList" unique_id=1444493409]
+custom_minimum_size = Vector2(173, 60)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/EventList/ScrollContainer" unique_id=259684599]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="EventLogItem" parent="VBoxContainer/EventList/ScrollContainer/VBoxContainer" unique_id=1446434861 instance=ExtResource("5_7t5kf")]
+layout_mode = 2
+
+[node name="EventLogItem2" parent="VBoxContainer/EventList/ScrollContainer/VBoxContainer" unique_id=1365382283 instance=ExtResource("5_7t5kf")]
+layout_mode = 2
+
+[node name="EventLogItem3" parent="VBoxContainer/EventList/ScrollContainer/VBoxContainer" unique_id=1911099147 instance=ExtResource("5_7t5kf")]
+layout_mode = 2
+
+[node name="EventLogItem4" parent="VBoxContainer/EventList/ScrollContainer/VBoxContainer" unique_id=41197450 instance=ExtResource("5_7t5kf")]
+layout_mode = 2
+
+[node name="EventLogItem5" parent="VBoxContainer/EventList/ScrollContainer/VBoxContainer" unique_id=1260625036 instance=ExtResource("5_7t5kf")]
+layout_mode = 2
+
+[node name="EventLogItem6" parent="VBoxContainer/EventList/ScrollContainer/VBoxContainer" unique_id=1231837481 instance=ExtResource("5_7t5kf")]
+layout_mode = 2

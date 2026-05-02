@@ -75,7 +75,6 @@ Content-Type: application/json
   "entry_fee_tier": "average",
   "player_count": 4,
   "experimental": {
-    "board_size": 30,
     "turn_duration_seconds": 60
   }
 }
@@ -109,7 +108,6 @@ Response:
   "entry_fee_amount": "500000000000000000",
   "player_count": 4,
   "experimental": {
-    "board_size": 30,
     "turn_duration_seconds": 60
   },
   "created_at": "2026-03-12T18:30:00Z"
@@ -138,7 +136,6 @@ Response:
   "entry_fee_amount": "500000000000000000",
   "player_count": 4,
   "experimental": {
-    "board_size": 30,
     "turn_duration_seconds": 60
   },
   "created_at": "2026-03-12T18:30:00Z"

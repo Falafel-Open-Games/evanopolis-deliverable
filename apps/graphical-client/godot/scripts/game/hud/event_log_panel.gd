@@ -42,7 +42,7 @@ func set_messages(messages: Array) -> void:
         label.text = ""
         item.visible = false
 
-    call_deferred("_scroll_to_bottom")
+    _queue_scroll_to_bottom()
 
 func _on_toggle_button_pressed() -> void:
     if event_list.visible == true:
@@ -57,10 +57,17 @@ func _set_expanded(is_expanded: bool) -> void:
     if is_expanded == true:
         size_flags_vertical = Control.SIZE_EXPAND_FILL
         event_list.visible = true
-        call_deferred("_scroll_to_bottom")
+        _queue_scroll_to_bottom()
         return
     size_flags_vertical = Control.SIZE_SHRINK_BEGIN
     event_list.visible = false
+
+func _queue_scroll_to_bottom() -> void:
+    call_deferred("_scroll_to_bottom_after_layout")
+
+func _scroll_to_bottom_after_layout() -> void:
+    await get_tree().process_frame
+    _scroll_to_bottom()
 
 func _scroll_to_bottom() -> void:
     var vertical_scroll_bar: VScrollBar = scroll_container.get_v_scroll_bar()

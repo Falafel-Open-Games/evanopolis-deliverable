@@ -4,13 +4,16 @@ extends Node3D
 const PawnView = preload("res://scripts/game/pawns/pawn.gd")
 const PlayerIdentityCardView = preload("res://scripts/app/player_identity_card.gd")
 const ANCHOR_EPSILON: float = 0.001
+const VISUAL_RING_START_TILES_BY_COLOR_ID: Array[int] = [12, 15, 0, 3, 6, 9]
 
 @onready var initial_positions: Node3D = get_node(^"InitialPositions")
 @onready var pawn_instances: Node3D = get_node(^"PawnInstances")
 
 var _pawns_by_player_index: Dictionary = { }
+var _authoritative_tile_positions_by_player_index: Dictionary = { }
 var _spawn_transforms_by_color_id: Array[Transform3D] = []
 var _legacy_color_slot_transforms: Array[Transform3D] = []
+var _tile_transforms_by_index: Array[Transform3D] = []
 var _template_mesh: Mesh = null
 var _template_materials_by_color_id: Array[Material] = []
 
@@ -21,6 +24,7 @@ func _ready() -> void:
 
 func bind_board_tiles(board_tiles_root: Node3D) -> void:
     assert(board_tiles_root != null)
+    _tile_transforms_by_index = _resolve_tile_transforms_by_index(board_tiles_root)
     _spawn_transforms_by_color_id = _resolve_start_transforms_from_tiles(board_tiles_root)
 
 func sync_waiting_room_slots(slots: Array) -> void:
@@ -34,7 +38,29 @@ func sync_waiting_room_slots(slots: Array) -> void:
         var player_index: int = int(slot.player_index)
         var color_id: int = int(slot.color_id)
         var pawn: Pawn = ensure_pawn(player_index, color_id)
-        pawn.configure(player_index, color_id, get_default_spawn_transform(color_id))
+        pawn.configure(player_index, color_id, _spawn_transform_for_player(player_index, color_id))
+        active_player_indices[player_index] = true
+
+    var player_indices: Array = _pawns_by_player_index.keys()
+    for player_index_variant in player_indices:
+        var player_index: int = int(player_index_variant)
+        if active_player_indices.has(player_index):
+            continue
+        remove_pawn(player_index)
+
+func sync_gameplay_player_states(player_states: Array) -> void:
+    assert(is_node_ready())
+    var active_player_indices: Dictionary = { }
+    for state_variant in player_states:
+        if state_variant == null:
+            continue
+        var player_index: int = int(state_variant.player_index)
+        if player_index < 0:
+            continue
+        var color_id: int = int(state_variant.color_id)
+        var pawn: Pawn = ensure_pawn(player_index, color_id)
+        pawn.set_color_id(color_id)
+        _apply_authoritative_tile_position(player_index)
         active_player_indices[player_index] = true
 
     var player_indices: Array = _pawns_by_player_index.keys()
@@ -54,7 +80,7 @@ func ensure_pawn(player_index: int, initial_color_id: int = PlayerIdentityCardVi
     pawn.set_mesh_template(_template_mesh, _template_materials_by_color_id)
     pawn_instances.add_child(pawn)
     _pawns_by_player_index[player_index] = pawn
-    pawn.configure(player_index, initial_color_id, get_default_spawn_transform(initial_color_id))
+    pawn.configure(player_index, initial_color_id, _spawn_transform_for_player(player_index, initial_color_id))
     return pawn
 
 func set_pawn_color(player_index: int, color_id: int) -> void:
@@ -69,9 +95,41 @@ func set_pawn_transform(player_index: int, board_transform: Transform3D) -> void
     var pawn: Pawn = ensure_pawn(player_index)
     pawn.set_board_transform(board_transform)
 
+func set_pawn_tile_index(player_index: int, tile_index: int) -> void:
+    assert(tile_index >= 0)
+    var tile_transform: Transform3D = get_tile_transform(tile_index)
+    set_pawn_transform(player_index, tile_transform)
+
+func sync_authoritative_tile_positions(tile_positions_by_player_index: Dictionary) -> void:
+    _authoritative_tile_positions_by_player_index = tile_positions_by_player_index.duplicate(true)
+    for player_index_variant in tile_positions_by_player_index.keys():
+        var player_index: int = int(player_index_variant)
+        var tile_index: int = int(tile_positions_by_player_index.get(player_index_variant, -1))
+        if tile_index < 0:
+            continue
+        set_pawn_tile_index(player_index, tile_index)
+
+func get_tile_transform(tile_index: int) -> Transform3D:
+    assert(_tile_transforms_by_index.size() > 0)
+    if tile_index >= _tile_transforms_by_index.size():
+        return _tile_transforms_by_index[tile_index % _tile_transforms_by_index.size()]
+    return _tile_transforms_by_index[tile_index]
+
 func get_default_spawn_transform(color_id: int) -> Transform3D:
     assert(_spawn_transforms_by_color_id.size() > 0)
     return _spawn_transforms_by_color_id[_resolved_color_id(color_id)]
+
+func _spawn_transform_for_player(player_index: int, color_id: int) -> Transform3D:
+    var tile_index: int = int(_authoritative_tile_positions_by_player_index.get(player_index, -1))
+    if tile_index >= 0 and _tile_transforms_by_index.size() > 0:
+        return get_tile_transform(tile_index)
+    return get_default_spawn_transform(color_id)
+
+func _apply_authoritative_tile_position(player_index: int) -> void:
+    var tile_index: int = int(_authoritative_tile_positions_by_player_index.get(player_index, -1))
+    if tile_index < 0:
+        return
+    set_pawn_tile_index(player_index, tile_index)
 
 func remove_pawn(player_index: int) -> void:
     var pawn: Pawn = _pawns_by_player_index.get(player_index, null) as Pawn
@@ -88,10 +146,41 @@ func clear_pawns() -> void:
         pawn.queue_free()
     _pawns_by_player_index.clear()
 
+func debug_print_pawn_layout(context: String = "") -> void:
+    if not _should_print_debug_gameplay_state():
+        return
+    var pawn_summaries: Array[String] = []
+    var player_indices: Array = _pawns_by_player_index.keys()
+    player_indices.sort()
+    for player_index_variant in player_indices:
+        var player_index: int = int(player_index_variant)
+        var pawn: Pawn = _pawns_by_player_index[player_index] as Pawn
+        if pawn == null:
+            continue
+        pawn_summaries.append(
+            "p%d color=%d origin=(%.2f, %.2f, %.2f)" % [
+                player_index,
+                pawn.color_id,
+                pawn.transform.origin.x,
+                pawn.transform.origin.y,
+                pawn.transform.origin.z,
+            ]
+        )
+    print_debug("[pawn-layout%s] %s" % [
+        "" if context.is_empty() else ":%s" % context,
+        ", ".join(pawn_summaries),
+    ])
+
+
+func _should_print_debug_gameplay_state() -> bool:
+    return OS.has_environment("EVANOPOLIS_DEBUG_GAMEPLAY")
+
 func _capture_template_and_spawn_positions() -> void:
     var markers: Array[MeshInstance3D] = []
     _collect_marker_meshes(initial_positions, markers)
     assert(markers.size() == PlayerIdentityCardView.PLAYER_REPRESENTATION_COLORS.size())
+    # Imported child order is not stable. The marker suffix is the only index
+    # source we trust here.
     markers.sort_custom(func(first: MeshInstance3D, second: MeshInstance3D) -> bool:
         return _marker_export_index(first) < _marker_export_index(second)
     )
@@ -149,15 +238,32 @@ func _resolved_color_id(requested_color_id: int) -> int:
     return requested_color_id
 
 func _resolve_start_transforms_from_tiles(board_tiles_root: Node3D) -> Array[Transform3D]:
-    var ordered_tiles: Array[Dictionary] = _ordered_tile_entries(board_tiles_root)
+    if _tile_transforms_by_index.is_empty():
+        _tile_transforms_by_index = _resolve_tile_transforms_by_index(board_tiles_root)
     var start_transforms: Array[Transform3D] = []
     start_transforms.resize(PlayerIdentityCardView.PLAYER_REPRESENTATION_COLORS.size())
     for color_id in range(PlayerIdentityCardView.PLAYER_REPRESENTATION_COLORS.size()):
-        var legacy_color_slot_transform: Transform3D = _legacy_color_slot_transforms[color_id]
-        var nearest_tile_index: int = _nearest_tile_index(legacy_color_slot_transform.origin, ordered_tiles)
-        assert(nearest_tile_index >= 0)
-        start_transforms[color_id] = ordered_tiles[nearest_tile_index].get("transform", Transform3D.IDENTITY)
+        var tile_index: int = _starting_tile_for_color(color_id)
+        start_transforms[color_id] = get_tile_transform(tile_index)
     return start_transforms
+
+func _starting_tile_for_color(color_id: int) -> int:
+    assert(_tile_transforms_by_index.size() > 0)
+    return VISUAL_RING_START_TILES_BY_COLOR_ID[_resolved_color_id(color_id)]
+
+func _resolve_tile_transforms_by_index(board_tiles_root: Node3D) -> Array[Transform3D]:
+    var ordered_tiles: Array[Dictionary] = _ordered_tile_entries(board_tiles_root)
+    var transforms: Array[Transform3D] = []
+    var max_tile_index: int = -1
+    for tile_entry in ordered_tiles:
+        max_tile_index = max(max_tile_index, int(tile_entry.get("tile_index", -1)))
+    assert(max_tile_index >= 0)
+    transforms.resize(max_tile_index + 1)
+    for tile_entry in ordered_tiles:
+        var tile_index: int = int(tile_entry.get("tile_index", -1))
+        assert(tile_index >= 0 and tile_index < transforms.size())
+        transforms[tile_index] = tile_entry.get("transform", Transform3D.IDENTITY)
+    return transforms
 
 func _ordered_tile_entries(board_tiles_root: Node3D) -> Array[Dictionary]:
     var tile_entries: Array[Dictionary] = []
@@ -169,11 +275,10 @@ func _ordered_tile_entries(board_tiles_root: Node3D) -> Array[Dictionary]:
         tile_entries.append(_build_tile_entry(tile_instance))
 
     tile_entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-        return float(a.get("angle", 0.0)) < float(b.get("angle", 0.0))
+        return int(a.get("tile_index", 0)) < int(b.get("tile_index", 0))
     )
 
-    for tile_index in range(tile_entries.size()):
-        tile_entries[tile_index]["ring_index"] = tile_index
+    # Tile indices come from the exported node names, never from child order.
     return tile_entries
 
 func _build_tile_entry(tile_instance: Node3D) -> Dictionary:
@@ -190,6 +295,7 @@ func _build_tile_entry(tile_instance: Node3D) -> Dictionary:
 
     return {
         "tile_name": String(tile_instance.name),
+        "tile_index": _tile_export_index(tile_instance),
         "transform": pawn_transform_local,
         "position": pawn_transform_local.origin,
         "angle": angle,
@@ -228,6 +334,15 @@ func _find_tile_mesh(tile_instance: Node3D) -> MeshInstance3D:
         if mesh_instance != null:
             return mesh_instance
     return null
+
+func _tile_export_index(tile_instance: Node3D) -> int:
+    var tile_name: String = String(tile_instance.name)
+    var tile_name_parts: PackedStringArray = tile_name.split("_")
+    assert(tile_name_parts.size() > 1)
+    var suffix_text: String = tile_name_parts[tile_name_parts.size() - 1]
+    var export_index: int = int(suffix_text)
+    assert(export_index >= 0)
+    return export_index
 
 func _nearest_tile_index(target_position: Vector3, tile_entries: Array[Dictionary]) -> int:
     var nearest_index: int = -1

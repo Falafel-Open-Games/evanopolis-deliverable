@@ -21,23 +21,7 @@ func rpc_buy_property(_game_id: String, _player_id: String, _tile_index: int) ->
     pass
 
 @rpc("any_peer")
-func rpc_buy_miner_batch(_game_id: String, _player_id: String, _tile_index: int) -> void:
-    pass
-
-@rpc("any_peer")
 func rpc_pay_toll(_game_id: String, _player_id: String) -> void:
-    pass
-
-@rpc("any_peer")
-func rpc_pay_inspection_fee(_game_id: String, _player_id: String) -> void:
-    pass
-
-@rpc("any_peer")
-func rpc_roll_inspection_exit(_game_id: String, _player_id: String) -> void:
-    pass
-
-@rpc("any_peer")
-func rpc_use_inspection_voucher(_game_id: String, _player_id: String) -> void:
     pass
 
 @rpc("any_peer")
@@ -114,10 +98,6 @@ func rpc_tile_landed(
     pass
 
 @rpc("authority")
-func rpc_incident_drawn(_seq: int, _tile_index: int, _incident_kind: String, _card_id: String, _card_text: String) -> void:
-    pass
-
-@rpc("authority")
 func rpc_player_balance_changed(_seq: int, _player_index: int, _fiat_delta: float, _btc_delta: float, _reason: String) -> void:
     pass
 
@@ -126,38 +106,11 @@ func rpc_cycle_started(_seq: int, _cycle: int, _inflation_active: bool) -> void:
     pass
 
 @rpc("authority")
-func rpc_incident_type_changed(_seq: int, _tile_index: int, _incident_kind: String) -> void:
-    pass
-
-@rpc("authority")
 func rpc_property_acquired(_seq: int, _player_index: int, _tile_index: int, _price: float) -> void:
     pass
 
 @rpc("authority")
-func rpc_miner_batches_added(_seq: int, _player_index: int, _tile_index: int, _count: int) -> void:
-    pass
-
-@rpc("authority")
-func rpc_mining_reward(
-        _seq: int,
-        _owner_index: int,
-        _tile_index: int,
-        _miner_batches: int,
-        _btc_reward: float,
-        _reason: String,
-) -> void:
-    pass
-
-@rpc("authority")
 func rpc_toll_paid(_seq: int, _payer_index: int, _owner_index: int, _amount: float) -> void:
-    pass
-
-@rpc("authority")
-func rpc_player_sent_to_inspection(_seq: int, _player_index: int, _reason: String) -> void:
-    pass
-
-@rpc("authority")
-func rpc_inspection_voucher_granted(_seq: int, _player_index: int, _amount: int, _reason: String) -> void:
     pass
 
 @rpc("authority")

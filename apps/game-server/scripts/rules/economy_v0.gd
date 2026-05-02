@@ -10,17 +10,17 @@ const MINER_BTC_PAYOUT_PER_BATCH: float = 2.0
 
 
 static func base_property_price(city: String) -> float:
-    if city == "caracas":
+    if city == "Patagonia":
         return 3.0
-    if city == "assuncion":
+    if city == "Ciudad del Este":
         return 4.0
-    if city == "ciudad_del_este":
+    if city == "El Salvador":
         return 5.0
-    if city == "minsk":
+    if city == "Angra dos Reis":
         return 6.0
-    if city == "irkutsk":
+    if city == "Atacama":
         return 7.0
-    if city == "rockdale":
+    if city == "Irkutsk":
         return 8.0
     assert(false)
     return 0.0
