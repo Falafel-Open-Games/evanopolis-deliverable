@@ -11,8 +11,8 @@ const PawnCollectionView = preload("res://scripts/game/pawns/pawn_collection.gd"
 @onready var hud_root: CanvasLayer = get_node(^"HudRoot")
 @onready var camera_rig: Node3D = get_node(^"CameraRig")
 
-@onready var top_bar: TopBarView = get_node("HudRoot/SafeMargin/TopBar")
-@onready var players_list_panel: PlayersListPanelView = get_node(^"HudRoot/SafeMargin/PlayersList")
+@onready var top_bar: TopBarView = get_node("HudRoot/SafeMargin/VBoxContainer/TopBar")
+@onready var players_list_panel: PlayersListPanelView = get_node(^"HudRoot/SafeMargin/VBoxContainer/PlayersList")
 
 func _ready() -> void:
     assert(board_root)
@@ -30,11 +30,12 @@ func set_local_player_identity(icon_id: int, color_id: int) -> void:
         return
     top_bar.set_local_player_identity(icon_id, color_id)
 
-func set_turn_info(turn_number: int, player_name: String, is_local_turn: bool) -> void:
+func set_turn_info(turn_number: int, player_name: String, is_local_turn: bool, current_player_index: int) -> void:
     if not is_node_ready():
-        call_deferred("set_turn_info", turn_number, player_name, is_local_turn)
+        call_deferred("set_turn_info", turn_number, player_name, is_local_turn, current_player_index)
         return
     top_bar.set_turn_info(turn_number, player_name, is_local_turn)
+    players_list_panel.set_current_turn_player_index(current_player_index)
 
 func set_player_slots(slots: Array) -> void:
     if not is_node_ready():

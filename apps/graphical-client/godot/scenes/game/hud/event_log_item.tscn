@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://12tkpljdw221"]
+
+[ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="1_fd87n"]
+
+[node name="EventLogItem" type="MarginContainer" unique_id=1446434861]
+
+[node name="Label" type="Label" parent="." unique_id=2012681576]
+custom_minimum_size = Vector2(172, 0)
+layout_mode = 2
+theme = ExtResource("1_fd87n")
+theme_type_variation = &"SmallLabel"
+text = "🎮️ Game started"

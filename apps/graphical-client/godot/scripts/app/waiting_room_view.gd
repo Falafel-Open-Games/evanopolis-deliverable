@@ -18,7 +18,6 @@ var _waiting_room_state: WaitingRoomState = null
 @export var identity_card: PlayerIdentityCard
 @export var room_facts_label: Label
 @export var seats_vbox: VBoxContainer
-@export var roster_footer_label: Label
 @export var identity_editor_ui: PlayerIdentityEditorUI
 
 func _ready() -> void:
@@ -28,7 +27,6 @@ func _ready() -> void:
     assert(room_facts_label)
     assert(seats_vbox)
     assert(ready_button)
-    assert(roster_footer_label)
     assert(identity_editor_ui)
 
     ready_button.pressed.connect(_on_ready_button_pressed)
@@ -69,8 +67,6 @@ func _show_placeholder() -> void:
     identity_editor_ui.sync_authoritative_identity("", "", DEFAULT_IDENTITY_ICON_FRAME, DEFAULT_IDENTITY_COLOR_ID)
     identity_editor_ui.set_unavailable_color_ids([])
     room_facts_label.text = "Room facts"
-    roster_footer_label.text = ""
-    roster_footer_label.visible = false
     ready_button.text = "Ready"
     ready_button.disabled = true
 
@@ -98,8 +94,6 @@ func _render_waiting_room() -> void:
         _waiting_room_state.ready_count,
         _waiting_room_state.room_capacity,
     ]
-    roster_footer_label.text = _waiting_room_state.footer_note
-    roster_footer_label.visible = not _waiting_room_state.footer_note.strip_edges().is_empty()
 
     if _waiting_room_state.local_player_ready:
         ready_button.text = "Ready Locked In"

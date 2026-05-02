@@ -23,10 +23,6 @@ window/size/viewport_height=360
 window/size/initial_position_type=4
 window/stretch/mode="canvas_items"
 
-[gui]
-
-theme/custom="uid://chh78tpswepp7"
-
 [physics]
 
 3d/physics_engine="Jolt Physics"

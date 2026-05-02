@@ -2,11 +2,10 @@ class_name PlayerListCard
 extends MarginContainer
 
 const GamePlayerHudState = preload("res://scripts/app/models/game_player_hud_state.gd")
+const GameEconomyConfigModel = preload("res://scripts/app/models/game_economy_config.gd")
 const PlayerIdentityCardView = preload("res://scripts/app/player_identity_card.gd")
 
-const BITCOIN_GOAL: float = 20.0
-
-@onready var slot_index_label: Label = get_node(^"SlotIndex")
+@onready var background_highlight: Panel = get_node(^"BackgroundHighlight")
 @onready var avatar_box: AvatarBox = get_node(^"SeatRow/AvatarBox")
 @onready var display_name_label: Label = get_node(^"SeatRow/VBoxContainer/DisplayNameLabel")
 @onready var fiat_value_label: Label = get_node(^"SeatRow/VBoxContainer/HBoxContainer/FiatValue")
@@ -14,7 +13,7 @@ const BITCOIN_GOAL: float = 20.0
 @onready var bitcoin_value_label: Label = get_node(^"SeatRow/VBoxContainer/HBoxContainer/BitcoinValue")
 
 func _ready() -> void:
-    assert(slot_index_label)
+    assert(background_highlight)
     assert(avatar_box)
     assert(display_name_label)
     assert(fiat_value_label)
@@ -22,14 +21,19 @@ func _ready() -> void:
     assert(bitcoin_value_label)
 
 func set_player_state(player_state: GamePlayerHudState) -> void:
-    slot_index_label.text = str(player_state.player_index + 1)
     avatar_box.set_icon_id(player_state.icon_id)
     avatar_box.set_hexagon_modulate(_color_from_id(player_state.color_id))
     display_name_label.text = _resolved_display_name(player_state)
     display_name_label.remove_theme_color_override("font_color")
     fiat_value_label.text = "$ %.2f" % player_state.fiat_balance
     energy_value_label.text = "⚡ %d" % player_state.energy_amount
-    bitcoin_value_label.text = "₿ %.1f/%.0f" % [player_state.bitcoin_balance, BITCOIN_GOAL]
+    bitcoin_value_label.text = "₿ %.1f/%.0f" % [
+        player_state.bitcoin_balance,
+        GameEconomyConfigModel.BITCOIN_GOAL_TO_WIN,
+    ]
+
+func set_is_current_turn_player(is_current_turn_player: bool) -> void:
+    background_highlight.visible = is_current_turn_player
 
 func _resolved_display_name(player_state: GamePlayerHudState) -> String:
     var display_name: String = player_state.display_name.strip_edges()

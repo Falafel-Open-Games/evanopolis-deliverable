@@ -209,7 +209,7 @@ func test_reaching_btc_goal_ends_match_immediately_on_mining_reward() -> void:
     if ended_events.size() == 1:
         assert_eq(int(ended_events[0].get("winner_index", -1)), 1, "winner index in event")
         assert_eq(str(ended_events[0].get("reason", "")), "btc_goal_reached", "end reason in event")
-        assert_true(is_equal_approx(float(ended_events[0].get("btc_goal", -1.0)), 20.0), "btc goal in event")
+        assert_true(is_equal_approx(float(ended_events[0].get("btc_goal", -1.0)), 21.0), "btc goal in event")
         assert_true(is_equal_approx(float(ended_events[0].get("winner_btc", -1.0)), 21.0), "winner btc in event")
 
 

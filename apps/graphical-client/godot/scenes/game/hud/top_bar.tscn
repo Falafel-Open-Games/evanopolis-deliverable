@@ -23,6 +23,7 @@ anchors_preset = 10
 anchor_right = 1.0
 grow_horizontal = 2
 size_flags_vertical = 0
+theme = ExtResource("3_g1q52")
 script = ExtResource("1_77pja")
 avatar_box = NodePath("MarginContainer/HBoxContainer/AvatarBox")
 
@@ -46,7 +47,7 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="AvatarBox" parent="MarginContainer/HBoxContainer" unique_id=1845499584 instance=ExtResource("2_rtodx")]
-custom_minimum_size = Vector2(24, 24)
+custom_minimum_size = Vector2(46, 46)
 layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer" unique_id=1093291562]
@@ -99,7 +100,7 @@ layout_mode = 2
 theme = ExtResource("3_g1q52")
 theme_type_variation = &"ResourceLabel"
 theme_override_colors/font_color = Color(0.9137255, 0.5372549, 0.3254902, 1)
-text = "₿ 0.0/20"
+text = "₿ 0.0/21"
 
 [node name="Label2" type="Label" parent="MarginContainer/HBoxContainer/GameGoal/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1502622976]
 layout_mode = 2
@@ -111,7 +112,7 @@ uppercase = true
 layout_mode = 2
 size_flags_vertical = 8
 theme_override_styles/fill = SubResource("StyleBoxFlat_f7370")
-max_value = 20.0
+max_value = 21.0
 show_percentage = false
 
 [node name="GameResources" type="MarginContainer" parent="MarginContainer" unique_id=2081011703]
@@ -120,6 +121,7 @@ size_flags_horizontal = 4
 
 [node name="Panel" type="Panel" parent="MarginContainer/GameResources" unique_id=1124668486]
 layout_mode = 2
+theme = ExtResource("3_g1q52")
 
 [node name="MarginContainer2" type="MarginContainer" parent="MarginContainer/GameResources" unique_id=983512077]
 custom_minimum_size = Vector2(190, 0)
@@ -147,7 +149,7 @@ size_flags_vertical = 6
 theme = ExtResource("3_g1q52")
 theme_type_variation = &"ResourceLabel"
 theme_override_colors/font_color = Color(0.015686275, 0.8, 0.68235296, 1)
-text = "$ 100_000"
+text = "$ 5000"
 horizontal_alignment = 1
 
 [node name="FiatLabel" type="Label" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer/VBoxContainer" unique_id=866299398]

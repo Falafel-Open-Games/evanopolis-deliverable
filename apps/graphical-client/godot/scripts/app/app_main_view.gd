@@ -187,5 +187,6 @@ func _sync_gameplay_turn_info() -> void:
         "set_turn_info",
         int(turn_state.get("turn_number", 1)),
         str(turn_state.get("current_player_name", "Player")),
-        bool(turn_state.get("is_local_turn", false))
+        bool(turn_state.get("is_local_turn", false)),
+        int(turn_state.get("current_player_index", -1))
     )

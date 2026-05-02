@@ -9,7 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://bvjd3i3tn37qd" path="res://scenes/app/waiting_room_seat.tscn" id="6_q2amx"]
 [ext_resource type="PackedScene" uid="uid://c2fwn0ix7pjp5" path="res://scenes/app/player_identity_editor_ui.tscn" id="8_33tm5"]
 
-[node name="WaitingRoomRoot" type="Control" unique_id=918327763 node_paths=PackedStringArray("waiting_room_title_label", "ready_button", "info_body_label", "identity_card", "room_facts_label", "seats_vbox", "roster_footer_label", "identity_editor_ui")]
+[node name="WaitingRoomRoot" type="Control" unique_id=918327763 node_paths=PackedStringArray("waiting_room_title_label", "ready_button", "info_body_label", "identity_card", "room_facts_label", "seats_vbox", "identity_editor_ui")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,7 +23,6 @@ info_body_label = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/InfoPanelBord
 identity_card = NodePath("SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/VBoxContainer/PlayerIdentityCardRoot")
 room_facts_label = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/RoomFactsLabel")
 seats_vbox = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/SeatsVBox")
-roster_footer_label = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/RosterFooterLabel")
 identity_editor_ui = NodePath("SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder/PlayerIdentityEditorUI")
 
 [node name="WaitingRoomLayoutController" type="Node" parent="." unique_id=1560968820 node_paths=PackedStringArray("collapsible_info_column", "identity_edit_button", "middle_column_panel", "middle_column_close_button")]
@@ -235,14 +234,6 @@ theme_override_constants/separation = 6
 
 [node name="WaitingRoomSeatRoot" parent="SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/SeatsVBox" unique_id=389302058 instance=ExtResource("6_q2amx")]
 layout_mode = 2
-
-[node name="RosterFooterLabel" type="Label" parent="SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox" unique_id=773055612]
-visible = false
-custom_minimum_size = Vector2(100, 0)
-layout_mode = 2
-theme = ExtResource("2_tq6v2")
-theme_override_colors/font_color = Color(0.823529, 0.831373, 0.756863, 1)
-autowrap_mode = 2
 
 [node name="ReadyButton" type="Button" parent="SafeMargin/RootVBox" unique_id=548163328]
 custom_minimum_size = Vector2(135, 29)

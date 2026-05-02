@@ -23,6 +23,7 @@ class_name SessionCheck
 ## expanding this file into a general-purpose match-state module.
 
 const StatusCardState = preload("res://scripts/app/models/status_view_state.gd")
+const GameEconomyConfigModel = preload("res://scripts/app/models/game_economy_config.gd")
 const GamePlayerHudStateModel = preload("res://scripts/app/models/game_player_hud_state.gd")
 const LaunchPayloadModel = preload("res://scripts/app/models/launch_payload.gd")
 const WaitingRoomStateModel = preload("res://scripts/app/models/waiting_room_state.gd")
@@ -140,9 +141,9 @@ func get_gameplay_player_states() -> Array:
                 player_index == _local_player_index,
                 _player_icon_id(player_index),
                 _player_color_id(player_index),
-                float(_player_fiat_balances.get(player_index, 0.0)),
-                int(_player_energy_balances.get(player_index, 0)),
-                float(_player_bitcoin_balances.get(player_index, 0.0))
+                _player_fiat_balance(player_index),
+                _player_energy_balance(player_index),
+                _player_bitcoin_balance(player_index)
             )
         )
     return _clone_gameplay_player_states(states)
@@ -419,8 +420,8 @@ func rpc_player_balance_changed(
     btc_delta: float,
     _reason: String
 ) -> void:
-    _player_fiat_balances[player_index] = float(_player_fiat_balances.get(player_index, 0.0)) + fiat_delta
-    _player_bitcoin_balances[player_index] = float(_player_bitcoin_balances.get(player_index, 0.0)) + btc_delta
+    _player_fiat_balances[player_index] = _player_fiat_balance(player_index) + fiat_delta
+    _player_bitcoin_balances[player_index] = _player_bitcoin_balance(player_index) + btc_delta
     _emit_gameplay_player_states()
 
 @rpc("authority")
@@ -479,9 +480,18 @@ func _apply_waiting_room_snapshot(snapshot: Dictionary) -> void:
         _known_player_display_names[player_index] = str(player_in_snapshot.get("display_name", ""))
         _known_player_icon_ids[player_index] = int(player_in_snapshot.get("icon_id", -1))
         _known_player_color_ids[player_index] = int(player_in_snapshot.get("color_id", -1))
-        _player_fiat_balances[player_index] = float(player_in_snapshot.get("fiat_balance", 0.0))
-        _player_energy_balances[player_index] = int(player_in_snapshot.get("energy_balance", player_in_snapshot.get("energy", 0)))
-        _player_bitcoin_balances[player_index] = float(player_in_snapshot.get("bitcoin_balance", 0.0))
+        _player_fiat_balances[player_index] = float(
+            player_in_snapshot.get("fiat_balance", GameEconomyConfigModel.INITIAL_FIAT_BALANCE)
+        )
+        _player_energy_balances[player_index] = int(
+            player_in_snapshot.get(
+                "energy_balance",
+                player_in_snapshot.get("energy", GameEconomyConfigModel.INITIAL_ENERGY_BALANCE)
+            )
+        )
+        _player_bitcoin_balances[player_index] = float(
+            player_in_snapshot.get("bitcoin_balance", GameEconomyConfigModel.INITIAL_BITCOIN_BALANCE)
+        )
         if bool(player_in_snapshot.get("ready", false)):
             _ready_players[player_index] = true
     _emit_waiting_room_state()
@@ -595,6 +605,15 @@ func _player_color_id(player_index: int) -> int:
     if color_id < 0:
         return DEFAULT_IDENTITY_COLOR_ID
     return color_id
+
+func _player_fiat_balance(player_index: int) -> float:
+    return float(_player_fiat_balances.get(player_index, GameEconomyConfigModel.INITIAL_FIAT_BALANCE))
+
+func _player_energy_balance(player_index: int) -> int:
+    return int(_player_energy_balances.get(player_index, GameEconomyConfigModel.INITIAL_ENERGY_BALANCE))
+
+func _player_bitcoin_balance(player_index: int) -> float:
+    return float(_player_bitcoin_balances.get(player_index, GameEconomyConfigModel.INITIAL_BITCOIN_BALANCE))
 
 func _gameplay_display_name(player_index: int) -> String:
     var display_name: String = _player_display_name(player_index)
