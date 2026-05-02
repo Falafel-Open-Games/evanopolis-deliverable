@@ -4,6 +4,7 @@ extends Node3D
 const TopBarView = preload("res://scripts/game/hud/top_bar.gd")
 const PlayersListPanelView = preload("res://scripts/game/hud/players_list_panel.gd")
 const PawnCollectionView = preload("res://scripts/game/pawns/pawn_collection.gd")
+const EventLogPanelView = preload("res://scripts/game/hud/event_log_panel.gd")
 
 @onready var board_root: Node3D = get_node(^"BoardRoot")
 @onready var pawn_root: Node3D = get_node(^"PawnRoot")
@@ -13,6 +14,7 @@ const PawnCollectionView = preload("res://scripts/game/pawns/pawn_collection.gd"
 
 @onready var top_bar: TopBarView = get_node("HudRoot/SafeMargin/VBoxContainer/TopBar")
 @onready var players_list_panel: PlayersListPanelView = get_node(^"HudRoot/SafeMargin/VBoxContainer/PlayersList")
+@onready var event_log_panel: EventLogPanelView = get_node(^"HudRoot/SafeMargin/VBoxContainer/EventLog")
 
 func _ready() -> void:
     assert(board_root)
@@ -22,6 +24,7 @@ func _ready() -> void:
     assert(camera_rig)
     assert(top_bar)
     assert(players_list_panel)
+    assert(event_log_panel)
     pawn_collection.bind_board_tiles(get_node(^"BoardRoot/tiles"))
 
 func set_local_player_identity(icon_id: int, color_id: int) -> void:
@@ -48,3 +51,9 @@ func set_player_states(player_states: Array) -> void:
         call_deferred("set_player_states", player_states.duplicate())
         return
     players_list_panel.set_player_states(player_states)
+
+func set_event_log_messages(messages: Array) -> void:
+    if not is_node_ready():
+        call_deferred("set_event_log_messages", messages.duplicate())
+        return
+    event_log_panel.set_messages(messages)

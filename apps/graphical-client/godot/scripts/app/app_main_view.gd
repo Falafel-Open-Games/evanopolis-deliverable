@@ -11,6 +11,7 @@ var _boot_state: StatusCardState
 var _session_state: StatusCardState
 var _waiting_room_state: WaitingRoomState = null
 var _gameplay_player_states: Array = []
+var _gameplay_event_log_messages: Array = []
 var _game_root: Node3D = null
 
 @onready var waiting_room_view: Control = $WaitingRoomMount/WaitingRoomRoot
@@ -40,9 +41,11 @@ func _ready() -> void:
     assert(session_node.has_signal("waiting_room_state_changed"))
     assert(session_node.has_signal("gameplay_turn_state_changed"))
     assert(session_node.has_signal("gameplay_player_states_changed"))
+    assert(session_node.has_signal("gameplay_event_log_changed"))
     assert(session_node.has_method("get_session_state"))
     assert(session_node.has_method("get_waiting_room_state"))
     assert(session_node.has_method("get_gameplay_player_states"))
+    assert(session_node.has_method("get_gameplay_event_log_messages"))
     assert(session_node.has_method("is_waiting_for_launch"))
     assert(session_node.has_method("is_waiting_room_active"))
     assert(session_node.has_method("is_game_started"))
@@ -60,12 +63,14 @@ func _ready() -> void:
     session_node.connect("waiting_room_state_changed", Callable(self, "_on_waiting_room_state_changed"))
     session_node.connect("gameplay_turn_state_changed", Callable(self, "_on_gameplay_turn_state_changed"))
     session_node.connect("gameplay_player_states_changed", Callable(self, "_on_gameplay_player_states_changed"))
+    session_node.connect("gameplay_event_log_changed", Callable(self, "_on_gameplay_event_log_changed"))
 
     _boot_state = boot_node.call("get_boot_state")
     _session_state = session_node.call("get_session_state")
     if session_node.call("has_waiting_room_state"):
         _waiting_room_state = session_node.call("get_waiting_room_state")
     _gameplay_player_states = session_node.call("get_gameplay_player_states")
+    _gameplay_event_log_messages = session_node.call("get_gameplay_event_log_messages")
 
     _render_scene()
 
@@ -88,6 +93,10 @@ func _on_gameplay_turn_state_changed(_turn_state: Dictionary) -> void:
 func _on_gameplay_player_states_changed(states: Array) -> void:
     _gameplay_player_states = states
     _sync_gameplay_player_states()
+
+func _on_gameplay_event_log_changed(messages: Array) -> void:
+    _gameplay_event_log_messages = messages
+    _sync_gameplay_event_log()
 
 func _on_ready_button_pressed() -> void:
     session_node.call("request_player_ready")
@@ -170,11 +179,17 @@ func _sync_gameplay_identity() -> void:
     _game_root.call("set_player_slots", _waiting_room_state.slots)
     _sync_gameplay_player_states()
     _sync_gameplay_turn_info()
+    _sync_gameplay_event_log()
 
 func _sync_gameplay_player_states() -> void:
     if _game_root == null:
         return
     _game_root.call("set_player_states", _gameplay_player_states)
+
+func _sync_gameplay_event_log() -> void:
+    if _game_root == null:
+        return
+    _game_root.call("set_event_log_messages", _gameplay_event_log_messages)
 
 func _sync_gameplay_turn_info() -> void:
     if _game_root == null:

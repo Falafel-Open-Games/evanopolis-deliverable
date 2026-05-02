@@ -37,6 +37,7 @@ signal session_state_changed(state: StatusCardState)
 signal waiting_room_state_changed(state: WaitingRoomStateModel)
 signal gameplay_turn_state_changed(turn_state: Dictionary)
 signal gameplay_player_states_changed(states: Array)
+signal gameplay_event_log_changed(messages: Array)
 
 enum SessionPhase {
     WAITING_FOR_LAUNCH,
@@ -89,6 +90,7 @@ var _ready_request_pending: bool = false
 var _identity_request_pending: bool = false
 var _match_has_started: bool = false
 var _match_has_finished: bool = false
+var _gameplay_event_log_messages: Array = []
 
 func _ready() -> void:
     assert(boot_node)
@@ -147,6 +149,9 @@ func get_gameplay_player_states() -> Array:
             )
         )
     return _clone_gameplay_player_states(states)
+
+func get_gameplay_event_log_messages() -> Array:
+    return _gameplay_event_log_messages.duplicate()
 
 func is_waiting_for_launch() -> bool:
     return _phase == SessionPhase.WAITING_FOR_LAUNCH
@@ -244,6 +249,7 @@ func _on_launch_payload_received(payload: LaunchPayloadModel) -> void:
     _identity_request_pending = false
     _match_has_started = false
     _match_has_finished = false
+    _gameplay_event_log_messages.clear()
     _connect_to_server()
 
 func _connect_to_server() -> void:
@@ -341,6 +347,7 @@ func rpc_state_snapshot(_seq: int, snapshot: Dictionary) -> void:
     _current_turn_number = int(snapshot.get("turn_number", _current_turn_number))
     _current_turn_player_index = int(snapshot.get("current_player_index", _current_turn_player_index))
     _apply_waiting_room_snapshot(snapshot)
+    _rebuild_gameplay_event_log_from_state()
     _emit_gameplay_turn_state()
     _emit_gameplay_player_states()
 
@@ -427,6 +434,8 @@ func rpc_player_balance_changed(
 @rpc("authority")
 func rpc_game_started(_seq: int, _new_game_id: String) -> void:
     _ready_request_pending = false
+    _match_has_started = true
+    _append_gameplay_event_log_message("🎮️ Game started")
     _update_state(
         SessionPhase.GAME_STARTED,
         "Game starting",
@@ -440,6 +449,7 @@ func rpc_turn_started(_seq: int, player_index: int, turn_number: int, _cycle: in
     _current_turn_player_index = player_index
     _current_turn_number = turn_number
     _match_has_started = true
+    _append_gameplay_event_log_message("🔄 %s turn started" % _event_log_player_name(player_index))
     _emit_gameplay_turn_state()
 
 func _update_state(
@@ -571,6 +581,9 @@ func _emit_gameplay_turn_state() -> void:
 func _emit_gameplay_player_states() -> void:
     gameplay_player_states_changed.emit(get_gameplay_player_states())
 
+func _emit_gameplay_event_log_messages() -> void:
+    gameplay_event_log_changed.emit(get_gameplay_event_log_messages())
+
 func _is_player_ready(player_index: int) -> bool:
     if player_index < 0 or player_index >= _ready_players.size():
         return false
@@ -623,11 +636,33 @@ func _gameplay_display_name(player_index: int) -> String:
         return "You"
     return "Player %d" % (player_index + 1)
 
+func _event_log_player_name(player_index: int) -> String:
+    var display_name: String = _player_display_name(player_index)
+    if not display_name.is_empty():
+        return display_name
+    return "Player %d" % (player_index + 1)
+
 func _clone_gameplay_player_states(states: Array) -> Array:
     var cloned_states: Array = []
     for state_variant in states:
         cloned_states.append(state_variant.clone())
     return cloned_states
+
+func _rebuild_gameplay_event_log_from_state() -> void:
+    _gameplay_event_log_messages.clear()
+    if not _match_has_started:
+        _emit_gameplay_event_log_messages()
+        return
+
+    _gameplay_event_log_messages.append("🎮️ Game started")
+    _gameplay_event_log_messages.append(
+        "🔄 %s turn started" % _event_log_player_name(_current_turn_player_index)
+    )
+    _emit_gameplay_event_log_messages()
+
+func _append_gameplay_event_log_message(message: String) -> void:
+    _gameplay_event_log_messages.append(message)
+    _emit_gameplay_event_log_messages()
 
 
 func _try_schedule_retry(message: String) -> bool:
