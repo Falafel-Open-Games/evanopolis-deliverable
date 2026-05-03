@@ -1,0 +1,202 @@
+EVANOPOLIS - ECONOMY V0 DESIGN
+
+--------------------------------------------------
+PURPOSE
+--------------------------------------------------
+
+This document proposes the first playable economy number set for the V3 core
+rules in `docs/game_rules.txt`.
+
+The goal is not perfect balance. The goal is a coherent baseline that is easy
+to implement, easy to reason about, and good enough for real playtesting.
+
+--------------------------------------------------
+ECONOMY LOOP
+--------------------------------------------------
+
+The economy follows the core rules loop:
+
+FIAT -> buy properties -> generate ENERGY -> SELL or MINE -> FIAT or BITCOIN
+
+Each owned property has:
+
+- city
+- tile type: A, B, or C
+- buy price
+- energy production
+- toll amount
+- sell value if 100% of its energy is sold
+- mining value if 100% of its energy is used to mine bitcoin
+
+At the end of a player's turn, that player's persistent ENERGY allocation is
+applied across all owned properties.
+
+Example:
+
+Total owned properties at 100% output:
+
+- sell value: $30
+- mining value: 2.4 BTC
+
+Player allocation:
+
+- 60% SELL
+- 40% MINE
+
+Turn production:
+
+- fiat gain = $30 * 0.60 = $18
+- bitcoin gain = 2.4 * 0.40 = 0.96 BTC
+
+--------------------------------------------------
+GLOBAL V0 NUMBERS
+--------------------------------------------------
+
+- Starting fiat: $130
+- Bitcoin goal: 20 BTC
+- Toll: 10% of current buy price
+- Tile type A: cheapest / lowest output property in a city
+- Tile type B: standard property in a city
+- Tile type C: premium / highest output property in a city
+
+Starting fiat is intentionally close to three average properties. The average
+base buy price in this draft is about $42, so $130 lets a player buy roughly
+three normal properties while retaining a small toll buffer.
+
+--------------------------------------------------
+CITY BALANCE MODEL
+--------------------------------------------------
+
+The six cities are not meant to be equal. They are meant to create strategic
+texture.
+
+High-level city roles:
+
+- Atacama: cheapest, weak sell, weak mine
+- Patagonia: cheap, high raw energy, weak conversion
+- Ciudad del Este: fiat / sell specialist
+- El Salvador: balanced, mining-leaning
+- Angra dos Reis: premium fiat / sell specialist
+- Irkutsk: bitcoin / mine specialist
+
+There is intentionally no strong-sell / strong-mine city. The strongest
+regions are specialists, not universal best choices.
+
+For premium C tiles only, the rough strength ordering is:
+
+| City | Sell Strength | Mine Strength | Role |
+|---|---:|---:|---|
+| Atacama | 1/6 | 1/6 | cheap weak / weak |
+| Patagonia | 2/6 | 2/6 | cheap energy volume, weak conversion |
+| Ciudad del Este | 5/6 | 3/6 | fiat / sell specialist |
+| El Salvador | 4/6 | 5/6 | balanced, mining-leaning |
+| Angra dos Reis | 6/6 | 4/6 | premium fiat / sell specialist |
+| Irkutsk | 3/6 | 6/6 | bitcoin / mine specialist |
+
+Buy price roughly follows total usefulness plus specialization value:
+
+price ~= total usefulness + specialization value
+
+This means weak / weak tiles are cheap, while powerful specialist regions cost
+more.
+
+--------------------------------------------------
+TILE VALUE TABLE
+--------------------------------------------------
+
+Toll is listed as 10% of base buy price.
+
+| Tile | City | Type | Buy Price | Energy | Toll | Sell 100% | Mine 100% |
+|---:|---|:---:|---:|---:|---:|---:|---:|
+| 0 | Irkutsk | A | $34 | 8 | $3.40 | $4 | 0.75 BTC |
+| 1 | Irkutsk | B | $42 | 10 | $4.20 | $5 | 0.95 BTC |
+| 2 | Irkutsk | C | $50 | 12 | $5.00 | $6 | 1.15 BTC |
+| 3 | Patagonia | A | $28 | 10 | $2.80 | $3 | 0.45 BTC |
+| 4 | Patagonia | B | $36 | 13 | $3.60 | $4 | 0.60 BTC |
+| 5 | Patagonia | C | $44 | 16 | $4.40 | $5 | 0.75 BTC |
+| 6 | Ciudad del Este | A | $38 | 9 | $3.80 | $6 | 0.55 BTC |
+| 7 | Ciudad del Este | B | $46 | 12 | $4.60 | $8 | 0.70 BTC |
+| 8 | Ciudad del Este | C | $54 | 15 | $5.40 | $10 | 0.85 BTC |
+| 9 | El Salvador | A | $32 | 8 | $3.20 | $4 | 0.65 BTC |
+| 10 | El Salvador | B | $40 | 11 | $4.00 | $6 | 0.85 BTC |
+| 11 | El Salvador | C | $48 | 14 | $4.80 | $8 | 1.05 BTC |
+| 12 | Angra dos Reis | A | $44 | 11 | $4.40 | $8 | 0.60 BTC |
+| 13 | Angra dos Reis | B | $54 | 14 | $5.40 | $11 | 0.80 BTC |
+| 14 | Angra dos Reis | C | $64 | 17 | $6.40 | $14 | 1.00 BTC |
+| 15 | Atacama | A | $24 | 9 | $2.40 | $2 | 0.35 BTC |
+| 16 | Atacama | B | $32 | 12 | $3.20 | $3 | 0.50 BTC |
+| 17 | Atacama | C | $40 | 15 | $4.00 | $4 | 0.65 BTC |
+
+--------------------------------------------------
+DESIGN NOTES BY CITY
+--------------------------------------------------
+
+IRKUTSK - COLD GEOTHERMAL
+
+Irkutsk is the bitcoin specialist. Cold conditions make mining efficient, so
+its Mine 100% output is the strongest in the game. Its sell value is only
+middle-tier, so owning Irkutsk pushes a player toward mining rather than
+fiat recovery.
+
+PATAGONIA - WIND
+
+Patagonia has high raw energy, but weaker conversion. It is affordable and
+useful for early expansion, but it should not dominate either sell or mine
+strategies. It is the "cheap volume" region.
+
+CIUDAD DEL ESTE - HYDRO
+
+Ciudad del Este is a strong fiat generator. The city has high demand and
+commercial value, so selling energy there is profitable. Its mining output is
+middle-low to preserve tradeoffs.
+
+EL SALVADOR - VOLCANO GEOTHERMAL
+
+El Salvador is the flexible mining-leaning region. It sells better than the
+cheap regions and mines nearly as well as Irkutsk, but does not lead either
+category.
+
+ANGRA DOS REIS - NUCLEAR
+
+Angra dos Reis is the premium fiat engine. It has the highest prices and the
+best Sell 100% output. It also has respectable mining output, but not enough
+to become the universal best region.
+
+ATACAMA - SOLAR
+
+Atacama is the cheapest region and intentionally weak at both conversion
+paths. It has a lot of solar energy, but low local demand and weaker mining
+conditions make it a low-cost entry region rather than a power region.
+
+--------------------------------------------------
+BALANCE QUESTIONS FOR PLAYTESTING
+--------------------------------------------------
+
+These numbers should be adjusted after real games. Key questions:
+
+1. Does $130 starting fiat create enough early buying without removing tension?
+2. Is 20 BTC reachable in the target 10-20 minute session length?
+3. Are Atacama and Patagonia useful enough as cheap entry regions?
+4. Are Angra dos Reis and Irkutsk strong without becoming automatic choices?
+5. Does 10% toll create enough danger without causing player lockout?
+6. Does persistent SELL / MINE allocation create meaningful decisions each turn?
+
+--------------------------------------------------
+IMPLEMENTATION NOTES
+--------------------------------------------------
+
+The server should treat these values as authoritative data.
+
+Recommended implementation shape:
+
+- define one property economy row per tile index
+- derive toll as `buy_price * 0.10` unless a future balance pass needs custom
+  tolls
+- store player allocation as `sell_percent` and derive `mine_percent` as
+  `100 - sell_percent`
+- apply production at end of turn after buy / pass / pay resolution
+- include property economy values in board state or landing context where the
+  graphical client needs to display them
+
+The UI should not duplicate these numbers manually. It should consume them
+from authoritative server state.
