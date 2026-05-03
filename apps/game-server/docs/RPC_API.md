@@ -22,6 +22,65 @@ sync, and prompt flow, but it is not the source of truth.
 - Server responds to reconnect with `rpc_state_snapshot(0, snapshot)` then `rpc_sync_complete(0, final_seq)`
 - During sync, clients must queue live broadcast events and apply them only after the snapshot is installed
 
+## Economy V0 Contract
+
+The server is authoritative for all economy values. Clients should consume
+property economy data from `rpc_board_state`, `rpc_tile_landed`, and
+`rpc_state_snapshot`; clients should not duplicate these numbers locally.
+
+Global economy values:
+
+- Starting fiat: `130.0`
+- Bitcoin goal: `20.0`
+- Toll: `buy_price * 0.10`
+- Tile types: `A`, `B`, `C`
+
+Each property tile carries these economy fields:
+
+- `tile_index: int`
+- `city: String`
+- `tile_type: String` - one of `A`, `B`, `C`
+- `buy_price: float`
+- `energy_production: int`
+- `toll: float`
+- `sell_100_fiat: float`
+- `mine_100_btc: float`
+
+The v0 board has exactly 18 ownable property tiles:
+
+| Tile | City | Type | Buy Price | Energy | Toll | Sell 100% | Mine 100% |
+|---:|---|:---:|---:|---:|---:|---:|---:|
+| 0 | Irkutsk | A | 34.0 | 8 | 3.40 | 4.0 | 0.75 |
+| 1 | Irkutsk | B | 42.0 | 10 | 4.20 | 5.0 | 0.95 |
+| 2 | Irkutsk | C | 50.0 | 12 | 5.00 | 6.0 | 1.15 |
+| 3 | Patagonia | A | 28.0 | 10 | 2.80 | 3.0 | 0.45 |
+| 4 | Patagonia | B | 36.0 | 13 | 3.60 | 4.0 | 0.60 |
+| 5 | Patagonia | C | 44.0 | 16 | 4.40 | 5.0 | 0.75 |
+| 6 | Ciudad del Este | A | 38.0 | 9 | 3.80 | 6.0 | 0.55 |
+| 7 | Ciudad del Este | B | 46.0 | 12 | 4.60 | 8.0 | 0.70 |
+| 8 | Ciudad del Este | C | 54.0 | 15 | 5.40 | 10.0 | 0.85 |
+| 9 | El Salvador | A | 32.0 | 8 | 3.20 | 4.0 | 0.65 |
+| 10 | El Salvador | B | 40.0 | 11 | 4.00 | 6.0 | 0.85 |
+| 11 | El Salvador | C | 48.0 | 14 | 4.80 | 8.0 | 1.05 |
+| 12 | Angra dos Reis | A | 44.0 | 11 | 4.40 | 8.0 | 0.60 |
+| 13 | Angra dos Reis | B | 54.0 | 14 | 5.40 | 11.0 | 0.80 |
+| 14 | Angra dos Reis | C | 64.0 | 17 | 6.40 | 14.0 | 1.00 |
+| 15 | Atacama | A | 24.0 | 9 | 2.40 | 2.0 | 0.35 |
+| 16 | Atacama | B | 32.0 | 12 | 3.20 | 3.0 | 0.50 |
+| 17 | Atacama | C | 40.0 | 15 | 4.00 | 4.0 | 0.65 |
+
+City roles:
+
+- Irkutsk: bitcoin / mine specialist
+- Patagonia: cheap energy volume with weak conversion
+- Ciudad del Este: fiat / sell specialist
+- El Salvador: balanced, mining-leaning
+- Angra dos Reis: premium fiat / sell specialist
+- Atacama: cheapest weak-sell / weak-mine region
+
+There is intentionally no strong-sell / strong-mine city. The strongest
+regions are specialists rather than universal best choices.
+
 ## Client To Server RPCs
 
 ### `rpc_auth(token: String)`
@@ -163,7 +222,11 @@ Failure:
 
 - `rpc_dice_rolled(seq: int, die_1: int, die_2: int, total: int)`
 - `rpc_pawn_moved(seq: int, from_tile: int, to_tile: int, passed_tiles: Array[int])`
-- `rpc_tile_landed(seq: int, tile_index: int, tile_type: String, city: String, owner_index: int, toll_due: float, buy_price: float, action_required: String)`
+- `rpc_tile_landed(seq: int, tile_index: int, tile_type: String, city: String, owner_index: int, toll_due: float, buy_price: float, energy_production: int, sell_100_fiat: float, mine_100_btc: float, action_required: String)`
+
+`rpc_tile_landed` economy fields should match the authoritative tile economy
+row for `tile_index`. For self-owned tiles, `toll_due` and `buy_price` are
+`0.0`, but the production fields still describe the tile.
 
 `action_required` values currently used by the server:
 - `buy_or_end_turn`
@@ -173,7 +236,7 @@ Failure:
 ### Economy / board mutation
 
 - `rpc_player_balance_changed(seq: int, player_index: int, fiat_delta: float, btc_delta: float, reason: String)`
-- `rpc_cycle_started(seq: int, cycle: int, inflation_active: bool)`
+- `rpc_cycle_started(seq: int, cycle: int)`
 - `rpc_property_acquired(seq: int, player_index: int, tile_index: int, price: float)`
 - `rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float)`
 
@@ -209,6 +272,32 @@ Current top-level fields include:
 - `players: Array[Dictionary]`
 - `ready_count: int`
 
+`pending_action` is empty when no player decision is required. When present,
+it should include enough authoritative data for a reconnecting client to render
+the current action without recomputing economy values:
+
+- `type: String` - `buy_or_end_turn`, `pay_toll`, or `end_turn`
+- `tile_index: int`
+- `owner_index: int`
+- `amount: float` - toll due for `pay_toll`, otherwise `0.0`
+- `buy_price: float` - buy price for `buy_or_end_turn`, otherwise `0.0`
+- `energy_production: int`
+- `sell_100_fiat: float`
+- `mine_100_btc: float`
+
+`board_state.tiles` contains exactly 18 property entries. Each tile entry
+should include:
+
+- `tile_index: int`
+- `tile_type: String` - `A`, `B`, or `C`
+- `city: String`
+- `owner_index: int` - `-1` when unowned
+- `buy_price: float`
+- `energy_production: int`
+- `toll: float`
+- `sell_100_fiat: float`
+- `mine_100_btc: float`
+
 Each `players` entry is authoritative per-seat state and currently includes:
 
 - `player_index: int`
@@ -219,7 +308,9 @@ Each `players` entry is authoritative per-seat state and currently includes:
 - `icon_id: int`
 - `color_id: int`
 - `fiat_balance: float`
+- `energy_balance: int`
 - `bitcoin_balance: float`
+- `sell_percent: int`
 - `position: int`
 - `laps: int`
 

@@ -24,7 +24,7 @@ func test_legacy_board_size_inputs_normalize_to_18_tiles() -> void:
     assert_eq(tiles.size(), 18, "new rules board always has 18 tiles")
     for index in range(tiles.size()):
         var tile: Dictionary = tiles[index]
-        assert_eq(str(tile.get("tile_type", "")), "property", "tile %d should be a property tile" % index)
+        assert_true(["A", "B", "C"].has(str(tile.get("tile_type", ""))), "tile %d should be an economy property tile" % index)
         assert_eq(int(tile.get("index", -1)), index, "tile %d index matches position" % index)
         assert_ne(str(tile.get("city", "")), "", "tile %d has a canonical city name" % index)
 
@@ -34,7 +34,7 @@ func test_tile_four_is_patagonia_property_not_legacy_special_tile() -> void:
     var game_match: GameMatch = GameMatch.new(config, [])
 
     var tile: Dictionary = game_match._tile_from_index(4)
-    assert_eq(str(tile.get("tile_type", "")), "property", "tile 4 is no longer an incident tile")
+    assert_eq(str(tile.get("tile_type", "")), "B", "tile 4 is Patagonia's B property")
     assert_eq(str(tile.get("city", "")), "Patagonia", "tile 4 belongs to Patagonia")
     assert_eq(str(game_match._action_required_for_tile(str(tile.get("tile_type", "")), -1, 0)), "buy_or_end_turn", "unowned property still offers buy or end turn")
 
@@ -53,6 +53,10 @@ func test_roll_emits_landing_context_for_property_tile() -> void:
     assert_eq(tile_landed.size(), 1, "roll should emit a landing tile")
     if tile_landed.size() == 1:
         assert_eq(str(tile_landed[0].get("action_required", "")), "buy_or_end_turn", "unowned property offers buy or end turn")
+        assert_eq(float(tile_landed[0].get("buy_price", 0.0)), 34.0, "landing context includes V0 buy price")
+        assert_eq(int(tile_landed[0].get("energy_production", 0)), 8, "landing context includes V0 energy output")
+        assert_eq(float(tile_landed[0].get("sell_100_fiat", 0.0)), 4.0, "landing context includes V0 sell output")
+        assert_eq(float(tile_landed[0].get("mine_100_btc", 0.0)), 0.75, "landing context includes V0 mining output")
 
 
 func test_landing_context_for_owned_property_by_other_player() -> void:
@@ -119,7 +123,7 @@ func test_buy_property_resolves_pending_action_and_advances_turn() -> void:
 
     var tile: Dictionary = game_match._tile_from_index(0)
     assert_eq(int(tile.get("owner_index", -1)), 0, "tile ownership transferred to buyer")
-    assert_true(is_equal_approx(game_match.state.players[0].fiat_balance, 111.2), "buyer fiat balance reduced by property price")
+    assert_true(is_equal_approx(game_match.state.players[0].fiat_balance, 96.0), "buyer fiat balance reduced by property price")
 
     var acquired: Array[Dictionary] = _filter_events(client_a, "rpc_property_acquired")
     assert_eq(acquired.size(), 1, "property acquired event emitted once")
@@ -168,8 +172,8 @@ func test_pay_toll_resolves_pending_action_and_advances_turn() -> void:
     var pay_reason: String = game_match.rpc_pay_toll("demo_002", "alice")
     assert_eq(pay_reason, "", "pay toll should succeed")
     assert_true(game_match.pending_action.is_empty(), "pending action cleared after pay toll")
-    assert_true(is_equal_approx(game_match.state.players[0].fiat_balance, 119.12), "payer fiat reduced by toll")
-    assert_true(is_equal_approx(game_match.state.players[1].fiat_balance, 120.88), "owner fiat increased by toll")
+    assert_true(is_equal_approx(game_match.state.players[0].fiat_balance, 126.6), "payer fiat reduced by toll")
+    assert_true(is_equal_approx(game_match.state.players[1].fiat_balance, 133.4), "owner fiat increased by toll")
 
     var toll_paid: Array[Dictionary] = _filter_events(client_a, "rpc_toll_paid")
     assert_eq(toll_paid.size(), 1, "toll paid event emitted once")

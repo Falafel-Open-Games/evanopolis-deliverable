@@ -119,6 +119,9 @@ func rpc_tile_landed(
         owner_index: int,
         toll_due: float,
         buy_price: float,
+        energy_production: int,
+        sell_100_fiat: float,
+        mine_100_btc: float,
         action_required: String,
 ) -> void:
     events.append(
@@ -131,6 +134,9 @@ func rpc_tile_landed(
             "owner_index": owner_index,
             "toll_due": toll_due,
             "buy_price": buy_price,
+            "energy_production": energy_production,
+            "sell_100_fiat": sell_100_fiat,
+            "mine_100_btc": mine_100_btc,
             "action_required": action_required,
         },
     )
@@ -149,13 +155,12 @@ func rpc_player_balance_changed(seq: int, player_index: int, fiat_delta: float, 
     )
 
 
-func rpc_cycle_started(seq: int, cycle: int, inflation_active: bool) -> void:
+func rpc_cycle_started(seq: int, cycle: int) -> void:
     events.append(
         {
             "method": "rpc_cycle_started",
             "seq": seq,
             "cycle": cycle,
-            "inflation_active": inflation_active,
         },
     )
 

@@ -396,7 +396,10 @@ func test_sync_snapshot_includes_pending_action() -> void:
     var pending_action: Dictionary = snapshot.get("pending_action", { })
     assert_eq(str(pending_action.get("type", "")), "buy_or_end_turn", "snapshot includes pending action type")
     assert_eq(int(pending_action.get("tile_index", -1)), 0, "snapshot includes pending tile index")
-    assert_true(is_equal_approx(float(pending_action.get("buy_price", 0.0)), 8.8), "snapshot includes buy price for buy_or_end_turn")
+    assert_true(is_equal_approx(float(pending_action.get("buy_price", 0.0)), 34.0), "snapshot includes buy price for buy_or_end_turn")
+    assert_eq(int(pending_action.get("energy_production", 0)), 8, "snapshot includes energy output for buy_or_end_turn")
+    assert_true(is_equal_approx(float(pending_action.get("sell_100_fiat", 0.0)), 4.0), "snapshot includes sell output for buy_or_end_turn")
+    assert_true(is_equal_approx(float(pending_action.get("mine_100_btc", 0.0)), 0.75), "snapshot includes mining output for buy_or_end_turn")
 
 
 func test_sync_snapshot_includes_pay_toll_pending_action_metadata() -> void:
@@ -422,7 +425,10 @@ func test_sync_snapshot_includes_pay_toll_pending_action_metadata() -> void:
     assert_eq(str(pending_action.get("type", "")), "pay_toll", "snapshot includes pay_toll pending action type")
     assert_eq(int(pending_action.get("tile_index", -1)), 0, "snapshot includes pay_toll tile index")
     assert_eq(int(pending_action.get("owner_index", -1)), 1, "snapshot includes pay_toll owner index")
-    assert_true(is_equal_approx(float(pending_action.get("amount", 0.0)), 0.88), "snapshot includes pay_toll amount")
+    assert_true(is_equal_approx(float(pending_action.get("amount", 0.0)), 3.4), "snapshot includes pay_toll amount")
+    assert_eq(int(pending_action.get("energy_production", 0)), 8, "snapshot includes energy output for pay_toll")
+    assert_true(is_equal_approx(float(pending_action.get("sell_100_fiat", 0.0)), 4.0), "snapshot includes sell output for pay_toll")
+    assert_true(is_equal_approx(float(pending_action.get("mine_100_btc", 0.0)), 0.75), "snapshot includes mining output for pay_toll")
 
 
 func test_sync_snapshot_includes_finished_match_metadata() -> void:

@@ -115,9 +115,12 @@ func rpc_tile_landed(
         owner_index: int,
         toll_due: float,
         buy_price: float,
+        energy_production: int,
+        sell_100_fiat: float,
+        mine_100_btc: float,
         action_required: String,
 ) -> void:
-    _handle_tile_landed(seq, tile_index, tile_type, city, owner_index, toll_due, buy_price, action_required)
+    _handle_tile_landed(seq, tile_index, tile_type, city, owner_index, toll_due, buy_price, energy_production, sell_100_fiat, mine_100_btc, action_required)
 
 
 @rpc("authority")
@@ -126,8 +129,8 @@ func rpc_player_balance_changed(seq: int, player_index: int, fiat_delta: float, 
 
 
 @rpc("authority")
-func rpc_cycle_started(seq: int, cycle: int, inflation_active: bool) -> void:
-    _handle_cycle_started(seq, cycle, inflation_active)
+func rpc_cycle_started(seq: int, cycle: int) -> void:
+    _handle_cycle_started(seq, cycle)
 
 
 @rpc("authority")
@@ -247,6 +250,9 @@ func _handle_tile_landed(
         owner_index: int,
         toll_due: float,
         buy_price: float,
+        energy_production: int,
+        sell_100_fiat: float,
+        mine_100_btc: float,
         action_required: String,
 ) -> void:
     pass
@@ -256,7 +262,7 @@ func _handle_player_balance_changed(seq: int, player_index: int, fiat_delta: flo
     pass
 
 
-func _handle_cycle_started(seq: int, cycle: int, inflation_active: bool) -> void:
+func _handle_cycle_started(seq: int, cycle: int) -> void:
     pass
 
 

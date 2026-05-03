@@ -163,17 +163,20 @@ func _handle_tile_landed(
         owner_index: int,
         toll_due: float,
         buy_price: float,
+        energy_production: int,
+        sell_100_fiat: float,
+        mine_100_btc: float,
         action_required: String,
 ) -> void:
-    _queue_event(seq, "_apply_tile_landed", [tile_index, tile_type, city, owner_index, toll_due, buy_price, action_required])
+    _queue_event(seq, "_apply_tile_landed", [tile_index, tile_type, city, owner_index, toll_due, buy_price, energy_production, sell_100_fiat, mine_100_btc, action_required])
 
 
 func _handle_player_balance_changed(seq: int, player_index_value: int, fiat_delta: float, btc_delta: float, reason: String) -> void:
     _queue_event(seq, "_apply_player_balance_changed", [player_index_value, fiat_delta, btc_delta, reason])
 
 
-func _handle_cycle_started(seq: int, cycle: int, inflation_active: bool) -> void:
-    _queue_event(seq, "_apply_cycle_started", [cycle, inflation_active])
+func _handle_cycle_started(seq: int, cycle: int) -> void:
+    _queue_event(seq, "_apply_cycle_started", [cycle])
 
 
 func _handle_property_acquired(seq: int, owner_player_index: int, tile_index: int, price: float) -> void:
@@ -357,6 +360,9 @@ func _apply_tile_landed(
         owner_index: int,
         toll_due: float,
         buy_price: float,
+        energy_production: int,
+        sell_100_fiat: float,
+        mine_100_btc: float,
         action_required: String,
 ) -> void:
     pending_action_type = action_required
@@ -366,24 +372,30 @@ func _apply_tile_landed(
     pending_action_buy_price = buy_price
     if city.is_empty():
         _log_server(
-            "tile landed: index=%d, tile_type=%s, owner_index=%d, toll_due=%.2f, buy_price=%.2f, action_required=%s" % [
+            "tile landed: index=%d, tile_type=%s, owner_index=%d, toll_due=%.2f, buy_price=%.2f, energy=%d, sell_100=%.2f, mine_100=%.8f, action_required=%s" % [
                 tile_index,
                 tile_type,
                 owner_index,
                 toll_due,
                 buy_price,
+                energy_production,
+                sell_100_fiat,
+                mine_100_btc,
                 action_required,
             ],
         )
         return
     _log_server(
-        "tile landed: index=%d, tile_type=%s, city=%s, owner_index=%d, toll_due=%.2f, buy_price=%.2f, action_required=%s" % [
+        "tile landed: index=%d, tile_type=%s, city=%s, owner_index=%d, toll_due=%.2f, buy_price=%.2f, energy=%d, sell_100=%.2f, mine_100=%.8f, action_required=%s" % [
             tile_index,
             tile_type,
             city,
             owner_index,
             toll_due,
             buy_price,
+            energy_production,
+            sell_100_fiat,
+            mine_100_btc,
             action_required,
         ],
     )
@@ -417,8 +429,8 @@ func _tile_info_from_index(tile_index: int) -> Dictionary:
     return { }
 
 
-func _apply_cycle_started(cycle: int, inflation_active: bool) -> void:
-    _log_server("cycle started: cycle=%d, inflation_active=%s" % [cycle, inflation_active])
+func _apply_cycle_started(cycle: int) -> void:
+    _log_server("cycle started: cycle=%d" % cycle)
 
 
 func _apply_property_acquired(owner_player_index: int, tile_index: int, price: float) -> void:

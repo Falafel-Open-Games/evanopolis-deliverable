@@ -13,7 +13,7 @@ func test_board_has_only_property_tiles() -> void:
     assert_eq(tiles.size(), 18, "new rules board always has 18 tiles")
     for index in range(tiles.size()):
         var tile: Dictionary = tiles[index]
-        assert_eq(str(tile.get("tile_type", "")), "property", "tile %d should be a property tile" % index)
+        assert_true(["A", "B", "C"].has(str(tile.get("tile_type", ""))), "tile %d should be an economy property tile" % index)
         assert_eq(int(tile.get("index", -1)), index, "tile %d index matches position" % index)
         assert_ne(str(tile.get("city", "")), "", "tile %d has a canonical city name" % index)
 
@@ -23,7 +23,7 @@ func test_tile_four_is_patagonia_property_not_legacy_special_tile() -> void:
     var game_match: GameMatch = GameMatch.new(config, [])
 
     var tile: Dictionary = game_match._tile_from_index(4)
-    assert_eq(str(tile.get("tile_type", "")), "property", "tile 4 is no longer an incident tile")
+    assert_eq(str(tile.get("tile_type", "")), "B", "tile 4 is Patagonia's B property")
     assert_eq(str(tile.get("city", "")), "Patagonia", "tile 4 belongs to Patagonia")
     assert_eq(str(game_match._action_required_for_tile(str(tile.get("tile_type", "")), -1, 0)), "buy_or_end_turn", "unowned property still offers buy or end turn")
 

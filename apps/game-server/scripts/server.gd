@@ -54,6 +54,9 @@ class NullClient:
             _owner_index: int,
             _toll_due: float,
             _buy_price: float,
+            _energy_production: int,
+            _sell_100_fiat: float,
+            _mine_100_btc: float,
             _action_required: String,
     ) -> void:
         pass
@@ -63,7 +66,7 @@ class NullClient:
         pass
 
 
-    func rpc_cycle_started(_seq: int, _cycle: int, _inflation_active: bool) -> void:
+    func rpc_cycle_started(_seq: int, _cycle: int) -> void:
         pass
 
 

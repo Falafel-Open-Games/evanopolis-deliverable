@@ -539,6 +539,15 @@ func rpc_player_balance_changed(
     _emit_gameplay_player_states()
 
 @rpc("authority")
+func rpc_game_ended(_seq: int, _winner_index: int, _reason: String, _btc_goal: float, _winner_btc: float) -> void:
+    _match_has_finished = true
+    _roll_request_pending = false
+    _end_turn_request_pending = false
+    _pending_action_type = ""
+    _pending_action_tile_index = -1
+    _emit_gameplay_turn_state()
+
+@rpc("authority")
 func rpc_board_state(_seq: int, board: Dictionary) -> void:
     _board_state = board.duplicate(true)
 
@@ -600,6 +609,9 @@ func rpc_tile_landed(
         _owner_index: int,
         _toll_due: float,
         _buy_price: float,
+        _energy_production: int,
+        _sell_100_fiat: float,
+        _mine_100_btc: float,
         action_required: String
 ) -> void:
     _pending_action_type = action_required
@@ -620,6 +632,33 @@ func rpc_tile_landed(
         ],
         _current_turn_player_index
     )
+    _emit_gameplay_turn_state()
+
+@rpc("authority")
+func rpc_cycle_started(_seq: int, _cycle: int) -> void:
+    pass
+
+@rpc("authority")
+func rpc_property_acquired(_seq: int, player_index: int, tile_index: int, price: float) -> void:
+    _player_fiat_balances[player_index] = _player_fiat_balance(player_index) - price
+    var tiles: Array = _board_state.get("tiles", [])
+    if tile_index >= 0 and tile_index < tiles.size():
+        var tile: Dictionary = tiles[tile_index]
+        tile["owner_index"] = player_index
+        tiles[tile_index] = tile
+        _board_state["tiles"] = tiles
+    _pending_action_type = ""
+    _pending_action_tile_index = -1
+    _emit_gameplay_player_states()
+    _emit_gameplay_turn_state()
+
+@rpc("authority")
+func rpc_toll_paid(_seq: int, payer_index: int, owner_index: int, amount: float) -> void:
+    _player_fiat_balances[payer_index] = _player_fiat_balance(payer_index) - amount
+    _player_fiat_balances[owner_index] = _player_fiat_balance(owner_index) + amount
+    _pending_action_type = ""
+    _pending_action_tile_index = -1
+    _emit_gameplay_player_states()
     _emit_gameplay_turn_state()
 
 func _update_state(

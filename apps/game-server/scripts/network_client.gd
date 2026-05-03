@@ -56,17 +56,20 @@ func rpc_tile_landed(
         owner_index: int,
         toll_due: float,
         buy_price: float,
+        energy_production: int,
+        sell_100_fiat: float,
+        mine_100_btc: float,
         action_required: String,
 ) -> void:
-    server_node.rpc_id(peer_id, "rpc_tile_landed", seq, tile_index, tile_type, city, owner_index, toll_due, buy_price, action_required)
+    server_node.rpc_id(peer_id, "rpc_tile_landed", seq, tile_index, tile_type, city, owner_index, toll_due, buy_price, energy_production, sell_100_fiat, mine_100_btc, action_required)
 
 
 func rpc_player_balance_changed(seq: int, player_index: int, fiat_delta: float, btc_delta: float, reason: String) -> void:
     server_node.rpc_id(peer_id, "rpc_player_balance_changed", seq, player_index, fiat_delta, btc_delta, reason)
 
 
-func rpc_cycle_started(seq: int, cycle: int, inflation_active: bool) -> void:
-    server_node.rpc_id(peer_id, "rpc_cycle_started", seq, cycle, inflation_active)
+func rpc_cycle_started(seq: int, cycle: int) -> void:
+    server_node.rpc_id(peer_id, "rpc_cycle_started", seq, cycle)
 
 
 func rpc_property_acquired(seq: int, player_index: int, tile_index: int, price: float) -> void:

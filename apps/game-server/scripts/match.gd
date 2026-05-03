@@ -252,6 +252,9 @@ func _server_move_pawn(steps: int) -> void:
             int(landing_context.get("owner_index", -1)),
             float(landing_context.get("toll_due", 0.0)),
             float(landing_context.get("buy_price", 0.0)),
+            int(landing_context.get("energy_production", 0)),
+            float(landing_context.get("sell_100_fiat", 0.0)),
+            float(landing_context.get("mine_100_btc", 0.0)),
             str(landing_context.get("action_required", "")),
         ],
     )
@@ -264,6 +267,9 @@ func _server_move_pawn(steps: int) -> void:
             to_tile,
             {
                 "buy_price": float(landing_context.get("buy_price", 0.0)),
+                "energy_production": int(landing_context.get("energy_production", 0)),
+                "sell_100_fiat": float(landing_context.get("sell_100_fiat", 0.0)),
+                "mine_100_btc": float(landing_context.get("mine_100_btc", 0.0)),
             },
         )
         return
@@ -274,6 +280,9 @@ func _server_move_pawn(steps: int) -> void:
             {
                 "owner_index": int(landing_context.get("owner_index", -1)),
                 "amount": float(landing_context.get("toll_due", 0.0)),
+                "energy_production": int(landing_context.get("energy_production", 0)),
+                "sell_100_fiat": float(landing_context.get("sell_100_fiat", 0.0)),
+                "mine_100_btc": float(landing_context.get("mine_100_btc", 0.0)),
             },
         )
         return
@@ -331,8 +340,7 @@ func rpc_buy_property(game_id: String, player_id: String, tile_index: int) -> St
     var tile_type: String = str(tile.get("tile_type", ""))
     if not _is_property_tile(tile_type):
         return "tile_not_buyable"
-    var city: String = str(tile.get("city", ""))
-    var price: float = _compute_property_price(city)
+    var price: float = _compute_property_price(tile_index)
     var buyer: PlayerState = state.players[resolved_index]
     if buyer.fiat_balance < price:
         return "insufficient_fiat"
@@ -393,12 +401,8 @@ func _compute_passed_tiles_with_effects(from_tile: int, steps: int, board_size: 
         var next_cycle: int = player.laps + 1
         if next_cycle > state.current_cycle:
             state.current_cycle = next_cycle
-            _broadcast("rpc_cycle_started", [state.current_cycle, _is_inflation_cycle(state.current_cycle)])
+            _broadcast("rpc_cycle_started", [state.current_cycle])
     return results
-
-
-func _is_inflation_cycle(cycle: int) -> bool:
-    return cycle % 2 == 0
 
 
 func _build_landing_context(tile_index: int, landing_player_index: int) -> Dictionary:
@@ -410,9 +414,9 @@ func _build_landing_context(tile_index: int, landing_player_index: int) -> Dicti
     var toll_due: float = 0.0
     var buy_price: float = 0.0
     if _is_property_tile(tile_type) and owner_index < 0:
-        buy_price = _compute_property_price(city)
+        buy_price = _compute_property_price(tile_index)
     if _is_property_tile(tile_type) and owner_index >= 0 and owner_index != landing_player_index:
-        toll_due = _compute_toll(city)
+        toll_due = _compute_toll(tile_index)
     return {
         "tile_index": tile_index,
         "tile_type": tile_type,
@@ -420,6 +424,9 @@ func _build_landing_context(tile_index: int, landing_player_index: int) -> Dicti
         "owner_index": owner_index,
         "toll_due": toll_due,
         "buy_price": buy_price,
+        "energy_production": int(tile.get("energy_production", 0)),
+        "sell_100_fiat": float(tile.get("sell_100_fiat", 0.0)),
+        "mine_100_btc": float(tile.get("mine_100_btc", 0.0)),
         "action_required": _action_required_for_tile(tile_type, owner_index, landing_player_index),
     }
 
@@ -434,7 +441,7 @@ func _action_required_for_tile(tile_type: String, owner_index: int, landing_play
 
 
 func _is_property_tile(tile_type: String) -> bool:
-    return tile_type == "property" or tile_type == "special_property"
+    return tile_type == "A" or tile_type == "B" or tile_type == "C"
 
 
 func _tile_from_index(tile_index: int) -> Dictionary:
@@ -444,20 +451,14 @@ func _tile_from_index(tile_index: int) -> Dictionary:
     return tiles[tile_index]
 
 
-func _compute_toll(city: String) -> float:
-    var property_price: float = _compute_property_price(city)
-    return property_price * 0.10
+func _compute_toll(tile_index: int) -> float:
+    var tile: Dictionary = _tile_from_index(tile_index)
+    return float(tile.get("toll", 0.0))
 
 
-func _compute_property_price(city: String) -> float:
-    var base_price: float = _base_property_price(city)
-    var inflation_steps: int = int(state.current_cycle / 2)
-    var multiplier: float = pow(1.1, inflation_steps)
-    return base_price * multiplier
-
-
-func _base_property_price(city: String) -> float:
-    return EconomyV0.base_property_price(city)
+func _compute_property_price(tile_index: int) -> float:
+    var tile: Dictionary = _tile_from_index(tile_index)
+    return float(tile.get("buy_price", 0.0))
 
 
 func _build_board_state(board_size: int) -> Dictionary:
@@ -482,12 +483,20 @@ func _build_board_state(board_size: int) -> Dictionary:
 func _append_city_tiles(tiles: Array[Dictionary], start_index: int, count: int, city_slug: String) -> int:
     var index: int = start_index
     for _i in range(count):
+        var property_values: Dictionary = EconomyV0.property_values_for_tile(index)
+        assert(str(property_values.get("city", "")) == city_slug)
         tiles.append(
             {
                 "index": index,
-                "tile_type": "property",
-                "city": city_slug,
+                "tile_index": index,
+                "tile_type": str(property_values.get("tile_type", "")),
+                "city": str(property_values.get("city", "")),
                 "owner_index": -1,
+                "buy_price": float(property_values.get("buy_price", 0.0)),
+                "energy_production": int(property_values.get("energy_production", 0)),
+                "toll": float(property_values.get("toll", 0.0)),
+                "sell_100_fiat": float(property_values.get("sell_100_fiat", 0.0)),
+                "mine_100_btc": float(property_values.get("mine_100_btc", 0.0)),
             },
         )
         index += 1

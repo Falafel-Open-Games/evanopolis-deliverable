@@ -485,7 +485,7 @@ func test_tile_landed_uses_board_state_details() -> void:
     }
 
     client._apply_board_state(board)
-    client._apply_tile_landed(1, "property", "Irkutsk", -1, 0.0, 8.0, "buy_or_end_turn")
+    client._apply_tile_landed(1, "property", "Irkutsk", -1, 0.0, 8.0, 10, 5.0, 0.95, "buy_or_end_turn")
     var tile_info: Dictionary = client._tile_info_from_index(1)
 
     assert_eq(int(client.board_state.get("size", 0)), 18, "board state should be applied")
@@ -503,7 +503,7 @@ func test_tile_landed_buy_prompt_submits_buy_property() -> void:
     client.next_buy_choice = true
     client.player_fiat_balances[0] = 30.0
 
-    client._apply_tile_landed(6, "property", "Patagonia", -1, 0.0, 3.0, "buy_or_end_turn")
+    client._apply_tile_landed(6, "property", "Patagonia", -1, 0.0, 3.0, 9, 6.0, 0.55, "buy_or_end_turn")
 
     assert_eq(client.server_calls.size(), 1, "buy prompt sends one rpc")
     assert_eq(str(client.server_calls[0].get("method", "")), "rpc_buy_property", "buy path sends buy_property rpc")
@@ -520,7 +520,7 @@ func test_tile_landed_buy_prompt_submits_end_turn() -> void:
     client.current_player_index = 0
     client.next_buy_choice = false
 
-    client._apply_tile_landed(6, "property", "Patagonia", -1, 0.0, 3.0, "buy_or_end_turn")
+    client._apply_tile_landed(6, "property", "Patagonia", -1, 0.0, 3.0, 9, 6.0, 0.55, "buy_or_end_turn")
 
     assert_eq(client.server_calls.size(), 1, "decline buy sends one rpc")
     assert_eq(str(client.server_calls[0].get("method", "")), "rpc_end_turn", "decline path sends end_turn rpc")
@@ -532,7 +532,7 @@ func test_tile_landed_pay_toll_prompt_submits_pay_toll() -> void:
     client.player_index = 0
     client.current_player_index = 0
 
-    client._apply_tile_landed(13, "property", "El Salvador", 1, 0.75, 0.0, "pay_toll")
+    client._apply_tile_landed(13, "property", "El Salvador", 1, 0.75, 0.0, 14, 11.0, 0.80, "pay_toll")
 
     assert_eq(client.server_calls.size(), 1, "pay toll prompt sends one rpc")
     assert_eq(str(client.server_calls[0].get("method", "")), "rpc_pay_toll", "pay toll path sends pay_toll rpc")
@@ -544,7 +544,7 @@ func test_tile_landed_pay_toll_for_other_player_does_not_prompt() -> void:
     client.player_index = 1
     client.current_player_index = 0
 
-    client._apply_tile_landed(13, "property", "El Salvador", 1, 0.75, 0.0, "pay_toll")
+    client._apply_tile_landed(13, "property", "El Salvador", 1, 0.75, 0.0, 14, 11.0, 0.80, "pay_toll")
 
     assert_eq(client.server_calls.size(), 0, "no rpc sent when pay_toll is for another player")
     assert_eq(client.pay_toll_prompt_count, 0, "no pay toll prompt for another player")
