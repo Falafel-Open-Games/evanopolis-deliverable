@@ -100,6 +100,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 3
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 16
@@ -120,24 +121,24 @@ size_flags_vertical = 1
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="TurnActions" type="MarginContainer" parent="HudRoot/SafeMargin/VBoxContainer" unique_id=1641847805]
+[node name="TurnActions" type="MarginContainer" parent="HudRoot/SafeMargin" unique_id=1641847805]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HudRoot/SafeMargin/VBoxContainer/TurnActions" unique_id=2103199]
+[node name="HBoxContainer" type="HBoxContainer" parent="HudRoot/SafeMargin/TurnActions" unique_id=2103199]
 layout_mode = 2
 
-[node name="RollDice" type="Button" parent="HudRoot/SafeMargin/VBoxContainer/TurnActions/HBoxContainer" unique_id=1091890019]
+[node name="RollDice" type="Button" parent="HudRoot/SafeMargin/TurnActions/HBoxContainer" unique_id=1091890019]
 layout_mode = 2
 text = "Roll Dice"
 
-[node name="SellVsMineSlider" type="HSlider" parent="HudRoot/SafeMargin/VBoxContainer/TurnActions/HBoxContainer" unique_id=1269343488]
+[node name="SellVsMineSlider" type="HSlider" parent="HudRoot/SafeMargin/TurnActions/HBoxContainer" unique_id=1269343488]
 custom_minimum_size = Vector2(146, 0)
 layout_mode = 2
 value = 50.0
 
-[node name="EndTurn" type="Button" parent="HudRoot/SafeMargin/VBoxContainer/TurnActions/HBoxContainer" unique_id=1567234429]
+[node name="EndTurn" type="Button" parent="HudRoot/SafeMargin/TurnActions/HBoxContainer" unique_id=1567234429]
 layout_mode = 2
 text = "End Turn"
 

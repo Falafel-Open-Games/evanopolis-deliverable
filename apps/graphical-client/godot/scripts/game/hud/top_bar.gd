@@ -4,6 +4,8 @@ extends Panel
 const AvatarBoxControl = preload("res://scripts/app/avatar_box.gd")
 const GameEconomyConfigModel = preload("res://scripts/app/models/game_economy_config.gd")
 const PlayerIdentityCardView = preload("res://scripts/app/player_identity_card.gd")
+const LOCAL_TURN_COLOR: Color = Color(0.015686275, 0.8, 0.68235296, 1.0)
+const OTHER_TURN_COLOR: Color = Color(0.980392, 0.94902, 0.870588, 1.0)
 
 @export var avatar_box: AvatarBoxControl
 @onready var turn_label: Label = get_node(^"MarginContainer/HBoxContainer/VBoxContainer/TurnLabel")
@@ -34,12 +36,14 @@ func set_local_player_identity(icon_id: int, color_id: int) -> void:
 func set_turn_info(turn_number: int, player_name: String, is_local_turn: bool) -> void:
     var resolved_turn_number: int = max(1, turn_number)
     if is_local_turn:
+        turn_label.add_theme_color_override("font_color", LOCAL_TURN_COLOR)
         turn_label.text = "Turn %d - Your turn" % resolved_turn_number
         return
 
     var resolved_player_name: String = player_name.strip_edges()
     if resolved_player_name.is_empty():
         resolved_player_name = "Player"
+    turn_label.add_theme_color_override("font_color", OTHER_TURN_COLOR)
     turn_label.text = "Turn %d - %s" % [resolved_turn_number, resolved_player_name]
 
 func _color_from_id(color_id: int) -> Color:

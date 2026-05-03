@@ -1,12 +1,37 @@
 [gd_scene format=3 uid="uid://12tkpljdw221"]
 
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="1_fd87n"]
+[ext_resource type="FontFile" uid="uid://bu2qutftugb1o" path="res://fonts/Noto_Color_Emoji/NotoColorEmoji-Regular.ttf" id="2_q6ju1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q6ju1"]
+bg_color = Color(0.6, 0.35515118, 0.26904127, 1)
 
 [node name="EventLogItem" type="MarginContainer" unique_id=1446434861]
 
-[node name="Label" type="Label" parent="." unique_id=2012681576]
-custom_minimum_size = Vector2(172, 0)
+[node name="Panel" type="Panel" parent="." unique_id=1048852285]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_q6ju1")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=314629823]
+layout_mode = 2
+
+[node name="Icon" type="Label" parent="HBoxContainer" unique_id=2012681576]
 layout_mode = 2
 theme = ExtResource("1_fd87n")
 theme_type_variation = &"SmallLabel"
-text = "🎮️ Game started"
+theme_override_fonts/font = ExtResource("2_q6ju1")
+theme_override_font_sizes/font_size = 10
+text = "🚦
+"
+vertical_alignment = 1
+
+[node name="Message" type="Label" parent="HBoxContainer" unique_id=1728736220]
+custom_minimum_size = Vector2(155, 0)
+layout_mode = 2
+theme = ExtResource("1_fd87n")
+theme_type_variation = &"SmallLabel"
+theme_override_font_sizes/font_size = 10
+text = "Alice turn started
+"
+vertical_alignment = 1
+autowrap_mode = 2

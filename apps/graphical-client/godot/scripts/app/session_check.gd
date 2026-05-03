@@ -430,7 +430,7 @@ func rpc_action_rejected(_seq: int, reason: String) -> void:
     if _phase == SessionPhase.GAME_STARTED:
         _roll_request_pending = false
         _end_turn_request_pending = false
-        _append_gameplay_event_log_message("Action rejected: %s" % reason)
+        _append_gameplay_event_log_message("Action rejected: %s" % reason, _current_turn_player_index)
         _emit_gameplay_turn_state()
         return
     _fail_session("The game server rejected the session: %s" % reason)
@@ -566,7 +566,7 @@ func rpc_turn_started(_seq: int, player_index: int, turn_number: int, _cycle: in
     _end_turn_request_pending = false
     _pending_action_type = ""
     _pending_action_tile_index = -1
-    _append_gameplay_event_log_message("🔄 %s turn started" % _event_log_player_name(player_index))
+    _append_gameplay_event_log_message("🚦 %s turn started" % _event_log_player_name(player_index), player_index)
     _emit_gameplay_turn_state()
     _debug_print_authoritative_gameplay_state("turn_started")
 
@@ -580,16 +580,14 @@ func rpc_dice_rolled(_seq: int, die_1: int, die_2: int, total: int) -> void:
             die_1,
             die_2,
             total,
-        ]
+        ],
+        _current_turn_player_index
     )
     _emit_gameplay_turn_state()
 
 @rpc("authority")
 func rpc_pawn_moved(_seq: int, _from_tile: int, to_tile: int, _passed_tiles: Array[int]) -> void:
     _player_tile_positions[_current_turn_player_index] = to_tile
-    _append_gameplay_event_log_message(
-        "%s moved to tile %d" % [_event_log_player_name(_current_turn_player_index), to_tile]
-    )
     _emit_gameplay_pawn_positions()
     _debug_print_authoritative_gameplay_state("pawn_moved")
 
@@ -619,7 +617,8 @@ func rpc_tile_landed(
             _event_log_player_name(_current_turn_player_index),
             tile_label,
             tile_index,
-        ]
+        ],
+        _current_turn_player_index
     )
     _emit_gameplay_turn_state()
 
@@ -822,8 +821,11 @@ func _clone_gameplay_player_states(states: Array) -> Array:
         cloned_states.append(state_variant.clone())
     return cloned_states
 
-func _append_gameplay_event_log_message(message: String) -> void:
-    _gameplay_event_log_messages.append(message)
+func _append_gameplay_event_log_message(message: String, player_index: int = -1) -> void:
+    _gameplay_event_log_messages.append({
+        "message": message,
+        "color_id": _player_color_id(player_index) if player_index >= 0 else -1,
+    })
     _emit_gameplay_event_log_messages()
 
 func _apply_player_positions_snapshot(snapshot: Dictionary) -> void:

@@ -4,6 +4,7 @@ extends Node3D
 const PawnView = preload("res://scripts/game/pawns/pawn.gd")
 const PlayerIdentityCardView = preload("res://scripts/app/player_identity_card.gd")
 const ANCHOR_EPSILON: float = 0.001
+const MIN_PAWN_STACK_HEIGHT: float = 0.01
 const VISUAL_RING_START_TILES_BY_COLOR_ID: Array[int] = [12, 15, 0, 3, 6, 9]
 
 @onready var initial_positions: Node3D = get_node(^"InitialPositions")
@@ -16,6 +17,7 @@ var _legacy_color_slot_transforms: Array[Transform3D] = []
 var _tile_transforms_by_index: Array[Transform3D] = []
 var _template_mesh: Mesh = null
 var _template_materials_by_color_id: Array[Material] = []
+var _pawn_stack_height: float = 1.0
 
 func _ready() -> void:
     assert(initial_positions)
@@ -60,7 +62,6 @@ func sync_gameplay_player_states(player_states: Array) -> void:
         var color_id: int = int(state_variant.color_id)
         var pawn: Pawn = ensure_pawn(player_index, color_id)
         pawn.set_color_id(color_id)
-        _apply_authoritative_tile_position(player_index)
         active_player_indices[player_index] = true
 
     var player_indices: Array = _pawns_by_player_index.keys()
@@ -69,6 +70,7 @@ func sync_gameplay_player_states(player_states: Array) -> void:
         if active_player_indices.has(player_index):
             continue
         remove_pawn(player_index)
+    _apply_authoritative_tile_positions()
 
 func ensure_pawn(player_index: int, initial_color_id: int = PlayerIdentityCardView.DEFAULT_COLOR_ID) -> Pawn:
     assert(is_node_ready())
@@ -97,17 +99,13 @@ func set_pawn_transform(player_index: int, board_transform: Transform3D) -> void
 
 func set_pawn_tile_index(player_index: int, tile_index: int) -> void:
     assert(tile_index >= 0)
-    var tile_transform: Transform3D = get_tile_transform(tile_index)
-    set_pawn_transform(player_index, tile_transform)
+    ensure_pawn(player_index)
+    _authoritative_tile_positions_by_player_index[player_index] = tile_index
+    _apply_authoritative_tile_positions()
 
 func sync_authoritative_tile_positions(tile_positions_by_player_index: Dictionary) -> void:
     _authoritative_tile_positions_by_player_index = tile_positions_by_player_index.duplicate(true)
-    for player_index_variant in tile_positions_by_player_index.keys():
-        var player_index: int = int(player_index_variant)
-        var tile_index: int = int(tile_positions_by_player_index.get(player_index_variant, -1))
-        if tile_index < 0:
-            continue
-        set_pawn_tile_index(player_index, tile_index)
+    _apply_authoritative_tile_positions()
 
 func get_tile_transform(tile_index: int) -> Transform3D:
     assert(_tile_transforms_by_index.size() > 0)
@@ -125,11 +123,34 @@ func _spawn_transform_for_player(player_index: int, color_id: int) -> Transform3
         return get_tile_transform(tile_index)
     return get_default_spawn_transform(color_id)
 
-func _apply_authoritative_tile_position(player_index: int) -> void:
-    var tile_index: int = int(_authoritative_tile_positions_by_player_index.get(player_index, -1))
-    if tile_index < 0:
-        return
-    set_pawn_tile_index(player_index, tile_index)
+func _apply_authoritative_tile_positions() -> void:
+    var player_indices_by_tile_index: Dictionary = _player_indices_by_tile_index()
+    for tile_index_variant in player_indices_by_tile_index.keys():
+        var tile_index: int = int(tile_index_variant)
+        var player_indices: Array = player_indices_by_tile_index[tile_index_variant]
+        player_indices.sort()
+        var tile_transform: Transform3D = get_tile_transform(tile_index)
+        var tile_up: Vector3 = tile_transform.basis.y.normalized()
+        for stack_index in range(player_indices.size()):
+            var player_index: int = int(player_indices[stack_index])
+            var stacked_transform: Transform3D = tile_transform
+            stacked_transform.origin += tile_up * _pawn_stack_height * stack_index
+            set_pawn_transform(player_index, stacked_transform)
+
+func _player_indices_by_tile_index() -> Dictionary:
+    var player_indices_by_tile_index: Dictionary = { }
+    for player_index_variant in _authoritative_tile_positions_by_player_index.keys():
+        var player_index: int = int(player_index_variant)
+        if not _pawns_by_player_index.has(player_index):
+            continue
+        var tile_index: int = int(_authoritative_tile_positions_by_player_index.get(player_index_variant, -1))
+        if tile_index < 0:
+            continue
+        if not player_indices_by_tile_index.has(tile_index):
+            player_indices_by_tile_index[tile_index] = []
+        var player_indices: Array = player_indices_by_tile_index[tile_index]
+        player_indices.append(player_index)
+    return player_indices_by_tile_index
 
 func remove_pawn(player_index: int) -> void:
     var pawn: Pawn = _pawns_by_player_index.get(player_index, null) as Pawn
@@ -145,6 +166,7 @@ func clear_pawns() -> void:
             continue
         pawn.queue_free()
     _pawns_by_player_index.clear()
+    _authoritative_tile_positions_by_player_index.clear()
 
 func debug_print_pawn_layout(context: String = "") -> void:
     if not _should_print_debug_gameplay_state():
@@ -201,6 +223,7 @@ func _capture_template_and_spawn_positions() -> void:
     var template_marker: MeshInstance3D = markers[0]
     _template_mesh = template_marker.mesh
     assert(_template_mesh != null)
+    _pawn_stack_height = max(_template_mesh.get_aabb().size.y, MIN_PAWN_STACK_HEIGHT)
     initial_positions.visible = false
 
 func _collect_marker_meshes(node: Node, result: Array[MeshInstance3D]) -> void:

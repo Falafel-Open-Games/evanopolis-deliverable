@@ -18,9 +18,9 @@ signal end_turn_requested()
 @onready var top_bar: TopBarView = get_node("HudRoot/SafeMargin/VBoxContainer/TopBar")
 @onready var players_list_panel: PlayersListPanelView = get_node(^"HudRoot/SafeMargin/VBoxContainer/PlayersList")
 @onready var event_log_panel: EventLogPanelView = get_node(^"HudRoot/SafeMargin/VBoxContainer/EventLog")
-@onready var roll_dice_button: Button = get_node(^"HudRoot/SafeMargin/VBoxContainer/TurnActions/HBoxContainer/RollDice")
-@onready var sell_vs_mine_slider: HSlider = get_node(^"HudRoot/SafeMargin/VBoxContainer/TurnActions/HBoxContainer/SellVsMineSlider")
-@onready var end_turn_button: Button = get_node(^"HudRoot/SafeMargin/VBoxContainer/TurnActions/HBoxContainer/EndTurn")
+@onready var roll_dice_button: Button = get_node(^"HudRoot/SafeMargin/TurnActions/HBoxContainer/RollDice")
+@onready var sell_vs_mine_slider: HSlider = get_node(^"HudRoot/SafeMargin/TurnActions/HBoxContainer/SellVsMineSlider")
+@onready var end_turn_button: Button = get_node(^"HudRoot/SafeMargin/TurnActions/HBoxContainer/EndTurn")
 
 func _ready() -> void:
     assert(board_root)
