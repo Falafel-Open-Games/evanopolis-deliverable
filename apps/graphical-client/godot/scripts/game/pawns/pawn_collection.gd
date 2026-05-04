@@ -6,6 +6,7 @@ const PlayerIdentityCardView = preload("res://scripts/app/player_identity_card.g
 const ANCHOR_EPSILON: float = 0.001
 const MIN_PAWN_STACK_HEIGHT: float = 0.01
 const VISUAL_RING_START_TILES_BY_COLOR_ID: Array[int] = [12, 15, 0, 3, 6, 9]
+const DEBUG_GAMEPLAY_ARGUMENT: String = "--debug"
 
 @onready var initial_positions: Node3D = get_node(^"InitialPositions")
 @onready var pawn_instances: Node3D = get_node(^"PawnInstances")
@@ -188,14 +189,23 @@ func debug_print_pawn_layout(context: String = "") -> void:
                 pawn.transform.origin.z,
             ]
         )
-    print_debug("[pawn-layout%s] %s" % [
+    print("[pawn-layout%s] %s" % [
         "" if context.is_empty() else ":%s" % context,
         ", ".join(pawn_summaries),
     ])
 
 
 func _should_print_debug_gameplay_state() -> bool:
-    return OS.has_environment("EVANOPOLIS_DEBUG_GAMEPLAY")
+    return OS.has_environment("EVANOPOLIS_DEBUG_GAMEPLAY") or _has_debug_argument()
+
+func _has_debug_argument() -> bool:
+    for argument in OS.get_cmdline_args():
+        if argument == DEBUG_GAMEPLAY_ARGUMENT or argument.begins_with("%s=" % DEBUG_GAMEPLAY_ARGUMENT):
+            return true
+    for argument in OS.get_cmdline_user_args():
+        if argument == DEBUG_GAMEPLAY_ARGUMENT or argument.begins_with("%s=" % DEBUG_GAMEPLAY_ARGUMENT):
+            return true
+    return false
 
 func _capture_template_and_spawn_positions() -> void:
     var markers: Array[MeshInstance3D] = []

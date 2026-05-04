@@ -5,6 +5,8 @@ const TopBarView = preload("res://scripts/game/hud/top_bar.gd")
 const PlayersListPanelView = preload("res://scripts/game/hud/players_list_panel.gd")
 const PawnCollectionView = preload("res://scripts/game/pawns/pawn_collection.gd")
 const EventLogPanelView = preload("res://scripts/game/hud/event_log_panel.gd")
+const TurnActionsView = preload("res://scripts/game/hud/turn_actions.gd")
+const DEBUG_GAMEPLAY_ARGUMENT: String = "--debug"
 
 signal roll_dice_requested()
 signal end_turn_requested()
@@ -15,12 +17,10 @@ signal end_turn_requested()
 @onready var hud_root: CanvasLayer = get_node(^"HudRoot")
 @onready var camera_rig: Node3D = get_node(^"CameraRig")
 
-@onready var top_bar: TopBarView = get_node("HudRoot/SafeMargin/VBoxContainer/TopBar")
-@onready var players_list_panel: PlayersListPanelView = get_node(^"HudRoot/SafeMargin/VBoxContainer/PlayersList")
-@onready var event_log_panel: EventLogPanelView = get_node(^"HudRoot/SafeMargin/VBoxContainer/EventLog")
-@onready var roll_dice_button: Button = get_node(^"HudRoot/SafeMargin/TurnActions/HBoxContainer/RollDice")
-@onready var sell_vs_mine_slider: HSlider = get_node(^"HudRoot/SafeMargin/TurnActions/HBoxContainer/SellVsMineSlider")
-@onready var end_turn_button: Button = get_node(^"HudRoot/SafeMargin/TurnActions/HBoxContainer/EndTurn")
+@export var top_bar: TopBarView
+@export var players_list_panel: PlayersListPanelView
+@export var event_log_panel: EventLogPanelView
+@export var turn_actions: TurnActionsView
 
 func _ready() -> void:
     assert(board_root)
@@ -28,16 +28,14 @@ func _ready() -> void:
     assert(pawn_collection)
     assert(hud_root)
     assert(camera_rig)
+    assert(turn_actions)
     assert(top_bar)
     assert(players_list_panel)
     assert(event_log_panel)
-    assert(roll_dice_button)
-    assert(sell_vs_mine_slider)
-    assert(end_turn_button)
     pawn_collection.bind_board_tiles(get_node(^"BoardRoot/tiles"))
-    roll_dice_button.pressed.connect(_on_roll_dice_pressed)
-    end_turn_button.pressed.connect(_on_end_turn_pressed)
-    set_turn_action_state(false, false)
+    turn_actions.roll_dice_requested.connect(_on_roll_dice_pressed)
+    turn_actions.end_turn_requested.connect(_on_end_turn_pressed)
+    set_turn_action_state(false, false, false, { })
 
 func set_local_player_identity(icon_id: int, color_id: int) -> void:
     if not is_node_ready():
@@ -71,13 +69,11 @@ func set_event_log_messages(messages: Array) -> void:
         return
     event_log_panel.set_messages(messages)
 
-func set_turn_action_state(can_roll_dice: bool, can_end_turn: bool) -> void:
+func set_turn_action_state(can_roll_dice: bool, can_end_turn: bool, is_local_turn: bool, property_action: Dictionary = { }) -> void:
     if not is_node_ready():
-        call_deferred("set_turn_action_state", can_roll_dice, can_end_turn)
+        call_deferred("set_turn_action_state", can_roll_dice, can_end_turn, is_local_turn, property_action.duplicate(true))
         return
-    roll_dice_button.disabled = not can_roll_dice
-    sell_vs_mine_slider.editable = false
-    end_turn_button.disabled = not can_end_turn
+    turn_actions.set_turn_action_state(can_roll_dice, can_end_turn, is_local_turn, property_action)
 
 func set_pawn_tile_positions(tile_positions_by_player_index: Dictionary) -> void:
     if not is_node_ready():
@@ -147,7 +143,7 @@ func debug_print_visible_state(
     for event_index in range(start_index, event_log_messages.size()):
         event_tail.append(str(event_log_messages[event_index]))
 
-    print_debug(
+    print(
         "[visible:%s] local_id=%s icon=%d color=%d turn=%d current=%d local_turn=%s can_roll=%s pending=%s/%d players=[%s] pawns=[%s] events=[%s]" % [
             context,
             local_player_id,
@@ -168,12 +164,19 @@ func debug_print_visible_state(
 
 
 func _should_print_debug_gameplay_state() -> bool:
-    return OS.has_environment("EVANOPOLIS_DEBUG_GAMEPLAY")
+    return OS.has_environment("EVANOPOLIS_DEBUG_GAMEPLAY") or _has_debug_argument()
+
+func _has_debug_argument() -> bool:
+    for argument in OS.get_cmdline_args():
+        if argument == DEBUG_GAMEPLAY_ARGUMENT or argument.begins_with("%s=" % DEBUG_GAMEPLAY_ARGUMENT):
+            return true
+    for argument in OS.get_cmdline_user_args():
+        if argument == DEBUG_GAMEPLAY_ARGUMENT or argument.begins_with("%s=" % DEBUG_GAMEPLAY_ARGUMENT):
+            return true
+    return false
 
 func _on_roll_dice_pressed() -> void:
-    roll_dice_button.disabled = true
     roll_dice_requested.emit()
 
 func _on_end_turn_pressed() -> void:
-    end_turn_button.disabled = true
     end_turn_requested.emit()

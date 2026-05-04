@@ -2,7 +2,7 @@ class_name PlayersListPanel
 extends MarginContainer
 
 const COLLAPSED_SIZE: Vector2 = Vector2(0, 0)
-const EXPANDED_SIZE: Vector2 = Vector2(210, 0)
+#const EXPANDED_SIZE: Vector2 = Vector2(50, 0)
 const PlayerListCardScene = preload("res://scenes/game/hud/player_list_card.tscn")
 
 @onready var toggle_button: Button = get_node(^"VBoxContainer/MarginContainer/ListToggleButton")
@@ -34,9 +34,12 @@ func _on_toggle_button_pressed() -> void:
     if player_list_seats.visible == true:
         custom_minimum_size = COLLAPSED_SIZE
         player_list_seats.visible = false
+        size_flags_vertical = Control.SIZE_SHRINK_BEGIN
     else:
-        custom_minimum_size = EXPANDED_SIZE
+        #custom_minimum_size = EXPANDED_SIZE
         player_list_seats.visible = true
+        #size_flags_vertical = Control.SIZE_EXPAND_FILL
+
 
 func _sync_collapsed_state() -> void:
     if custom_minimum_size.x <= 0.0:

@@ -8,6 +8,7 @@ const TOP_BAR_FADE_SECONDS: float = 1.0
 @export var top_bar: Control
 @export var players_list: Control
 @export var event_log: Control
+@export var turn_actions: Control
 @export var initial_logo: Control
 
 var _intro_tween: Tween
@@ -17,6 +18,7 @@ func _ready() -> void:
     assert(top_bar)
     assert(players_list)
     assert(event_log)
+    assert(turn_actions)
     assert(initial_logo)
     _configure_initial_state()
     call_deferred("play_intro")
@@ -44,6 +46,7 @@ func play_intro() -> void:
     _intro_tween.tween_method(_set_control_alpha.bind(top_bar), top_bar.modulate.a, 1.0, TOP_BAR_FADE_SECONDS)
     _intro_tween.tween_method(_set_control_alpha.bind(players_list), players_list.modulate.a, 1.0, TOP_BAR_FADE_SECONDS)
     _intro_tween.tween_method(_set_control_alpha.bind(event_log), event_log.modulate.a, 1.0, TOP_BAR_FADE_SECONDS)
+    _intro_tween.tween_method(_set_control_alpha.bind(turn_actions), turn_actions.modulate.a, 1.0, TOP_BAR_FADE_SECONDS)
 
 func _configure_initial_state() -> void:
     _show_control(initial_logo)
@@ -54,6 +57,7 @@ func _configure_initial_state() -> void:
     _set_control_alpha(0.0, players_list)
     _show_control(event_log)
     _set_control_alpha(0.0, event_log)
+    _set_control_alpha(0.0, turn_actions)
 
 func _show_control(target: Control) -> void:
     target.visible = true

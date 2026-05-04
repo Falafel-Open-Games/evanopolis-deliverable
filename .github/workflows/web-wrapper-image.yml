@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - .github/workflows/web-wrapper-image.yml
+      - apps/graphical-client/godot/**
       - apps/web-wrapper/**
       - deploy/docker/web-wrapper/**
       - .dockerignore

@@ -1,0 +1,211 @@
+[gd_scene format=3 uid="uid://dr1pfhku6r0j5"]
+
+[ext_resource type="PackedScene" uid="uid://dxfoynfa302k7" path="res://scenes/app/panel_blurried_bg.tscn" id="1_vp3go"]
+[ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="2_a31m3"]
+[ext_resource type="Texture2D" uid="uid://iocy85bsb5vl" path="res://assets/cities/2.Irkutsk.png" id="3_e3k5w"]
+[ext_resource type="FontFile" uid="uid://djk2or1x8ndb7" path="res://fonts/JetBrains_Mono/static/JetBrainsMono-ExtraBold.ttf" id="4_4ua6o"]
+[ext_resource type="Script" path="res://scripts/game/hud/turn_actions.gd" id="5_4ua6o"]
+
+[node name="TurnActions" type="MarginContainer" unique_id=1812314134]
+custom_minimum_size = Vector2(190, 0)
+script = ExtResource("5_4ua6o")
+
+[node name="PanelBlurriedBg" parent="." unique_id=1137042040 instance=ExtResource("1_vp3go")]
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="." unique_id=925786627]
+layout_mode = 2
+theme = ExtResource("2_a31m3")
+
+[node name="ContentContainer" type="MarginContainer" parent="." unique_id=1811311648]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ContentContainer" unique_id=341638878]
+layout_mode = 2
+
+[node name="RollDice" type="Button" parent="ContentContainer/VBoxContainer" unique_id=100298599]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 6
+theme = ExtResource("2_a31m3")
+text = "Roll Dice"
+
+[node name="PropertyActions" type="MarginContainer" parent="ContentContainer/VBoxContainer" unique_id=659318092]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ContentContainer/VBoxContainer/PropertyActions" unique_id=785135747]
+layout_mode = 2
+
+[node name="CityInfoCard" type="MarginContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer" unique_id=1534963736]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CityTexture" type="TextureRect" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard" unique_id=1596083230]
+layout_mode = 2
+texture = ExtResource("3_e3k5w")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="OverlayMargin" type="MarginContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard" unique_id=547865527]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="TitleContainer" type="MarginContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin" unique_id=751211277]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/margin_top = 4
+
+[node name="Panel" type="Panel" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/TitleContainer" unique_id=461028779]
+layout_mode = 2
+
+[node name="TileTitle" type="Label" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/TitleContainer" unique_id=753123987]
+layout_mode = 2
+size_flags_vertical = 0
+theme = ExtResource("2_a31m3")
+theme_type_variation = &"SectionTitle"
+text = "Angra dos Reis (B)"
+horizontal_alignment = 1
+
+[node name="InfoPanel" type="MarginContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin" unique_id=558578387]
+layout_mode = 2
+size_flags_vertical = 8
+
+[node name="Panel" type="Panel" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel" unique_id=505367431]
+layout_mode = 2
+
+[node name="BuyOverlay" type="MarginContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel" unique_id=1968191226]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/BuyOverlay" unique_id=358982817]
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_constants/separation = 0
+
+[node name="Produces" type="HBoxContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/BuyOverlay/VBoxContainer" unique_id=43973240]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/BuyOverlay/VBoxContainer/Produces" unique_id=582604785]
+custom_minimum_size = Vector2(51, 0)
+layout_mode = 2
+theme = ExtResource("2_a31m3")
+theme_type_variation = &"SmallLabel"
+theme_override_fonts/font = ExtResource("4_4ua6o")
+text = "Produces:"
+
+[node name="EnergyValueLabel" type="Label" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/BuyOverlay/VBoxContainer/Produces" unique_id=938634475]
+layout_mode = 2
+theme = ExtResource("2_a31m3")
+theme_type_variation = &"ResourceLabel"
+theme_override_colors/font_color = Color(0.8901961, 0.627451, 0.2784314, 1)
+theme_override_font_sizes/font_size = 10
+text = "⚡️ 12  energy"
+
+[node name="SellEnergy" type="HBoxContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/BuyOverlay/VBoxContainer" unique_id=1903004106]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/BuyOverlay/VBoxContainer/SellEnergy" unique_id=316757279]
+custom_minimum_size = Vector2(51, 0)
+layout_mode = 2
+theme = ExtResource("2_a31m3")
+theme_type_variation = &"SmallLabel"
+theme_override_fonts/font = ExtResource("4_4ua6o")
+text = "100% sell:"
+
+[node name="SellValueLabel" type="Label" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/BuyOverlay/VBoxContainer/SellEnergy" unique_id=707473285]
+layout_mode = 2
+theme = ExtResource("2_a31m3")
+theme_type_variation = &"ResourceLabel"
+theme_override_colors/font_color = Color(0.0627451, 0.7529412, 0.63529414, 1)
+theme_override_font_sizes/font_size = 10
+text = "$ 8 / turn"
+
+[node name="UseEnergy" type="HBoxContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/BuyOverlay/VBoxContainer" unique_id=327229087]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/BuyOverlay/VBoxContainer/UseEnergy" unique_id=746940921]
+custom_minimum_size = Vector2(51, 0)
+layout_mode = 2
+theme = ExtResource("2_a31m3")
+theme_type_variation = &"SmallLabel"
+theme_override_fonts/font = ExtResource("4_4ua6o")
+text = "100% mine:"
+
+[node name="MineValueLabel" type="Label" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/BuyOverlay/VBoxContainer/UseEnergy" unique_id=1415006336]
+layout_mode = 2
+theme = ExtResource("2_a31m3")
+theme_type_variation = &"ResourceLabel"
+theme_override_colors/font_color = Color(0.87058824, 0.52156866, 0.31764707, 1)
+theme_override_font_sizes/font_size = 10
+text = "₿ 0.70 /turn"
+
+[node name="BuyPrice" type="HBoxContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/BuyOverlay/VBoxContainer" unique_id=650335948]
+layout_mode = 2
+
+[node name="BuyPriceLabel" type="Label" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/BuyOverlay/VBoxContainer/BuyPrice" unique_id=399931468]
+custom_minimum_size = Vector2(51, 0)
+layout_mode = 2
+theme = ExtResource("2_a31m3")
+theme_type_variation = &"SmallLabel"
+theme_override_fonts/font = ExtResource("4_4ua6o")
+theme_override_font_sizes/font_size = 10
+text = "Buy Price:"
+
+[node name="BuyPriceValueLabel" type="Label" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/BuyOverlay/VBoxContainer/BuyPrice" unique_id=1471580291]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_a31m3")
+theme_type_variation = &"ResourceLabel"
+theme_override_font_sizes/font_size = 12
+text = "$ 46"
+horizontal_alignment = 2
+
+[node name="BuyPassContainer" type="HBoxContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer" unique_id=2042535420]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="Pass" type="Button" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/BuyPassContainer" unique_id=1657228880]
+custom_minimum_size = Vector2(54, 0)
+layout_mode = 2
+theme = ExtResource("2_a31m3")
+theme_type_variation = &"CancelBitton"
+text = "Pass"
+
+[node name="Buy" type="Button" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/BuyPassContainer" unique_id=774365603]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_a31m3")
+text = "Buy"
+
+[node name="PayToll" type="Button" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer" unique_id=814724202]
+visible = false
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 0
+theme = ExtResource("2_a31m3")
+text = "Pay Toll"
+
+[node name="SellVsMineSlider" type="HSlider" parent="ContentContainer/VBoxContainer" unique_id=1100479036]
+visible = false
+custom_minimum_size = Vector2(146, 0)
+layout_mode = 2
+size_flags_vertical = 4
+value = 50.0
+
+[node name="EndTurn" type="Button" parent="ContentContainer/VBoxContainer" unique_id=675066472]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 8
+theme = ExtResource("2_a31m3")
+text = "End Turn"

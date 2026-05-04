@@ -9,12 +9,12 @@
 [ext_resource type="FontFile" uid="uid://djk2or1x8ndb7" path="res://fonts/JetBrains_Mono/static/JetBrainsMono-ExtraBold.ttf" id="4_u7cj8"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u7cj8"]
-bg_color = Color(0, 0.82, 0.6969999, 0.627451)
+bg_color = Color(1, 0.70000005, 0.27999997, 0.627451)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(1, 1, 1, 0.5176471)
+border_color = Color(1, 1, 1, 1)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
@@ -137,6 +137,7 @@ corner_radius_bottom_left = 6
 default_font_size = 8
 Button/colors/font_color = Color(0.9098039, 0.9098039, 0.9098039, 1)
 Button/colors/font_hover_color = Color(0.9098039, 0.9098039, 0.9098039, 1)
+Button/constants/outline_size = 1
 Button/font_sizes/font_size = 14
 Button/fonts/font = ExtResource("3_7j863")
 Button/styles/disabled = SubResource("StyleBoxFlat_u7cj8")

@@ -12,3 +12,4 @@ tmp/
 *.tmp
 apps/graphical-client/godot/import
 apps/graphical-client/3d
+apps/web-wrapper/public/graphical-client/

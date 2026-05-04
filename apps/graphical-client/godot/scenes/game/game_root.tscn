@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://bs4isqdfffe5o" path="res://scenes/game/pawns/pawns.tscn" id="4_0krdv"]
 [ext_resource type="PackedScene" uid="uid://5hkh50ulk56t" path="res://scenes/game/hud/players_list.tscn" id="7_k63du"]
 [ext_resource type="PackedScene" uid="uid://do5yn138o8j4l" path="res://scenes/game/hud/event_log.tscn" id="8_cylga"]
+[ext_resource type="PackedScene" uid="uid://dr1pfhku6r0j5" path="res://scenes/game/hud/turn_actions.tscn" id="9_cylga"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_f3gwi"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -37,8 +38,12 @@ size = Vector3(10, 1, 10)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_agidj"]
 albedo_color = Color(0.34, 0.21958335, 0.05099999, 1)
 
-[node name="GameRoot" type="Node3D" unique_id=408025639]
+[node name="GameRoot" type="Node3D" unique_id=408025639 node_paths=PackedStringArray("top_bar", "players_list_panel", "event_log_panel", "turn_actions")]
 script = ExtResource("1_game_root")
+top_bar = NodePath("HudRoot/SafeMargin/VBoxContainer/TopBar")
+players_list_panel = NodePath("HudRoot/SafeMargin/VBoxContainer/HBoxContainer/GameInfo/PlayersList")
+event_log_panel = NodePath("HudRoot/SafeMargin/VBoxContainer/HBoxContainer/GameInfo/EventLog")
+turn_actions = NodePath("HudRoot/SafeMargin/VBoxContainer/HBoxContainer/TurnActions")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1577108294]
 environment = SubResource("Environment_scx5b")
@@ -113,38 +118,34 @@ theme_override_constants/separation = 8
 [node name="TopBar" parent="HudRoot/SafeMargin/VBoxContainer" unique_id=766824955 instance=ExtResource("3_pevc5")]
 layout_mode = 2
 
-[node name="PlayersList" parent="HudRoot/SafeMargin/VBoxContainer" unique_id=1938680914 instance=ExtResource("7_k63du")]
-layout_mode = 2
-size_flags_vertical = 1
-
-[node name="EventLog" parent="HudRoot/SafeMargin/VBoxContainer" unique_id=1558601936 instance=ExtResource("8_cylga")]
+[node name="HBoxContainer" type="HBoxContainer" parent="HudRoot/SafeMargin/VBoxContainer" unique_id=721512055]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="TurnActions" type="MarginContainer" parent="HudRoot/SafeMargin" unique_id=1641847805]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 8
-
-[node name="HBoxContainer" type="HBoxContainer" parent="HudRoot/SafeMargin/TurnActions" unique_id=2103199]
+[node name="GameInfo" type="VBoxContainer" parent="HudRoot/SafeMargin/VBoxContainer/HBoxContainer" unique_id=2141333429]
 layout_mode = 2
 
-[node name="RollDice" type="Button" parent="HudRoot/SafeMargin/TurnActions/HBoxContainer" unique_id=1091890019]
+[node name="PlayersList" parent="HudRoot/SafeMargin/VBoxContainer/HBoxContainer/GameInfo" unique_id=1938680914 instance=ExtResource("7_k63du")]
 layout_mode = 2
-text = "Roll Dice"
+size_flags_horizontal = 0
+size_flags_vertical = 1
 
-[node name="SellVsMineSlider" type="HSlider" parent="HudRoot/SafeMargin/TurnActions/HBoxContainer" unique_id=1269343488]
-custom_minimum_size = Vector2(146, 0)
+[node name="EventLog" parent="HudRoot/SafeMargin/VBoxContainer/HBoxContainer/GameInfo" unique_id=1558601936 instance=ExtResource("8_cylga")]
 layout_mode = 2
-value = 50.0
+size_flags_vertical = 1
 
-[node name="EndTurn" type="Button" parent="HudRoot/SafeMargin/TurnActions/HBoxContainer" unique_id=1567234429]
+[node name="TurnInfo" type="MarginContainer" parent="HudRoot/SafeMargin/VBoxContainer/HBoxContainer" unique_id=176550503]
+custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
-text = "End Turn"
+size_flags_horizontal = 6
 
-[node name="HudIntroController" type="Node" parent="HudRoot" unique_id=1251668087 node_paths=PackedStringArray("top_bar", "players_list", "event_log", "initial_logo")]
+[node name="TurnActions" parent="HudRoot/SafeMargin/VBoxContainer/HBoxContainer" unique_id=1812314134 instance=ExtResource("9_cylga")]
+layout_mode = 2
+
+[node name="HudIntroController" type="Node" parent="HudRoot" unique_id=1251668087 node_paths=PackedStringArray("top_bar", "players_list", "event_log", "turn_actions", "initial_logo")]
 script = ExtResource("2_8k27q")
 top_bar = NodePath("../SafeMargin/VBoxContainer/TopBar")
-players_list = NodePath("../SafeMargin/VBoxContainer/PlayersList")
-event_log = NodePath("../SafeMargin/VBoxContainer/EventLog")
+players_list = NodePath("../SafeMargin/VBoxContainer/HBoxContainer/GameInfo/PlayersList")
+event_log = NodePath("../SafeMargin/VBoxContainer/HBoxContainer/GameInfo/EventLog")
+turn_actions = NodePath("../SafeMargin/VBoxContainer/HBoxContainer/TurnActions")
 initial_logo = NodePath("../InitialLogo")

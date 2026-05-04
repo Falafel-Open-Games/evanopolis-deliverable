@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - .github/workflows/web-wrapper-fly-deploy.yml
+      - apps/graphical-client/godot/**
       - apps/web-wrapper/**
       - deploy/docker/web-wrapper/**
       - deploy/fly/web-wrapper/**

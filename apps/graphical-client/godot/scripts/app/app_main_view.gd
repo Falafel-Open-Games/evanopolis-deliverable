@@ -4,6 +4,8 @@ const StatusCardState = preload("res://scripts/app/models/status_view_state.gd")
 const WaitingRoomState = preload("res://scripts/app/models/waiting_room_state.gd")
 const GameRootScene = preload("res://scenes/game/game_root.tscn")
 
+const DEBUG_GAMEPLAY_ARGUMENT: String = "--debug"
+
 @export var boot_node: AppBoot
 @export var session_node: SessionCheck
 
@@ -239,7 +241,9 @@ func _sync_gameplay_turn_info() -> void:
     _game_root.call(
         "set_turn_action_state",
         bool(turn_state.get("can_roll_dice", false)),
-        bool(turn_state.get("can_end_turn", false))
+        bool(turn_state.get("can_end_turn", false)),
+        bool(turn_state.get("is_local_turn", false)),
+        turn_state.get("property_action", { })
     )
     _debug_print_gameplay_state("turn_info")
 
@@ -263,4 +267,13 @@ func _debug_print_gameplay_state(context: String) -> void:
 
 
 func _should_print_debug_gameplay_state() -> bool:
-    return OS.has_environment("EVANOPOLIS_DEBUG_GAMEPLAY")
+    return OS.has_environment("EVANOPOLIS_DEBUG_GAMEPLAY") or _has_debug_argument()
+
+func _has_debug_argument() -> bool:
+    for argument in OS.get_cmdline_args():
+        if argument == DEBUG_GAMEPLAY_ARGUMENT or argument.begins_with("%s=" % DEBUG_GAMEPLAY_ARGUMENT):
+            return true
+    for argument in OS.get_cmdline_user_args():
+        if argument == DEBUG_GAMEPLAY_ARGUMENT or argument.begins_with("%s=" % DEBUG_GAMEPLAY_ARGUMENT):
+            return true
+    return false
