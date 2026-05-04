@@ -8,7 +8,7 @@ const PlayerListCardScene = preload("res://scenes/game/hud/player_list_card.tscn
 @onready var toggle_button: Button = get_node(^"VBoxContainer/MarginContainer/ListToggleButton")
 @onready var player_list_seats: VBoxContainer = get_node(^"VBoxContainer/PlayerListSeats/VBoxContainer")
 
-var _player_slots: Array = []
+var _player_states: Array = []
 var _current_turn_player_index: int = -1
 
 func _ready() -> void:
@@ -19,7 +19,7 @@ func _ready() -> void:
     _rebuild_seats()
 
 func set_player_states(player_states: Array) -> void:
-    _player_slots = player_states.duplicate()
+    _player_states = player_states.duplicate()
     if not is_node_ready():
         return
     _rebuild_seats()
@@ -53,13 +53,13 @@ func _rebuild_seats() -> void:
         player_list_seats.remove_child(child)
         child.queue_free()
 
-    for slot_variant in _player_slots:
+    for player_state_variant in _player_states:
         var seat_card: Control = PlayerListCardScene.instantiate()
         assert(seat_card.has_method("set_player_state"))
         assert(seat_card.has_method("set_is_current_turn_player"))
         player_list_seats.add_child(seat_card)
-        seat_card.call("set_player_state", slot_variant)
-        seat_card.call("set_is_current_turn_player", int(slot_variant.player_index) == _current_turn_player_index)
+        seat_card.call("set_player_state", player_state_variant)
+        seat_card.call("set_is_current_turn_player", int(player_state_variant.player_index) == _current_turn_player_index)
 
 func _sync_turn_highlight() -> void:
     var seat_cards: Array = player_list_seats.get_children()
@@ -67,7 +67,7 @@ func _sync_turn_highlight() -> void:
         var seat_card: Node = seat_cards[seat_index]
         if not seat_card.has_method("set_is_current_turn_player"):
             continue
-        if seat_index >= _player_slots.size():
+        if seat_index >= _player_states.size():
             continue
-        var player_index: int = int(_player_slots[seat_index].player_index)
+        var player_index: int = int(_player_states[seat_index].player_index)
         seat_card.call("set_is_current_turn_player", player_index == _current_turn_player_index)

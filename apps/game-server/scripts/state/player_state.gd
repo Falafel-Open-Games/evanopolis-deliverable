@@ -11,6 +11,8 @@ var position: int = 0
 var laps: int = 0
 var landing_sequence: int = 0
 var is_active: bool = true
+var sell_percent: int = 50
+var last_turn_number_allocation_changed: int = -1
 
 
 func _init(index: int = -1) -> void:

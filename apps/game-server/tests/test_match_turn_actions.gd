@@ -123,10 +123,13 @@ func test_buy_property_resolves_pending_action_and_advances_turn() -> void:
 
     var tile: Dictionary = game_match._tile_from_index(0)
     assert_eq(int(tile.get("owner_index", -1)), 0, "tile ownership transferred to buyer")
-    assert_true(is_equal_approx(game_match.state.players[0].fiat_balance, 96.0), "buyer fiat balance reduced by property price")
+    assert_true(is_equal_approx(game_match.state.players[0].fiat_balance, 98.0), "buyer receives end-of-turn fiat production after buying")
+    assert_true(is_equal_approx(game_match.state.players[0].bitcoin_balance, 0.375), "buyer receives end-of-turn bitcoin production after buying")
 
     var acquired: Array[Dictionary] = _filter_events(client_a, "rpc_property_acquired")
     assert_eq(acquired.size(), 1, "property acquired event emitted once")
+    var balance_events: Array[Dictionary] = _filter_events(client_a, "rpc_player_balance_changed")
+    assert_true(balance_events.any(func(event: Dictionary) -> bool: return str(event.get("reason", "")) == "turn_production"), "turn production balance event emitted")
     var turns: Array[Dictionary] = _filter_events(client_a, "rpc_turn_started")
     assert_eq(turns.size(), 2, "next turn starts after buy resolution")
     assert_eq(int(turns[1].get("player_index", -1)), 1, "turn advanced to next player")
@@ -173,7 +176,8 @@ func test_pay_toll_resolves_pending_action_and_advances_turn() -> void:
     assert_eq(pay_reason, "", "pay toll should succeed")
     assert_true(game_match.pending_action.is_empty(), "pending action cleared after pay toll")
     assert_true(is_equal_approx(game_match.state.players[0].fiat_balance, 126.6), "payer fiat reduced by toll")
-    assert_true(is_equal_approx(game_match.state.players[1].fiat_balance, 133.4), "owner fiat increased by toll")
+    assert_true(is_equal_approx(game_match.state.players[1].fiat_balance, 135.4), "owner receives toll plus end-of-turn fiat production")
+    assert_true(is_equal_approx(game_match.state.players[1].bitcoin_balance, 0.375), "owner receives end-of-turn bitcoin production")
 
     var toll_paid: Array[Dictionary] = _filter_events(client_a, "rpc_toll_paid")
     assert_eq(toll_paid.size(), 1, "toll paid event emitted once")
@@ -231,7 +235,8 @@ func test_pay_toll_insufficient_fiat_falls_back_to_one_bitcoin() -> void:
     assert_eq(reason, "", "pay toll should succeed with bitcoin fallback")
     assert_true(game_match.pending_action.is_empty(), "pending toll action clears after bitcoin toll payment")
     assert_true(is_equal_approx(game_match.state.players[0].bitcoin_balance, 0.5), "payer loses one bitcoin")
-    assert_true(is_equal_approx(game_match.state.players[1].bitcoin_balance, 1.25), "owner gains one bitcoin")
+    assert_true(is_equal_approx(game_match.state.players[1].fiat_balance, 132.0), "owner receives end-of-turn fiat production")
+    assert_true(is_equal_approx(game_match.state.players[1].bitcoin_balance, 1.625), "owner gains one bitcoin plus end-of-turn mining production")
 
     var toll_events: Array[Dictionary] = _filter_events(client_a, "rpc_toll_paid")
     assert_eq(toll_events.size(), 1, "bitcoin toll payment event emitted")
@@ -313,6 +318,64 @@ func test_end_turn_on_unpayable_toll_eliminates_player_and_releases_properties()
     assert_true(board_events.size() >= 2, "board state is re-broadcast after releasing properties")
     var toll_events_after_ack: Array[Dictionary] = _filter_events(client_a, "rpc_toll_paid")
     assert_eq(toll_events_after_ack.size(), 0, "no toll payment event emitted when player is eliminated")
+
+
+func test_set_energy_allocation_updates_player_and_emits_event() -> void:
+    var config: Config = Config.from_values("demo_002", 2, 18)
+    var game_match: GameMatch = GameMatch.new(config, [])
+    var client_a: MatchTestClient = MatchTestClient.new()
+    var client_b: MatchTestClient = MatchTestClient.new()
+    assert_eq(str(game_match.assign_client("alice", client_a).get("reason", "")), "", "first client should register")
+    assert_eq(str(game_match.assign_client("bob", client_b).get("reason", "")), "", "second client should register")
+
+    var reason: String = game_match.rpc_set_energy_allocation("demo_002", "bob", 80)
+    assert_eq(reason, "", "allocation change should succeed during another player's turn")
+    assert_eq(game_match.state.players[1].sell_percent, 80, "allocation stored on player state")
+    assert_eq(game_match.state.players[1].last_turn_number_allocation_changed, game_match.state.turn_number, "change is stamped with current turn number")
+
+    var events: Array[Dictionary] = _filter_events(client_a, "rpc_energy_allocation_changed")
+    assert_eq(events.size(), 1, "allocation event emitted once")
+    if events.size() == 1:
+        assert_eq(int(events[0].get("player_index", -1)), 1, "event identifies the updated player")
+        assert_eq(int(events[0].get("sell_percent", -1)), 80, "event carries sell percent")
+        assert_eq(int(events[0].get("turn_number", -1)), game_match.state.turn_number, "event carries turn number")
+
+
+func test_set_energy_allocation_rejected_twice_in_same_turn() -> void:
+    var config: Config = Config.from_values("demo_002", 2, 18)
+    var game_match: GameMatch = GameMatch.new(config, [])
+    var client_a: MatchTestClient = MatchTestClient.new()
+    var client_b: MatchTestClient = MatchTestClient.new()
+    assert_eq(str(game_match.assign_client("alice", client_a).get("reason", "")), "", "first client should register")
+    assert_eq(str(game_match.assign_client("bob", client_b).get("reason", "")), "", "second client should register")
+
+    assert_eq(game_match.rpc_set_energy_allocation("demo_002", "alice", 100), "", "first change in the turn succeeds")
+    assert_eq(game_match.rpc_set_energy_allocation("demo_002", "alice", 0), "allocation_already_changed_this_turn", "second change in the same turn is rejected")
+
+
+func test_end_turn_production_uses_latest_energy_allocation() -> void:
+    var config: Config = Config.from_values("demo_002", 2, 18)
+    var game_match: GameMatch = GameMatch.new(config, [])
+    var client_a: MatchTestClient = MatchTestClient.new()
+    var client_b: MatchTestClient = MatchTestClient.new()
+    assert_eq(str(game_match.assign_client("alice", client_a).get("reason", "")), "", "first client should register")
+    assert_eq(str(game_match.assign_client("bob", client_b).get("reason", "")), "", "second client should register")
+
+    game_match.rpc_roll_dice("demo_002", "alice")
+    assert_eq(game_match.rpc_set_energy_allocation("demo_002", "alice", 100), "", "allocation update succeeds before buy")
+    assert_eq(game_match.rpc_buy_property("demo_002", "alice", 0), "", "buy succeeds")
+    assert_true(is_equal_approx(game_match.state.players[0].fiat_balance, 100.0), "100 percent sell yields full fiat output for owned tile")
+    assert_true(is_equal_approx(game_match.state.players[0].bitcoin_balance, 0.0), "100 percent sell yields no bitcoin output")
+
+    var balance_events: Array[Dictionary] = _filter_events(client_a, "rpc_player_balance_changed")
+    var production_events: Array[Dictionary] = balance_events.filter(
+        func(event: Dictionary) -> bool:
+            return int(event.get("player_index", -1)) == 0 and str(event.get("reason", "")) == "turn_production"
+    )
+    assert_eq(production_events.size(), 1, "production event emitted once for player zero")
+    if production_events.size() == 1:
+        assert_true(is_equal_approx(float(production_events[0].get("fiat_delta", 0.0)), 4.0), "production event uses full sell fiat value")
+        assert_true(is_equal_approx(float(production_events[0].get("btc_delta", 0.0)), 0.0), "production event uses zero mining output at full sell")
 
 
 func test_pay_toll_without_fiat_or_bitcoin_ends_match_when_one_player_remains() -> void:

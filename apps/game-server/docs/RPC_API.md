@@ -140,6 +140,29 @@ Failure:
   - `identity_locked`
   - other server-side validation failures
 
+### `rpc_set_energy_allocation(game_id: String, player_id: String, sell_percent: int)`
+
+Sets the player's current energy allocation split between SELL and MINE.
+
+The server is authoritative for this state. The current implementation rules are:
+
+- `sell_percent` must be between `0` and `100`
+- players start at `50`
+- only active players may change allocation
+- a player may change allocation at most once per global turn number
+- the change may be made during any player's turn, not only the caller's own turn
+
+Success:
+- `rpc_energy_allocation_changed(seq, player_index, sell_percent, turn_number)` broadcast
+
+Failure:
+- `rpc_action_rejected(0, reason)` where `reason` may include:
+  - `allocation_already_changed_this_turn`
+  - `invalid_sell_percent`
+  - `match_not_started`
+  - `player_eliminated`
+  - other normal session validation failures
+
 ### `rpc_sync_request(game_id: String, player_id: String, last_applied_seq: int)`
 
 Requests authoritative catch-up state after reconnect or late join.
@@ -196,7 +219,9 @@ Success:
 Insufficient fiat path:
 - if payer has at least `1.0` BTC, the server transfers `1.0` BTC and emits
   `rpc_toll_paid(..., 1.0, "bitcoin")`
-- otherwise the server eliminates the payer with
+- otherwise `rpc_pay_toll(...)` is rejected with `insufficient_toll_funds`
+- the payer must then acknowledge defeat with `rpc_end_turn(...)`
+- that acknowledgement eliminates the payer with
   `rpc_player_eliminated(seq, payer_index, "toll_unpayable")`
 - after elimination, the server re-broadcasts `rpc_board_state(...)` with the
   eliminated player's properties released back to the bank
@@ -225,6 +250,7 @@ Failure:
 - `rpc_player_joined(seq: int, player_id: String, player_index: int)`
 - `rpc_player_identity_changed(seq: int, player_index: int, display_name: String, icon_id: int, color_id: int)`
 - `rpc_player_eliminated(seq: int, player_index: int, reason: String)`
+- `rpc_energy_allocation_changed(seq: int, player_index: int, sell_percent: int, turn_number: int)`
 
 ### Movement / landing
 
@@ -247,6 +273,19 @@ row for `tile_index`. For self-owned tiles, `toll_due` and `buy_price` are
 - `rpc_cycle_started(seq: int, cycle: int)`
 - `rpc_property_acquired(seq: int, player_index: int, tile_index: int, price: float)`
 - `rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float, payment_type: String)`
+
+`rpc_player_balance_changed(..., reason)` currently uses these economy-related reasons:
+
+- `turn_production`
+
+End-of-turn production is applied by the server on every successful turn advance.
+For each active player:
+
+- fiat delta = sum of owned tiles' `sell_100_fiat * (sell_percent / 100.0)`
+- bitcoin delta = sum of owned tiles' `mine_100_btc * (1.0 - sell_percent / 100.0)`
+
+If production pushes any active player to the bitcoin goal, the server ends the
+match with `rpc_game_ended(..., "btc_goal_reached", ...)`.
 
 ### Reconnect / sync
 
@@ -280,6 +319,8 @@ Current top-level fields include:
 - `pending_action: Dictionary`
 - `players: Array[Dictionary]`
 - `ready_count: int`
+- `has_rolled_current_turn: bool`
+- `next_landing_seq: int`
 
 `pending_action` is empty when no player decision is required. When present,
 it should include enough authoritative data for a reconnecting client to render
@@ -317,11 +358,13 @@ Each `players` entry is authoritative per-seat state and currently includes:
 - `icon_id: int`
 - `color_id: int`
 - `fiat_balance: float`
-- `energy_balance: int`
 - `bitcoin_balance: float`
 - `sell_percent: int`
+- `last_turn_number_allocation_changed: int`
 - `position: int`
 - `laps: int`
+- `landing_sequence: int`
+- `is_active: bool`
 
 Clients should treat `players[*].joined` and `players[*].ready` as the
 canonical waiting-room seat state and should not depend on a separate

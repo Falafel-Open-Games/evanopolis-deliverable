@@ -42,6 +42,10 @@ class NullClient:
         pass
 
 
+    func rpc_energy_allocation_changed(_seq: int, _player_index: int, _sell_percent: int, _turn_number: int) -> void:
+        pass
+
+
     func rpc_dice_rolled(_seq: int, _die_1: int, _die_2: int, _total: int) -> void:
         pass
 
@@ -223,6 +227,25 @@ func rpc_set_player_identity(
         if str(slot.get("player_id", "")) != player_id:
             return { "reason": "peer_player_mismatch", "seq": 0 }
     var reason: String = game_match.rpc_set_player_identity(game_id, player_id, display_name, icon_id, color_id)
+    if not reason.is_empty():
+        return { "reason": reason, "seq": 0 }
+    _persist_match(game_match)
+    return { "reason": "", "seq": 0 }
+
+
+func rpc_set_energy_allocation(game_id: String, player_id: String, sell_percent: int, sender_peer_id: int = -1) -> Dictionary:
+    var game_match: GameMatch = matches.get(game_id, null)
+    if game_match == null:
+        return { "reason": "invalid_game_id", "seq": 0 }
+    if sender_peer_id >= 0:
+        var slot: Dictionary = peer_slots.get(sender_peer_id, { })
+        if slot.is_empty():
+            return { "reason": "unregistered_peer", "seq": 0 }
+        if str(slot.get("game_id", "")) != game_id:
+            return { "reason": "peer_game_id_mismatch", "seq": 0 }
+        if str(slot.get("player_id", "")) != player_id:
+            return { "reason": "peer_player_mismatch", "seq": 0 }
+    var reason: String = game_match.rpc_set_energy_allocation(game_id, player_id, sell_percent)
     if not reason.is_empty():
         return { "reason": reason, "seq": 0 }
     _persist_match(game_match)

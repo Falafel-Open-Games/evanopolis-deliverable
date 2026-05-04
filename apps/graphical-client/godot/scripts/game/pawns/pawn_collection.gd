@@ -33,27 +33,6 @@ func bind_board_tiles(board_tiles_root: Node3D) -> void:
     _tile_transforms_by_index = _resolve_tile_transforms_by_index(board_tiles_root)
     _spawn_transforms_by_color_id = _resolve_start_transforms_from_tiles(board_tiles_root)
 
-func sync_waiting_room_slots(slots: Array) -> void:
-    assert(is_node_ready())
-    var active_player_indices: Dictionary = { }
-    for slot in slots:
-        if slot == null:
-            continue
-        if not bool(slot.is_known_player):
-            continue
-        var player_index: int = int(slot.player_index)
-        var color_id: int = int(slot.color_id)
-        var pawn: Pawn = ensure_pawn(player_index, color_id)
-        pawn.configure(player_index, color_id, _spawn_transform_for_player(player_index, color_id))
-        active_player_indices[player_index] = true
-
-    var player_indices: Array = _pawns_by_player_index.keys()
-    for player_index_variant in player_indices:
-        var player_index: int = int(player_index_variant)
-        if active_player_indices.has(player_index):
-            continue
-        remove_pawn(player_index)
-
 func sync_gameplay_player_states(player_states: Array) -> void:
     assert(is_node_ready())
     var active_player_indices: Dictionary = { }

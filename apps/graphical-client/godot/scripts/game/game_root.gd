@@ -67,12 +67,6 @@ func set_turn_info(turn_number: int, player_name: String, is_local_turn: bool, c
     top_bar.set_turn_info(turn_number, player_name, is_local_turn)
     players_list_panel.set_current_turn_player_index(current_player_index)
 
-func set_player_slots(slots: Array) -> void:
-    if not is_node_ready():
-        call_deferred("set_player_slots", slots.duplicate())
-        return
-    pawn_collection.sync_waiting_room_slots(slots)
-
 func set_player_states(player_states: Array) -> void:
     if not is_node_ready():
         call_deferred("set_player_states", player_states.duplicate())

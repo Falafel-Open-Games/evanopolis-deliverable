@@ -221,6 +221,15 @@ func _handle_set_player_identity(
         _rpc_to_peer(sender_id, "rpc_action_rejected", [seq, reason])
 
 
+func _handle_set_energy_allocation(game_id: String, player_id: String, sell_percent: int) -> void:
+    var sender_id: int = _get_sender_id()
+    var result: Dictionary = server.rpc_set_energy_allocation(game_id, player_id, sell_percent, sender_id)
+    var reason: String = str(result.get("reason", ""))
+    var seq: int = int(result.get("seq", 0))
+    if not reason.is_empty():
+        _rpc_to_peer(sender_id, "rpc_action_rejected", [seq, reason])
+
+
 func _maybe_queue_room_lookup(game_id: String, player_id: String, peer_id: int) -> bool:
     if server.matches.has(game_id):
         return false

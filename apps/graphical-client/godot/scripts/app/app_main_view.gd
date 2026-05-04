@@ -221,7 +221,6 @@ func _sync_gameplay_identity() -> void:
         _waiting_room_state.local_color_id
     )
     _sync_gameplay_pawn_positions()
-    _game_root.call("set_player_slots", _waiting_room_state.slots)
     _sync_gameplay_player_states()
     _sync_gameplay_tile_ownership()
     _sync_gameplay_turn_info()

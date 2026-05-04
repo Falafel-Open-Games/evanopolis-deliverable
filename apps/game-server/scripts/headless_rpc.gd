@@ -46,6 +46,11 @@ func rpc_set_player_identity(game_id: String, player_id: String, display_name: S
     _handle_set_player_identity(game_id, player_id, display_name, icon_id, color_id)
 
 
+@rpc("any_peer")
+func rpc_set_energy_allocation(game_id: String, player_id: String, sell_percent: int) -> void:
+    _handle_set_energy_allocation(game_id, player_id, sell_percent)
+
+
 @rpc("authority")
 func rpc_game_started(seq: int, new_game_id: String) -> void:
     _handle_game_started(seq, new_game_id)
@@ -99,6 +104,11 @@ func rpc_player_identity_changed(seq: int, player_index: int, display_name: Stri
 @rpc("authority")
 func rpc_player_eliminated(seq: int, player_index: int, reason: String) -> void:
     _handle_player_eliminated(seq, player_index, reason)
+
+
+@rpc("authority")
+func rpc_energy_allocation_changed(seq: int, player_index: int, sell_percent: int, turn_number: int) -> void:
+    _handle_energy_allocation_changed(seq, player_index, sell_percent, turn_number)
 
 
 @rpc("authority")
@@ -199,6 +209,10 @@ func _handle_set_player_identity(game_id: String, player_id: String, display_nam
     pass
 
 
+func _handle_set_energy_allocation(game_id: String, player_id: String, sell_percent: int) -> void:
+    pass
+
+
 func _handle_game_started(seq: int, new_game_id: String) -> void:
     pass
 
@@ -240,6 +254,10 @@ func _handle_player_identity_changed(seq: int, player_index: int, display_name: 
 
 
 func _handle_player_eliminated(seq: int, player_index: int, reason: String) -> void:
+    pass
+
+
+func _handle_energy_allocation_changed(seq: int, player_index: int, sell_percent: int, turn_number: int) -> void:
     pass
 
 

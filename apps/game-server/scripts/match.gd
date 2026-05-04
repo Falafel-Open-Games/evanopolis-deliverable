@@ -412,9 +412,35 @@ func rpc_pay_toll(game_id: String, player_id: String) -> String:
         payer.bitcoin_balance -= 1.0
         owner.bitcoin_balance += 1.0
         _broadcast("rpc_toll_paid", [resolved_index, owner_index, 1.0, "bitcoin"])
+        _check_btc_goal_victory(owner_index)
+        if has_finished:
+            return ""
         _advance_turn()
         return ""
     return "insufficient_toll_funds"
+
+
+func rpc_set_energy_allocation(game_id: String, player_id: String, sell_percent: int) -> String:
+    if not has_started:
+        return "match_not_started"
+    if has_finished:
+        return "match_finished"
+    if game_id != state.game_id:
+        return "invalid_game_id"
+    var resolved_index: int = _player_index_from_id(player_id)
+    if resolved_index < 0:
+        return "invalid_player_id"
+    if not _is_player_active(resolved_index):
+        return "player_eliminated"
+    if sell_percent < 0 or sell_percent > 100:
+        return "invalid_sell_percent"
+    var player: PlayerState = state.players[resolved_index]
+    if player.last_turn_number_allocation_changed == state.turn_number:
+        return "allocation_already_changed_this_turn"
+    player.sell_percent = sell_percent
+    player.last_turn_number_allocation_changed = state.turn_number
+    _broadcast("rpc_energy_allocation_changed", [resolved_index, sell_percent, state.turn_number])
+    return ""
 
 
 func _compute_passed_tiles_with_effects(from_tile: int, steps: int, board_size: int) -> Array[int]:
@@ -559,6 +585,8 @@ func build_state_snapshot() -> Dictionary:
                 "laps": player.laps,
                 "landing_sequence": player.landing_sequence,
                 "is_active": player.is_active,
+                "sell_percent": player.sell_percent,
+                "last_turn_number_allocation_changed": player.last_turn_number_allocation_changed,
             },
         )
     return {
@@ -625,6 +653,8 @@ func restore_from_snapshot(snapshot: Dictionary) -> String:
         restored_player.laps = int(player_in_snapshot.get("laps", restored_player.laps))
         restored_player.landing_sequence = int(player_in_snapshot.get("landing_sequence", player_index + 1))
         restored_player.is_active = bool(player_in_snapshot.get("is_active", true))
+        restored_player.sell_percent = int(player_in_snapshot.get("sell_percent", 50))
+        restored_player.last_turn_number_allocation_changed = int(player_in_snapshot.get("last_turn_number_allocation_changed", -1))
         max_landing_sequence = max(max_landing_sequence, restored_player.landing_sequence)
     if next_landing_seq <= max_landing_sequence:
         next_landing_seq = max_landing_sequence + 1
@@ -652,6 +682,9 @@ func _advance_turn() -> void:
         return
     _clear_pending_action()
     has_rolled_current_turn = false
+    _apply_end_of_turn_production()
+    if has_finished:
+        return
     var next_player_index: int = state.current_player_index
     var wrapped: bool = false
     for _offset in range(clients.size()):
@@ -677,6 +710,64 @@ func _check_btc_goal_victory(player_index: int) -> void:
     if player.bitcoin_balance < EconomyV0.BTC_GOAL_TO_WIN:
         return
     _finish_match(player_index, "btc_goal_reached")
+
+
+func _apply_end_of_turn_production() -> void:
+    for player_index in range(state.players.size()):
+        if not _is_player_active(player_index):
+            continue
+        var production: Dictionary = _production_for_player(player_index)
+        var fiat_delta: float = float(production.get("fiat_delta", 0.0))
+        var btc_delta: float = float(production.get("btc_delta", 0.0))
+        if is_zero_approx(fiat_delta) and is_zero_approx(btc_delta):
+            continue
+        var player: PlayerState = state.players[player_index]
+        player.fiat_balance += fiat_delta
+        player.bitcoin_balance += btc_delta
+        _broadcast("rpc_player_balance_changed", [player_index, fiat_delta, btc_delta, "turn_production"])
+    var winner_after_production: int = _first_player_at_btc_goal()
+    if winner_after_production >= 0:
+        _finish_match(winner_after_production, "btc_goal_reached")
+
+
+func _production_for_player(player_index: int) -> Dictionary:
+    var owned_totals: Dictionary = _owned_tile_economy_totals(player_index)
+    var player: PlayerState = state.players[player_index]
+    var sell_ratio: float = float(player.sell_percent) / 100.0
+    var mine_ratio: float = 1.0 - sell_ratio
+    return {
+        "energy_amount": int(owned_totals.get("energy_amount", 0)),
+        "fiat_delta": float(owned_totals.get("sell_100_fiat", 0.0)) * sell_ratio,
+        "btc_delta": float(owned_totals.get("mine_100_btc", 0.0)) * mine_ratio,
+    }
+
+
+func _owned_tile_economy_totals(player_index: int) -> Dictionary:
+    var energy_amount: int = 0
+    var total_sell_100_fiat: float = 0.0
+    var total_mine_100_btc: float = 0.0
+    var tiles: Array = board_state.get("tiles", [])
+    for tile_variant in tiles:
+        var tile: Dictionary = tile_variant
+        if int(tile.get("owner_index", -1)) != player_index:
+            continue
+        energy_amount += int(tile.get("energy_production", 0))
+        total_sell_100_fiat += float(tile.get("sell_100_fiat", 0.0))
+        total_mine_100_btc += float(tile.get("mine_100_btc", 0.0))
+    return {
+        "energy_amount": energy_amount,
+        "sell_100_fiat": total_sell_100_fiat,
+        "mine_100_btc": total_mine_100_btc,
+    }
+
+
+func _first_player_at_btc_goal() -> int:
+    for player_index in range(state.players.size()):
+        if not _is_player_active(player_index):
+            continue
+        if state.players[player_index].bitcoin_balance >= EconomyV0.BTC_GOAL_TO_WIN:
+            return player_index
+    return -1
 
 
 func _finish_match(resolved_winner_index: int, reason: String) -> void:

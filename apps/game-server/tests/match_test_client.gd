@@ -98,6 +98,18 @@ func rpc_player_eliminated(seq: int, player_index: int, reason: String) -> void:
     )
 
 
+func rpc_energy_allocation_changed(seq: int, player_index: int, sell_percent: int, turn_number: int) -> void:
+    events.append(
+        {
+            "method": "rpc_energy_allocation_changed",
+            "seq": seq,
+            "player_index": player_index,
+            "sell_percent": sell_percent,
+            "turn_number": turn_number,
+        },
+    )
+
+
 func rpc_dice_rolled(seq: int, die_1: int, die_2: int, total: int) -> void:
     events.append(
         {

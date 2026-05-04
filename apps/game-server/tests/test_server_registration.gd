@@ -78,12 +78,38 @@ func test_sync_request_returns_snapshot_for_registered_peer() -> void:
     assert_eq(str(first_player.get("display_name", "")), "", "snapshot includes default first seat display name")
     assert_eq(int(first_player.get("icon_id", -1)), -1, "snapshot includes default first seat icon")
     assert_eq(int(first_player.get("color_id", -1)), 0, "snapshot includes default first seat color")
+    assert_eq(int(first_player.get("sell_percent", -1)), 50, "snapshot includes default first seat allocation")
+    assert_eq(int(first_player.get("last_turn_number_allocation_changed", 999)), -1, "snapshot includes default allocation turn sentinel")
     assert_eq(str(second_player.get("player_id", "")), "bob", "snapshot includes second player id")
     assert_true(bool(second_player.get("joined", false)), "snapshot marks second seat joined")
     assert_false(bool(second_player.get("ready", true)), "snapshot marks second seat not ready before ready signal")
     assert_eq(str(second_player.get("display_name", "")), "", "snapshot includes default second seat display name")
     assert_eq(int(second_player.get("icon_id", -1)), -1, "snapshot includes default second seat icon")
     assert_eq(int(second_player.get("color_id", -1)), 1, "snapshot includes default second seat color")
+    assert_eq(int(second_player.get("sell_percent", -1)), 50, "snapshot includes default second seat allocation")
+    assert_eq(int(second_player.get("last_turn_number_allocation_changed", 999)), -1, "snapshot includes default allocation turn sentinel")
+
+
+func test_set_energy_allocation_updates_snapshot() -> void:
+    var config: Config = Config.from_values("demo_002", 2, 24)
+    var server: HeadlessServer = HeadlessServer.new()
+    server.create_match(config)
+    server.authorize_peer(11, "alice")
+    server.authorize_peer(12, "bob")
+    assert_eq(str(server.register_remote_client("demo_002", "alice", 11, null).get("reason", "")), "", "alice joins")
+    assert_eq(str(server.register_remote_client("demo_002", "bob", 12, null).get("reason", "")), "", "bob joins so the match starts")
+
+    var allocation_result: Dictionary = server.rpc_set_energy_allocation("demo_002", "alice", 65, 11)
+    assert_eq(str(allocation_result.get("reason", "")), "", "allocation update accepted")
+
+    var sync_result: Dictionary = server.rpc_sync_request("demo_002", "alice", 11)
+    assert_eq(str(sync_result.get("reason", "")), "", "sync succeeds")
+    var snapshot: Dictionary = sync_result.get("snapshot", { })
+    var players: Array = snapshot.get("players", [])
+    assert_eq(players.size(), 2, "snapshot includes both seats")
+    var alice: Dictionary = players[0]
+    assert_eq(int(alice.get("sell_percent", -1)), 65, "snapshot persists allocation value")
+    assert_eq(int(alice.get("last_turn_number_allocation_changed", -99)), 1, "snapshot persists allocation turn number")
 
 
 func test_set_player_identity_updates_snapshot_and_rejects_color_conflict() -> void:

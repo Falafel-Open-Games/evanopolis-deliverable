@@ -1165,6 +1165,8 @@ func _player_icon_id(player_index: int) -> int:
 func _player_color_id(player_index: int) -> int:
     var color_id: int = int(_known_player_color_ids.get(player_index, -1))
     if color_id < 0:
+        if player_index >= 0:
+            return player_index
         return DEFAULT_IDENTITY_COLOR_ID
     return color_id
 

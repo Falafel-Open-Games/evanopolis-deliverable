@@ -44,6 +44,10 @@ func rpc_player_eliminated(seq: int, player_index: int, reason: String) -> void:
     server_node.rpc_id(peer_id, "rpc_player_eliminated", seq, player_index, reason)
 
 
+func rpc_energy_allocation_changed(seq: int, player_index: int, sell_percent: int, turn_number: int) -> void:
+    server_node.rpc_id(peer_id, "rpc_energy_allocation_changed", seq, player_index, sell_percent, turn_number)
+
+
 func rpc_dice_rolled(seq: int, die_1: int, die_2: int, total: int) -> void:
     server_node.rpc_id(peer_id, "rpc_dice_rolled", seq, die_1, die_2, total)
 

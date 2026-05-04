@@ -26,6 +26,9 @@ extends RefCounted
 @abstract func rpc_player_eliminated(seq: int, player_index: int, reason: String) -> void
 
 
+@abstract func rpc_energy_allocation_changed(seq: int, player_index: int, sell_percent: int, turn_number: int) -> void
+
+
 @abstract func rpc_dice_rolled(seq: int, die_1: int, die_2: int, total: int) -> void
 
 

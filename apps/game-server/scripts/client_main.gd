@@ -40,6 +40,8 @@ var player_ready_states: Dictionary = { }
 var player_display_names: Dictionary = { }
 var player_icon_ids: Dictionary = { }
 var player_color_ids: Dictionary = { }
+var player_sell_percents: Dictionary = { }
+var player_last_allocation_changed_turns: Dictionary = { }
 var local_ready_sent: bool = false
 
 
@@ -150,6 +152,10 @@ func _handle_player_identity_changed(seq: int, player_index_value: int, display_
 
 func _handle_player_eliminated(seq: int, player_index_value: int, reason: String) -> void:
     _queue_event(seq, "_apply_player_eliminated", [player_index_value, reason])
+
+
+func _handle_energy_allocation_changed(seq: int, player_index_value: int, sell_percent: int, turn_number: int) -> void:
+    _queue_event(seq, "_apply_energy_allocation_changed", [player_index_value, sell_percent, turn_number])
 
 
 func _handle_dice_rolled(seq: int, die_1: int, die_2: int, total: int) -> void:
@@ -327,6 +333,16 @@ func _apply_player_eliminated(player_index_value: int, reason: String) -> void:
         pending_action_amount = 0.0
         pending_action_buy_price = 0.0
     _log_server("player eliminated: player=%d reason=%s" % [player_index_value, reason])
+
+
+func _apply_energy_allocation_changed(player_index_value: int, sell_percent: int, turn_number: int) -> void:
+    connected_player_indexes[player_index_value] = true
+    player_sell_percents[player_index_value] = sell_percent
+    player_last_allocation_changed_turns[player_index_value] = turn_number
+    _log_server(
+        "energy allocation changed: player=%d sell_percent=%d turn=%d"
+        % [player_index_value, sell_percent, turn_number],
+    )
 
 
 func _apply_game_ended(winner_index: int, reason: String, btc_goal: float, winner_btc: float) -> void:
@@ -522,6 +538,8 @@ func _apply_state_snapshot(snapshot: Dictionary) -> void:
     player_display_names.clear()
     player_icon_ids.clear()
     player_color_ids.clear()
+    player_sell_percents.clear()
+    player_last_allocation_changed_turns.clear()
     for player_variant in players:
         var player_in_snapshot: Dictionary = player_variant
         var player_index_value: int = int(player_in_snapshot.get("player_index", -1))
@@ -538,6 +556,8 @@ func _apply_state_snapshot(snapshot: Dictionary) -> void:
         player_display_names[player_index_value] = str(player_in_snapshot.get("display_name", ""))
         player_icon_ids[player_index_value] = int(player_in_snapshot.get("icon_id", -1))
         player_color_ids[player_index_value] = int(player_in_snapshot.get("color_id", -1))
+        player_sell_percents[player_index_value] = int(player_in_snapshot.get("sell_percent", 50))
+        player_last_allocation_changed_turns[player_index_value] = int(player_in_snapshot.get("last_turn_number_allocation_changed", -1))
     _log_server(
         "state snapshot: game_id=%s turn=%d cycle=%d current_player=%d players=%d board_size=%d started=%s finished=%s winner=%d end_reason=%s pending_action=%s pending_tile=%d pending_owner=%d pending_amount=%.2f pending_buy_price=%.2f"
         % [
