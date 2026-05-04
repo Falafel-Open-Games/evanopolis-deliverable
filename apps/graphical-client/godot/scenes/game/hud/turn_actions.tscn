@@ -29,6 +29,7 @@ theme_override_constants/margin_bottom = 8
 layout_mode = 2
 
 [node name="RollDice" type="Button" parent="ContentContainer/VBoxContainer" unique_id=100298599]
+visible = false
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 size_flags_vertical = 10
@@ -263,16 +264,22 @@ size_flags_vertical = 0
 theme = ExtResource("2_a31m3")
 text = "Pay Toll"
 
-[node name="SellVsMineSlider" type="HSlider" parent="ContentContainer/VBoxContainer" unique_id=1100479036]
-visible = false
-custom_minimum_size = Vector2(146, 0)
-layout_mode = 2
-size_flags_vertical = 4
-value = 50.0
-
 [node name="EndTurn" type="Button" parent="ContentContainer/VBoxContainer" unique_id=675066472]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 size_flags_vertical = 8
 theme = ExtResource("2_a31m3")
 text = "End Turn"
+
+[node name="WinningPanel" type="MarginContainer" parent="ContentContainer/VBoxContainer" unique_id=1876125059]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="WinLabel" type="Label" parent="ContentContainer/VBoxContainer/WinningPanel" unique_id=326028433]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+text = "YOU WIN"
+horizontal_alignment = 1
+vertical_alignment = 1

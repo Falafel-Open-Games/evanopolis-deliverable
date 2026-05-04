@@ -13,6 +13,7 @@ const MAX_WAITING_ROOM_COLOR_COUNT: int = 6
 const VISUAL_RING_BOARD_SIZE: int = 18
 const VISUAL_RING_START_TILES_BY_COLOR_ID: Array[int] = [12, 15, 0, 3, 6, 9]
 const LEGACY_MECHANIC_REMOVED_REASON: String = "legacy_mechanic_removed"
+const BTC_GOAL_EPSILON: float = 0.000001
 
 var config: Config
 var clients: Array[Client]
@@ -707,7 +708,7 @@ func _check_btc_goal_victory(player_index: int) -> void:
         return
     assert(player_index >= 0 and player_index < state.players.size())
     var player: PlayerState = state.players[player_index]
-    if player.bitcoin_balance < EconomyV0.BTC_GOAL_TO_WIN:
+    if player.bitcoin_balance + BTC_GOAL_EPSILON < EconomyV0.BTC_GOAL_TO_WIN:
         return
     _finish_match(player_index, "btc_goal_reached")
 
@@ -762,12 +763,18 @@ func _owned_tile_economy_totals(player_index: int) -> Dictionary:
 
 
 func _first_player_at_btc_goal() -> int:
+    var resolved_winner_index: int = -1
+    var highest_btc_balance: float = -1.0
     for player_index in range(state.players.size()):
         if not _is_player_active(player_index):
             continue
-        if state.players[player_index].bitcoin_balance >= EconomyV0.BTC_GOAL_TO_WIN:
-            return player_index
-    return -1
+        var bitcoin_balance: float = state.players[player_index].bitcoin_balance
+        if bitcoin_balance + BTC_GOAL_EPSILON < EconomyV0.BTC_GOAL_TO_WIN:
+            continue
+        if resolved_winner_index < 0 or bitcoin_balance > highest_btc_balance:
+            resolved_winner_index = player_index
+            highest_btc_balance = bitcoin_balance
+    return resolved_winner_index
 
 
 func _finish_match(resolved_winner_index: int, reason: String) -> void:

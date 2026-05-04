@@ -378,6 +378,60 @@ func test_end_turn_production_uses_latest_energy_allocation() -> void:
         assert_true(is_equal_approx(float(production_events[0].get("btc_delta", 0.0)), 0.0), "production event uses zero mining output at full sell")
 
 
+func test_end_turn_production_btc_goal_uses_highest_balance_when_multiple_players_cross_goal() -> void:
+    var config: Config = Config.from_values("demo_002", 2, 18)
+    var game_match: GameMatch = GameMatch.new(config, [])
+    var client_a: MatchTestClient = MatchTestClient.new()
+    var client_b: MatchTestClient = MatchTestClient.new()
+    assert_eq(str(game_match.assign_client("alice", client_a).get("reason", "")), "", "first client should register")
+    assert_eq(str(game_match.assign_client("bob", client_b).get("reason", "")), "", "second client should register")
+
+    var tiles: Array = game_match.board_state.get("tiles", [])
+    tiles[0]["owner_index"] = 0
+    tiles[1]["owner_index"] = 1
+    game_match.board_state["tiles"] = tiles
+    game_match.state.players[0].bitcoin_balance = 19.8
+    game_match.state.players[1].bitcoin_balance = 19.9
+    game_match.state.players[0].sell_percent = 0
+    game_match.state.players[1].sell_percent = 0
+
+    game_match.rpc_roll_dice("demo_002", "alice")
+    assert_eq(game_match.rpc_end_turn("demo_002", "alice"), "", "end turn should resolve and apply production")
+    assert_true(game_match.has_finished, "match ends when production pushes players to the btc goal")
+    assert_eq(game_match.winner_index, 1, "higher bitcoin balance wins when multiple players cross the goal on the same turn")
+    assert_eq(game_match.end_reason, "btc_goal_reached", "match ends with btc goal reason")
+
+    var ended_events: Array[Dictionary] = _filter_events(client_a, "rpc_game_ended")
+    assert_eq(ended_events.size(), 1, "game ended event emitted once")
+    if ended_events.size() == 1:
+        assert_eq(int(ended_events[0].get("winner_index", -1)), 1, "broadcast winner is the higher-balance player")
+
+
+func test_end_turn_production_btc_goal_triggers_when_balance_reaches_exact_threshold() -> void:
+    var config: Config = Config.from_values("demo_002", 2, 18)
+    var game_match: GameMatch = GameMatch.new(config, [])
+    var client_a: MatchTestClient = MatchTestClient.new()
+    var client_b: MatchTestClient = MatchTestClient.new()
+    assert_eq(str(game_match.assign_client("alice", client_a).get("reason", "")), "", "first client should register")
+    assert_eq(str(game_match.assign_client("bob", client_b).get("reason", "")), "", "second client should register")
+
+    var tiles: Array = game_match.board_state.get("tiles", [])
+    tiles[17]["owner_index"] = 1
+    game_match.board_state["tiles"] = tiles
+    game_match.state.players[1].bitcoin_balance = 19.675
+
+    game_match.rpc_roll_dice("demo_002", "alice")
+    assert_eq(game_match.rpc_end_turn("demo_002", "alice"), "", "end turn should resolve and apply production")
+    assert_true(game_match.has_finished, "match ends when production reaches the btc goal exactly")
+    assert_eq(game_match.winner_index, 1, "the player reaching the exact threshold wins")
+    assert_eq(game_match.end_reason, "btc_goal_reached", "match ends with btc goal reason")
+
+    var ended_events: Array[Dictionary] = _filter_events(client_a, "rpc_game_ended")
+    assert_eq(ended_events.size(), 1, "game ended event emitted once")
+    if ended_events.size() == 1:
+        assert_eq(int(ended_events[0].get("winner_index", -1)), 1, "broadcast winner is the threshold-reaching player")
+
+
 func test_pay_toll_without_fiat_or_bitcoin_ends_match_when_one_player_remains() -> void:
     var config: Config = Config.from_values("demo_002", 2, 18)
     var game_match: GameMatch = GameMatch.new(config, [])

@@ -1,0 +1,90 @@
+[gd_scene format=3 uid="uid://b3sdtqdh2syty"]
+
+[ext_resource type="Script" path="res://scripts/game/hud/energy_allocation.gd" id="1_1t2l8"]
+[ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="1_e1hnk"]
+[ext_resource type="PackedScene" uid="uid://dxfoynfa302k7" path="res://scenes/app/panel_blurried_bg.tscn" id="2_cjbq1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a6cr8"]
+content_margin_top = 7.0
+bg_color = Color(0.8235294, 0.49803922, 0.30588236, 1)
+border_color = Color(0.09963737, 0.8, 0.1344337, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c2lvh"]
+bg_color = Color(0.11764706, 0.6627451, 0.54901963, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i88f8"]
+bg_color = Color(0.11764706, 0.6627451, 0.54901963, 1)
+
+[node name="EnergyAllocation" type="MarginContainer" unique_id=2051949682]
+script = ExtResource("1_1t2l8")
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="Panel" type="Panel" parent="." unique_id=568257413]
+layout_mode = 2
+theme = ExtResource("1_e1hnk")
+
+[node name="PanelBlurriedBg" parent="." unique_id=1137042040 instance=ExtResource("2_cjbq1")]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1709196722]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1227278381]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1390471303]
+layout_mode = 2
+
+[node name="SellEnergyLabel" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1905715801]
+layout_mode = 2
+theme = ExtResource("1_e1hnk")
+theme_type_variation = &"SubsectionTitle"
+theme_override_colors/font_color = Color(0.078431375, 0.69803923, 0.5882353, 1)
+text = "Sell Energy"
+
+[node name="MineBitcoinLabel" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1954739404]
+layout_mode = 2
+size_flags_horizontal = 10
+theme = ExtResource("1_e1hnk")
+theme_type_variation = &"SubsectionTitle"
+theme_override_colors/font_color = Color(0.87058824, 0.5176471, 0.3137255, 1)
+text = "Mine Bitcoin"
+
+[node name="SellVsMineSlider" type="HSlider" parent="MarginContainer/VBoxContainer" unique_id=656501014]
+custom_minimum_size = Vector2(146, 0)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/slider = SubResource("StyleBoxFlat_a6cr8")
+theme_override_styles/grabber_area = SubResource("StyleBoxFlat_c2lvh")
+theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_i88f8")
+step = 10.0
+value = 50.0
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1840215577]
+layout_mode = 2
+
+[node name="EnergyPreview" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer2" unique_id=1293793494]
+layout_mode = 2
+theme = ExtResource("1_e1hnk")
+theme_type_variation = &"SubsectionTitle"
+text = "50% → $ 10"
+
+[node name="MinePreview" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer2" unique_id=653171600]
+layout_mode = 2
+size_flags_horizontal = 10
+theme = ExtResource("1_e1hnk")
+theme_type_variation = &"SubsectionTitle"
+text = "50% → ₿ 10"
+
+[node name="SubmitAllocationButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=1627503460]
+custom_minimum_size = Vector2(101, 30)
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("1_e1hnk")
+theme_type_variation = &"SecondaryButton"
+text = "Set Allocation"

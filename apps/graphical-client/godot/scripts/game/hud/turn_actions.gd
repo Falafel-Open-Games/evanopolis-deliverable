@@ -35,8 +35,8 @@ signal pay_toll_requested()
 @onready var pass_button: Button = get_node(^"ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/BuyPassContainer/Pass")
 @onready var buy_button: Button = get_node(^"ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/BuyPassContainer/Buy")
 @onready var pay_toll_button: Button = get_node(^"ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/PayToll")
-@onready var sell_vs_mine_slider: HSlider = get_node(^"ContentContainer/VBoxContainer/SellVsMineSlider")
 @onready var end_turn_button: Button = get_node(^"ContentContainer/VBoxContainer/EndTurn")
+@onready var winning_panel: Control = get_node(^"ContentContainer/VBoxContainer/WinningPanel")
 
 var _current_property_action_tile_index: int = -1
 var _current_can_end_turn: bool = false
@@ -60,8 +60,8 @@ func _ready() -> void:
     assert(pass_button)
     assert(buy_button)
     assert(pay_toll_button)
-    assert(sell_vs_mine_slider)
     assert(end_turn_button)
+    assert(winning_panel)
     roll_dice_button.pressed.connect(_on_roll_dice_pressed)
     pass_button.pressed.connect(_on_pass_pressed)
     buy_button.pressed.connect(_on_buy_pressed)
@@ -84,14 +84,17 @@ func set_turn_action_state(
             property_action.duplicate(true)
         )
         return
-    visible = is_local_turn
+    var resolved_property_action: Dictionary = property_action.duplicate(true)
+    var is_local_winner: bool = bool(resolved_property_action.get("_is_local_winner", false))
+    resolved_property_action.erase("_is_local_winner")
+    visible = is_local_turn or is_local_winner
     roll_dice_button.visible = can_roll_dice
     roll_dice_button.disabled = not can_roll_dice
-    sell_vs_mine_slider.editable = false
     _current_can_end_turn = can_end_turn
     end_turn_button.visible = can_end_turn
     end_turn_button.disabled = not can_end_turn
-    _set_property_action_state(property_action)
+    winning_panel.visible = is_local_winner
+    _set_property_action_state(resolved_property_action)
 
 func _on_roll_dice_pressed() -> void:
     roll_dice_button.disabled = true

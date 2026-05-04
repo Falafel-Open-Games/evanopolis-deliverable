@@ -66,6 +66,8 @@ func _ready() -> void:
     assert(session_node.has_method("request_buy_property"))
     assert(session_node.has_method("can_request_pay_toll"))
     assert(session_node.has_method("request_pay_toll"))
+    assert(session_node.has_method("can_request_energy_allocation"))
+    assert(session_node.has_method("request_energy_allocation"))
     assert(session_node.has_method("can_request_end_turn"))
     assert(session_node.has_method("request_end_turn"))
     assert(session_node.has_method("can_request_player_identity"))
@@ -144,6 +146,9 @@ func _on_pay_toll_requested() -> void:
 func _on_end_turn_requested() -> void:
     session_node.call("request_end_turn")
 
+func _on_energy_allocation_requested(sell_percent: int) -> void:
+    session_node.call("request_energy_allocation", sell_percent)
+
 func _render_scene() -> void:
     var gameplay_active: bool = session_node.call("is_game_started")
     _render_shell(gameplay_active)
@@ -208,6 +213,7 @@ func _ensure_game_root() -> void:
     _game_root.connect("buy_property_requested", Callable(self, "_on_buy_property_requested"))
     _game_root.connect("pay_toll_requested", Callable(self, "_on_pay_toll_requested"))
     _game_root.connect("end_turn_requested", Callable(self, "_on_end_turn_requested"))
+    _game_root.connect("energy_allocation_requested", Callable(self, "_on_energy_allocation_requested"))
     _sync_gameplay_identity()
 
 func _sync_gameplay_identity() -> void:
@@ -231,6 +237,7 @@ func _sync_gameplay_player_states() -> void:
     if _game_root == null:
         return
     _game_root.call("set_player_states", _gameplay_player_states)
+    _sync_gameplay_turn_info()
     _sync_gameplay_tile_ownership()
     _debug_print_gameplay_state("player_states")
 
@@ -250,6 +257,7 @@ func _sync_gameplay_tile_ownership() -> void:
     if _game_root == null:
         return
     _game_root.call("set_tile_owner_indices", _gameplay_tile_owner_indices)
+    _sync_gameplay_turn_info()
 
 func _sync_gameplay_turn_info() -> void:
     if _game_root == null:
@@ -270,9 +278,22 @@ func _sync_gameplay_turn_info() -> void:
         bool(turn_state.get("can_roll_dice", false)),
         bool(turn_state.get("can_end_turn", false)),
         bool(turn_state.get("is_local_turn", false)),
-        turn_state.get("property_action", { })
+        _property_action_with_turn_metadata(turn_state)
+    )
+    _game_root.call(
+        "set_energy_allocation_state",
+        int(turn_state.get("sell_percent", 50)),
+        bool(turn_state.get("can_set_energy_allocation", false)),
+        float(turn_state.get("sell_100_fiat_total", 0.0)),
+        float(turn_state.get("mine_100_btc_total", 0.0)),
+        bool(turn_state.get("energy_allocation_request_pending", false))
     )
     _debug_print_gameplay_state("turn_info")
+
+func _property_action_with_turn_metadata(turn_state: Dictionary) -> Dictionary:
+    var property_action: Dictionary = turn_state.get("property_action", { }).duplicate(true)
+    property_action["_is_local_winner"] = bool(turn_state.get("is_local_winner", false))
+    return property_action
 
 func _debug_print_gameplay_state(context: String) -> void:
     if _game_root == null:

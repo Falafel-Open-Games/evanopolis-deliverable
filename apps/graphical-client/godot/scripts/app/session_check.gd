@@ -82,8 +82,9 @@ var _known_player_display_names: Dictionary = { }
 var _known_player_icon_ids: Dictionary = { }
 var _known_player_color_ids: Dictionary = { }
 var _player_fiat_balances: Dictionary = { }
-var _player_energy_balances: Dictionary = { }
 var _player_bitcoin_balances: Dictionary = { }
+var _player_sell_percents: Dictionary = { }
+var _player_last_allocation_changed_turns: Dictionary = { }
 var _player_landing_sequences: Dictionary = { }
 var _active_players: Dictionary = { }
 var _ready_players: Array = []
@@ -95,6 +96,7 @@ var _ready_request_pending: bool = false
 var _identity_request_pending: bool = false
 var _match_has_started: bool = false
 var _match_has_finished: bool = false
+var _winner_index: int = -1
 var _gameplay_event_log_messages: Array = []
 var _board_state: Dictionary = { }
 var _player_tile_positions: Dictionary = { }
@@ -107,6 +109,7 @@ var _roll_request_pending: bool = false
 var _buy_property_request_pending: bool = false
 var _pay_toll_request_pending: bool = false
 var _end_turn_request_pending: bool = false
+var _energy_allocation_request_pending: bool = false
 
 func _ready() -> void:
     assert(boot_node)
@@ -137,6 +140,8 @@ func get_gameplay_turn_state() -> Dictionary:
     var current_player_name: String = _player_display_name(_current_turn_player_index)
     if current_player_name.is_empty():
         current_player_name = "Player"
+    var local_sell_percent: int = _player_sell_percent(_local_player_index)
+    var local_owned_economy_totals: Dictionary = _owned_tile_economy_totals(_local_player_index)
     var property_action: Dictionary = _pending_property_action.duplicate(true)
     if property_action.is_empty():
         property_action = _build_property_action_state_from_current_pending_action()
@@ -152,11 +157,18 @@ func get_gameplay_turn_state() -> Dictionary:
         "current_player_index": _current_turn_player_index,
         "current_player_name": current_player_name,
         "is_local_turn": _current_turn_player_index == _local_player_index,
+        "is_local_winner": _winner_index >= 0 and _winner_index == _local_player_index,
         "can_roll_dice": can_request_roll_dice(),
         "can_buy_property": can_request_buy_property(),
         "can_end_turn": can_request_end_turn(),
         "pending_action_type": _pending_action_type,
         "pending_action_tile_index": _pending_action_tile_index,
+        "sell_percent": local_sell_percent,
+        "mine_percent": 100 - local_sell_percent,
+        "can_set_energy_allocation": can_request_energy_allocation(),
+        "energy_allocation_request_pending": _energy_allocation_request_pending,
+        "sell_100_fiat_total": float(local_owned_economy_totals.get("sell_100_fiat", 0.0)),
+        "mine_100_btc_total": float(local_owned_economy_totals.get("mine_100_btc", 0.0)),
         "property_action": property_action,
     }
 
@@ -313,6 +325,23 @@ func can_request_pay_toll() -> bool:
         return false
     return _pending_action_tile_index >= 0
 
+func can_request_energy_allocation() -> bool:
+    if _phase != SessionPhase.GAME_STARTED:
+        return false
+    if _launch_payload == null:
+        return false
+    if _current_player_id.is_empty():
+        return false
+    if _local_player_index < 0:
+        return false
+    if _match_has_finished:
+        return false
+    if _energy_allocation_request_pending:
+        return false
+    if not _is_player_active(_local_player_index):
+        return false
+    return _player_last_allocation_changed_turn(_local_player_index) != _current_turn_number
+
 func _can_afford_buy_property(buy_price: float) -> bool:
     if _local_player_index < 0:
         return false
@@ -402,6 +431,22 @@ func request_pay_toll() -> void:
     _emit_gameplay_turn_state()
     rpc_id(1, "rpc_pay_toll", _launch_payload._game_id, _current_player_id)
 
+func request_energy_allocation(sell_percent: int) -> void:
+    assert(_launch_payload)
+    assert(not _current_player_id.is_empty())
+    assert(_local_player_index >= 0)
+    var normalized_sell_percent: int = clampi(sell_percent, 0, 100)
+    if normalized_sell_percent == _player_sell_percent(_local_player_index):
+        _emit_gameplay_turn_state()
+        return
+    if not can_request_energy_allocation():
+        _emit_gameplay_turn_state()
+        return
+
+    _energy_allocation_request_pending = true
+    _emit_gameplay_turn_state()
+    rpc_id(1, "rpc_set_energy_allocation", _launch_payload._game_id, _current_player_id, normalized_sell_percent)
+
 func request_player_identity(display_name: String, icon_id: int, color_id: int) -> void:
     assert(_launch_payload)
     assert(_current_player_id != "")
@@ -447,8 +492,9 @@ func _on_launch_payload_received(payload: LaunchPayloadModel) -> void:
     _known_player_icon_ids.clear()
     _known_player_color_ids.clear()
     _player_fiat_balances.clear()
-    _player_energy_balances.clear()
     _player_bitcoin_balances.clear()
+    _player_sell_percents.clear()
+    _player_last_allocation_changed_turns.clear()
     _player_landing_sequences.clear()
     _ready_players.clear()
     _current_turn_number = 1
@@ -459,6 +505,7 @@ func _on_launch_payload_received(payload: LaunchPayloadModel) -> void:
     _identity_request_pending = false
     _match_has_started = false
     _match_has_finished = false
+    _winner_index = -1
     _gameplay_event_log_messages.clear()
     _board_state.clear()
     _player_tile_positions.clear()
@@ -471,6 +518,7 @@ func _on_launch_payload_received(payload: LaunchPayloadModel) -> void:
     _buy_property_request_pending = false
     _pay_toll_request_pending = false
     _end_turn_request_pending = false
+    _energy_allocation_request_pending = false
     _connect_to_server()
 
 func _connect_to_server() -> void:
@@ -565,6 +613,7 @@ func rpc_action_rejected(_seq: int, reason: String) -> void:
         _buy_property_request_pending = false
         _pay_toll_request_pending = false
         _end_turn_request_pending = false
+        _energy_allocation_request_pending = false
         _append_gameplay_event_log_message("Action rejected: %s" % reason, _current_turn_player_index)
         _emit_gameplay_turn_state()
         return
@@ -592,6 +641,11 @@ func rpc_state_snapshot(_seq: int, snapshot: Dictionary) -> void:
     _apply_waiting_room_snapshot(snapshot)
     _gameplay_event_log_messages.clear()
     _append_gameplay_event_log_message("🔄 Game state updated from snapshot")
+    if _match_has_finished and int(snapshot.get("winner_index", -1)) >= 0:
+        _append_gameplay_snapshot_winner_message(
+            int(snapshot.get("winner_index", -1)),
+            str(snapshot.get("end_reason", ""))
+        )
     _emit_gameplay_turn_state()
     _emit_gameplay_pawn_positions()
     _emit_gameplay_player_states()
@@ -669,6 +723,14 @@ func rpc_player_identity_changed(
     _debug_print_authoritative_gameplay_state("player_identity_changed")
 
 @rpc("authority")
+func rpc_energy_allocation_changed(_seq: int, player_index: int, sell_percent: int, turn_number: int) -> void:
+    _player_sell_percents[player_index] = sell_percent
+    _player_last_allocation_changed_turns[player_index] = turn_number
+    if player_index == _local_player_index:
+        _energy_allocation_request_pending = false
+    _emit_gameplay_turn_state()
+
+@rpc("authority")
 func rpc_player_eliminated(_seq: int, player_index: int, reason: String) -> void:
     _active_players[player_index] = false
     _player_fiat_balances[player_index] = 0.0
@@ -682,7 +744,11 @@ func rpc_player_eliminated(_seq: int, player_index: int, reason: String) -> void
         _buy_property_request_pending = false
         _pay_toll_request_pending = false
         _end_turn_request_pending = false
-    _append_gameplay_event_log_message("%s was eliminated" % _event_log_player_name(player_index), player_index)
+    _append_gameplay_event_log_message(
+        "%s was eliminated" % _event_log_player_name(player_index),
+        player_index,
+        "💀"
+    )
     _emit_gameplay_pawn_positions()
     _emit_gameplay_player_states()
     _emit_gameplay_turn_state()
@@ -700,15 +766,23 @@ func rpc_player_balance_changed(
     _emit_gameplay_player_states()
 
 @rpc("authority")
-func rpc_game_ended(_seq: int, _winner_index: int, _reason: String, _btc_goal: float, _winner_btc: float) -> void:
+func rpc_game_ended(_seq: int, winner_index: int, _reason: String, _btc_goal: float, _winner_btc: float) -> void:
     _match_has_finished = true
+    _winner_index = winner_index
     _roll_request_pending = false
     _buy_property_request_pending = false
     _pay_toll_request_pending = false
     _end_turn_request_pending = false
+    _energy_allocation_request_pending = false
     _pending_action_type = ""
     _pending_action_tile_index = -1
     _pending_property_action.clear()
+    if _reason == "btc_goal_reached" and winner_index >= 0:
+        _append_gameplay_event_log_message(
+            "%s won by reaching %.1f BTC first" % [_event_log_player_name(winner_index), _btc_goal],
+            winner_index,
+            "🏆️"
+        )
     _emit_gameplay_turn_state()
 
 @rpc("authority")
@@ -994,6 +1068,7 @@ func _apply_waiting_room_snapshot(snapshot: Dictionary) -> void:
     _room_game_id = str(snapshot.get("game_id", _room_game_id))
     _match_has_started = bool(snapshot.get("has_started", false))
     _match_has_finished = bool(snapshot.get("has_finished", false))
+    _winner_index = int(snapshot.get("winner_index", -1))
     _current_turn_number = int(snapshot.get("turn_number", _current_turn_number))
     _current_turn_player_index = int(snapshot.get("current_player_index", _current_turn_player_index))
     var players: Array = snapshot.get("players", [])
@@ -1022,14 +1097,12 @@ func _apply_waiting_room_snapshot(snapshot: Dictionary) -> void:
         _player_fiat_balances[player_index] = float(
             player_in_snapshot.get("fiat_balance", GameEconomyConfigModel.INITIAL_FIAT_BALANCE)
         )
-        _player_energy_balances[player_index] = int(
-            player_in_snapshot.get(
-                "energy_balance",
-                player_in_snapshot.get("energy", GameEconomyConfigModel.INITIAL_ENERGY_BALANCE)
-            )
-        )
         _player_bitcoin_balances[player_index] = float(
             player_in_snapshot.get("bitcoin_balance", GameEconomyConfigModel.INITIAL_BITCOIN_BALANCE)
+        )
+        _player_sell_percents[player_index] = int(player_in_snapshot.get("sell_percent", 50))
+        _player_last_allocation_changed_turns[player_index] = int(
+            player_in_snapshot.get("last_turn_number_allocation_changed", -1)
         )
         if bool(player_in_snapshot.get("ready", false)):
             _ready_players[player_index] = true
@@ -1174,10 +1247,37 @@ func _player_fiat_balance(player_index: int) -> float:
     return float(_player_fiat_balances.get(player_index, GameEconomyConfigModel.INITIAL_FIAT_BALANCE))
 
 func _player_energy_balance(player_index: int) -> int:
-    return int(_player_energy_balances.get(player_index, GameEconomyConfigModel.INITIAL_ENERGY_BALANCE))
+    return _owned_energy_amount(player_index)
 
 func _player_bitcoin_balance(player_index: int) -> float:
     return float(_player_bitcoin_balances.get(player_index, GameEconomyConfigModel.INITIAL_BITCOIN_BALANCE))
+
+func _player_sell_percent(player_index: int) -> int:
+    return int(_player_sell_percents.get(player_index, 50))
+
+func _player_last_allocation_changed_turn(player_index: int) -> int:
+    return int(_player_last_allocation_changed_turns.get(player_index, -1))
+
+func _owned_energy_amount(player_index: int) -> int:
+    return int(_owned_tile_economy_totals(player_index).get("energy_amount", 0))
+
+func _owned_tile_economy_totals(player_index: int) -> Dictionary:
+    var tiles: Array = _board_state.get("tiles", [])
+    var total_energy_amount: int = 0
+    var total_sell_100_fiat: float = 0.0
+    var total_mine_100_btc: float = 0.0
+    for tile_variant in tiles:
+        var tile: Dictionary = tile_variant
+        if int(tile.get("owner_index", -1)) != player_index:
+            continue
+        total_energy_amount += int(tile.get("energy_production", 0))
+        total_sell_100_fiat += float(tile.get("sell_100_fiat", 0.0))
+        total_mine_100_btc += float(tile.get("mine_100_btc", 0.0))
+    return {
+        "energy_amount": total_energy_amount,
+        "sell_100_fiat": total_sell_100_fiat,
+        "mine_100_btc": total_mine_100_btc,
+    }
 
 func _player_landing_sequence(player_index: int) -> int:
     return int(_player_landing_sequences.get(player_index, player_index + 1))
@@ -1205,12 +1305,34 @@ func _clone_gameplay_player_states(states: Array) -> Array:
         cloned_states.append(state_variant.clone())
     return cloned_states
 
-func _append_gameplay_event_log_message(message: String, player_index: int = -1) -> void:
+func _append_gameplay_event_log_message(message: String, player_index: int = -1, icon: String = "") -> void:
     _gameplay_event_log_messages.append({
         "message": message,
         "color_id": _player_color_id(player_index) if player_index >= 0 else -1,
+        "icon": icon,
     })
     _emit_gameplay_event_log_messages()
+
+func _append_gameplay_snapshot_winner_message(winner_index: int, end_reason: String) -> void:
+    if end_reason == "btc_goal_reached":
+        _append_gameplay_event_log_message(
+            "%s won by reaching %.1f BTC first" % [_event_log_player_name(winner_index), _player_bitcoin_balance(winner_index)],
+            winner_index,
+            "🏆️"
+        )
+        return
+    if end_reason == "last_player_standing":
+        _append_gameplay_event_log_message(
+            "%s won as the last active player remaining" % _event_log_player_name(winner_index),
+            winner_index,
+            "🏆️"
+        )
+        return
+    _append_gameplay_event_log_message(
+        "%s won the match" % _event_log_player_name(winner_index),
+        winner_index,
+        "🏆️"
+    )
 
 func _apply_player_positions_snapshot(snapshot: Dictionary) -> void:
     _player_tile_positions.clear()

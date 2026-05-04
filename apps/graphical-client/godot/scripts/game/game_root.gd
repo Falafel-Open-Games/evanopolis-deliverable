@@ -5,6 +5,7 @@ const TopBarView = preload("res://scripts/game/hud/top_bar.gd")
 const PlayersListPanelView = preload("res://scripts/game/hud/players_list_panel.gd")
 const PawnCollectionView = preload("res://scripts/game/pawns/pawn_collection.gd")
 const EventLogPanelView = preload("res://scripts/game/hud/event_log_panel.gd")
+const EnergyAllocationView = preload("res://scripts/game/hud/energy_allocation.gd")
 const TurnActionsView = preload("res://scripts/game/hud/turn_actions.gd")
 const DEBUG_GAMEPLAY_ARGUMENT: String = "--debug"
 
@@ -12,6 +13,7 @@ signal roll_dice_requested()
 signal end_turn_requested()
 signal buy_property_requested(tile_index: int)
 signal pay_toll_requested()
+signal energy_allocation_requested(sell_percent: int)
 
 @onready var board_root: Node3D = get_node(^"BoardRoot")
 @onready var top_tiles_root: Node3D = get_node(^"BoardRoot/tiles")
@@ -20,6 +22,7 @@ signal pay_toll_requested()
 @onready var pawn_collection: PawnCollectionView = get_node(^"PawnRoot/pawns")
 @onready var hud_root: CanvasLayer = get_node(^"HudRoot")
 @onready var camera_rig: Node3D = get_node(^"CameraRig")
+@export var energy_allocation: EnergyAllocationView
 
 @export var top_bar: TopBarView
 @export var players_list_panel: PlayersListPanelView
@@ -41,6 +44,7 @@ func _ready() -> void:
     assert(pawn_collection)
     assert(hud_root)
     assert(camera_rig)
+    assert(energy_allocation)
     assert(turn_actions)
     assert(top_bar)
     assert(players_list_panel)
@@ -52,7 +56,9 @@ func _ready() -> void:
     turn_actions.buy_property_requested.connect(_on_buy_property_pressed)
     turn_actions.pay_toll_requested.connect(_on_pay_toll_pressed)
     turn_actions.end_turn_requested.connect(_on_end_turn_pressed)
+    energy_allocation.allocation_requested.connect(_on_energy_allocation_requested)
     set_turn_action_state(false, false, false, { })
+    set_energy_allocation_state(50, false, 0.0, 0.0, false)
 
 func set_local_player_identity(icon_id: int, color_id: int) -> void:
     if not is_node_ready():
@@ -104,6 +110,31 @@ func set_turn_action_state(can_roll_dice: bool, can_end_turn: bool, is_local_tur
         call_deferred("set_turn_action_state", can_roll_dice, can_end_turn, is_local_turn, property_action.duplicate(true))
         return
     turn_actions.set_turn_action_state(can_roll_dice, can_end_turn, is_local_turn, property_action)
+
+func set_energy_allocation_state(
+    sell_percent: int,
+    can_edit: bool,
+    sell_100_fiat_total: float,
+    mine_100_btc_total: float,
+    is_request_pending: bool
+) -> void:
+    if not is_node_ready():
+        call_deferred(
+            "set_energy_allocation_state",
+            sell_percent,
+            can_edit,
+            sell_100_fiat_total,
+            mine_100_btc_total,
+            is_request_pending
+        )
+        return
+    energy_allocation.set_energy_allocation_state(
+        sell_percent,
+        can_edit,
+        sell_100_fiat_total,
+        mine_100_btc_total,
+        is_request_pending
+    )
 
 func set_pawn_tile_positions(tile_positions_by_player_index: Dictionary) -> void:
     if not is_node_ready():
@@ -204,6 +235,9 @@ func _has_debug_argument() -> bool:
         if argument == DEBUG_GAMEPLAY_ARGUMENT or argument.begins_with("%s=" % DEBUG_GAMEPLAY_ARGUMENT):
             return true
     return false
+
+func _on_energy_allocation_requested(sell_percent: int) -> void:
+    energy_allocation_requested.emit(sell_percent)
 
 func _capture_tile_stack_nodes() -> void:
     _top_tile_nodes_by_index = _resolve_tile_nodes_by_index(top_tiles_root, "TileInstance")

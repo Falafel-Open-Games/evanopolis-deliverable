@@ -5,6 +5,7 @@ const PlayerIdentityCardView = preload("res://scripts/app/player_identity_card.g
 const EventLogItemScene = preload("res://scenes/game/hud/event_log_item.tscn")
 const MAX_VISIBLE_MESSAGES: int = 21
 const ICON_PREFIXES: Array[String] = ["🚦", "🔄", "🎮️", "🎮", "🎲", "📍", "⚠️", "⚠"]
+const AUTO_EXPAND_ICONS: Array[String] = ["🏆️"]
 const NEUTRAL_BACKGROUND_COLOR: Color = Color(1.0, 1.0, 1.0, 0.08)
 const PLAYER_BACKGROUND_ALPHA: float = 0.42
 const PLAYER_BACKGROUND_DARKEN_AMOUNT: float = 0.58
@@ -28,6 +29,8 @@ func set_messages(messages: Array) -> void:
     if not is_node_ready():
         call_deferred("set_messages", messages.duplicate())
         return
+    if not event_list.visible and _contains_auto_expand_event(messages):
+        _set_expanded(true)
 
     var visible_messages: Array = messages
     if visible_messages.size() > MAX_VISIBLE_MESSAGES:
@@ -50,7 +53,7 @@ func set_messages(messages: Array) -> void:
         if item_index < visible_messages.size():
             var event_entry: Variant = visible_messages[item_index]
             var message: String = _entry_message(event_entry)
-            icon_label.text = _event_icon(message)
+            icon_label.text = _entry_icon(event_entry, message)
             message_label.text = _event_text(message)
             _apply_background_color(background_panel, _entry_color_id(event_entry))
             item.visible = true
@@ -93,6 +96,22 @@ func _entry_message(event_entry: Variant) -> String:
         var event_dictionary: Dictionary = event_entry
         return str(event_dictionary.get("message", ""))
     return str(event_entry)
+
+func _entry_icon(event_entry: Variant, message: String) -> String:
+    if event_entry is Dictionary:
+        var event_dictionary: Dictionary = event_entry
+        var icon: String = str(event_dictionary.get("icon", ""))
+        if not icon.is_empty():
+            return icon
+    return _event_icon(message)
+
+func _contains_auto_expand_event(messages: Array) -> bool:
+    for event_entry in messages:
+        var message: String = _entry_message(event_entry)
+        var icon: String = _entry_icon(event_entry, message)
+        if AUTO_EXPAND_ICONS.has(icon):
+            return true
+    return false
 
 func _entry_color_id(event_entry: Variant) -> int:
     if not event_entry is Dictionary:
