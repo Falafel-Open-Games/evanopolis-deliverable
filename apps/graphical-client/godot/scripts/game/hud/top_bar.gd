@@ -33,6 +33,15 @@ func set_local_player_identity(icon_id: int, color_id: int) -> void:
     avatar_box.set_icon_id(icon_id)
     avatar_box.set_hexagon_modulate(_color_from_id(color_id))
 
+func set_local_player_resources(fiat_balance: float, energy_amount: int, bitcoin_balance: float) -> void:
+    fiat_value_label.text = "$ %.2f" % fiat_balance
+    energy_value_label.text = "⚡ %d" % energy_amount
+    game_goal_value_label.text = "₿ %.1f/%.0f" % [
+        bitcoin_balance,
+        GameEconomyConfigModel.BITCOIN_GOAL_TO_WIN,
+    ]
+    game_goal_progress_bar.value = bitcoin_balance
+
 func set_turn_info(turn_number: int, player_name: String, is_local_turn: bool) -> void:
     var resolved_turn_number: int = max(1, turn_number)
     if is_local_turn:

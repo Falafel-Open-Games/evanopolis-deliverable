@@ -87,6 +87,17 @@ func rpc_player_identity_changed(seq: int, player_index: int, display_name: Stri
     )
 
 
+func rpc_player_eliminated(seq: int, player_index: int, reason: String) -> void:
+    events.append(
+        {
+            "method": "rpc_player_eliminated",
+            "seq": seq,
+            "player_index": player_index,
+            "reason": reason,
+        },
+    )
+
+
 func rpc_dice_rolled(seq: int, die_1: int, die_2: int, total: int) -> void:
     events.append(
         {
@@ -177,7 +188,7 @@ func rpc_property_acquired(seq: int, player_index: int, tile_index: int, price: 
     )
 
 
-func rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float) -> void:
+func rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float, payment_type: String) -> void:
     events.append(
         {
             "method": "rpc_toll_paid",
@@ -185,6 +196,7 @@ func rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float) 
             "payer_index": payer_index,
             "owner_index": owner_index,
             "amount": amount,
+            "payment_type": payment_type,
         },
     )
 

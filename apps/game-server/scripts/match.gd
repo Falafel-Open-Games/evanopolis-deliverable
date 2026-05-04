@@ -29,6 +29,7 @@ var board_state: Dictionary = { }
 var pending_action: Dictionary = { }
 var has_rolled_current_turn: bool = false
 var require_explicit_ready: bool = false
+var next_landing_seq: int = 1
 
 
 func _init(config_node: Config, client_nodes: Array[Client], require_ready: bool = false) -> void:
@@ -75,9 +76,12 @@ func register_client_at_index(player_id: String, player_index: int, client: Clie
     player_ids[player_index] = player_id
     player_ready[player_index] = false
     var player: PlayerState = state.players[player_index]
+    player.is_active = true
     if player.color_id < 0:
         player.color_id = player_index
     player.position = _starting_tile_for_color(player.color_id)
+    player.landing_sequence = next_landing_seq
+    next_landing_seq += 1
     _broadcast("rpc_player_joined", [player_id, player_index])
     if _has_all_clients() and not require_explicit_ready:
         start_game()
@@ -154,6 +158,8 @@ func rpc_set_player_identity(game_id: String, player_id: String, display_name: S
     player.icon_id = icon_id
     player.color_id = color_id
     player.position = _starting_tile_for_color(color_id)
+    player.landing_sequence = next_landing_seq
+    next_landing_seq += 1
     _broadcast("rpc_player_identity_changed", [resolved_index, player.display_name, player.icon_id, player.color_id])
     return ""
 
@@ -217,6 +223,9 @@ func rpc_roll_dice(game_id: String, player_id: String) -> void:
     if has_finished:
         _send_to_player(resolved_index, "rpc_action_rejected", ["match_finished"])
         return
+    if not _is_player_active(resolved_index):
+        _send_to_player(resolved_index, "rpc_action_rejected", ["player_eliminated"])
+        return
     if resolved_index != state.current_player_index:
         _send_to_player(resolved_index, "rpc_action_rejected", ["not_current_player"])
         return
@@ -241,6 +250,8 @@ func _server_move_pawn(steps: int) -> void:
     var to_tile: int = (from_tile + steps) % board_size
     var passed_tiles: Array[int] = _compute_passed_tiles_with_effects(from_tile, steps, board_size)
     player.position = to_tile
+    player.landing_sequence = next_landing_seq
+    next_landing_seq += 1
     _broadcast("rpc_pawn_moved", [from_tile, to_tile, passed_tiles])
     var landing_context: Dictionary = _build_landing_context(to_tile, state.current_player_index)
     _broadcast(
@@ -302,6 +313,8 @@ func rpc_end_turn(game_id: String, player_id: String) -> String:
     var resolved_index: int = _player_index_from_id(player_id)
     if resolved_index < 0:
         return "invalid_player_id"
+    if not _is_player_active(resolved_index):
+        return "player_eliminated"
     if resolved_index != state.current_player_index:
         return "not_current_player"
     if not has_rolled_current_turn:
@@ -309,6 +322,11 @@ func rpc_end_turn(game_id: String, player_id: String) -> String:
     if pending_action.is_empty():
         return "no_pending_action"
     var pending_type: String = str(pending_action.get("type", ""))
+    if pending_type == "pay_toll":
+        if _can_player_pay_pending_toll(resolved_index):
+            return "action_not_allowed"
+        _eliminate_player(resolved_index, "toll_unpayable")
+        return ""
     if pending_type != "buy_or_end_turn" and pending_type != "end_turn":
         return "action_not_allowed"
     _advance_turn()
@@ -325,6 +343,8 @@ func rpc_buy_property(game_id: String, player_id: String, tile_index: int) -> St
     var resolved_index: int = _player_index_from_id(player_id)
     if resolved_index < 0:
         return "invalid_player_id"
+    if not _is_player_active(resolved_index):
+        return "player_eliminated"
     if resolved_index != state.current_player_index:
         return "not_current_player"
     if pending_action.is_empty():
@@ -364,6 +384,8 @@ func rpc_pay_toll(game_id: String, player_id: String) -> String:
     var resolved_index: int = _player_index_from_id(player_id)
     if resolved_index < 0:
         return "invalid_player_id"
+    if not _is_player_active(resolved_index):
+        return "player_eliminated"
     if resolved_index != state.current_player_index:
         return "not_current_player"
     if pending_action.is_empty():
@@ -379,14 +401,20 @@ func rpc_pay_toll(game_id: String, player_id: String) -> String:
     if amount <= 0.0:
         return "invalid_toll_amount"
     var payer: PlayerState = state.players[resolved_index]
-    if payer.fiat_balance < amount:
-        return "insufficient_fiat"
     var owner: PlayerState = state.players[owner_index]
-    payer.fiat_balance -= amount
-    owner.fiat_balance += amount
-    _broadcast("rpc_toll_paid", [resolved_index, owner_index, amount])
-    _advance_turn()
-    return ""
+    if payer.fiat_balance >= amount:
+        payer.fiat_balance -= amount
+        owner.fiat_balance += amount
+        _broadcast("rpc_toll_paid", [resolved_index, owner_index, amount, "fiat"])
+        _advance_turn()
+        return ""
+    if payer.bitcoin_balance >= 1.0:
+        payer.bitcoin_balance -= 1.0
+        owner.bitcoin_balance += 1.0
+        _broadcast("rpc_toll_paid", [resolved_index, owner_index, 1.0, "bitcoin"])
+        _advance_turn()
+        return ""
+    return "insufficient_toll_funds"
 
 
 func _compute_passed_tiles_with_effects(from_tile: int, steps: int, board_size: int) -> Array[int]:
@@ -413,9 +441,9 @@ func _build_landing_context(tile_index: int, landing_player_index: int) -> Dicti
     var owner_index: int = int(tile.get("owner_index", -1))
     var toll_due: float = 0.0
     var buy_price: float = 0.0
-    if _is_property_tile(tile_type) and owner_index < 0:
+    if owner_index < 0:
         buy_price = _compute_property_price(tile_index)
-    if _is_property_tile(tile_type) and owner_index >= 0 and owner_index != landing_player_index:
+    if owner_index >= 0 and owner_index != landing_player_index:
         toll_due = _compute_toll(tile_index)
     return {
         "tile_index": tile_index,
@@ -427,16 +455,15 @@ func _build_landing_context(tile_index: int, landing_player_index: int) -> Dicti
         "energy_production": int(tile.get("energy_production", 0)),
         "sell_100_fiat": float(tile.get("sell_100_fiat", 0.0)),
         "mine_100_btc": float(tile.get("mine_100_btc", 0.0)),
-        "action_required": _action_required_for_tile(tile_type, owner_index, landing_player_index),
+        "action_required": _action_required_for_tile(owner_index, landing_player_index),
     }
 
 
-func _action_required_for_tile(tile_type: String, owner_index: int, landing_player_index: int) -> String:
-    if _is_property_tile(tile_type):
-        if owner_index < 0:
-            return "buy_or_end_turn"
-        if owner_index != landing_player_index:
-            return "pay_toll"
+func _action_required_for_tile(owner_index: int, landing_player_index: int) -> String:
+    if owner_index < 0:
+        return "buy_or_end_turn"
+    if owner_index != landing_player_index:
+        return "pay_toll"
     return "end_turn"
 
 
@@ -530,6 +557,8 @@ func build_state_snapshot() -> Dictionary:
                 "bitcoin_balance": player.bitcoin_balance,
                 "position": player.position,
                 "laps": player.laps,
+                "landing_sequence": player.landing_sequence,
+                "is_active": player.is_active,
             },
         )
     return {
@@ -547,6 +576,7 @@ func build_state_snapshot() -> Dictionary:
         "pending_action": pending_action.duplicate(true),
         "has_rolled_current_turn": has_rolled_current_turn,
         "ready_count": _ready_player_count(),
+        "next_landing_seq": next_landing_seq,
     }
 
 
@@ -578,6 +608,8 @@ func restore_from_snapshot(snapshot: Dictionary) -> String:
     next_event_seq = int(snapshot.get("last_sequence", 0)) + 1
     if next_event_seq < 1:
         next_event_seq = 1
+    next_landing_seq = int(snapshot.get("next_landing_seq", 1))
+    var max_landing_sequence: int = 0
 
     for player_index in range(players_snapshot.size()):
         var player_in_snapshot: Dictionary = players_snapshot[player_index]
@@ -591,6 +623,13 @@ func restore_from_snapshot(snapshot: Dictionary) -> String:
         restored_player.bitcoin_balance = float(player_in_snapshot.get("bitcoin_balance", restored_player.bitcoin_balance))
         restored_player.position = int(player_in_snapshot.get("position", restored_player.position))
         restored_player.laps = int(player_in_snapshot.get("laps", restored_player.laps))
+        restored_player.landing_sequence = int(player_in_snapshot.get("landing_sequence", player_index + 1))
+        restored_player.is_active = bool(player_in_snapshot.get("is_active", true))
+        max_landing_sequence = max(max_landing_sequence, restored_player.landing_sequence)
+    if next_landing_seq <= max_landing_sequence:
+        next_landing_seq = max_landing_sequence + 1
+    if has_started and not has_finished and not _is_player_active(state.current_player_index):
+        state.current_player_index = _first_active_player_index()
     return ""
 
 func _set_pending_action(action_type: String, tile_index: int, metadata: Dictionary = { }) -> void:
@@ -613,12 +652,21 @@ func _advance_turn() -> void:
         return
     _clear_pending_action()
     has_rolled_current_turn = false
-    var next_player_index: int = state.current_player_index + 1
-    if next_player_index >= clients.size():
-        next_player_index = 0
-        state.turn_number += 1
-    state.current_player_index = next_player_index
-    _broadcast("rpc_turn_started", [state.current_player_index, state.turn_number, state.current_cycle])
+    var next_player_index: int = state.current_player_index
+    var wrapped: bool = false
+    for _offset in range(clients.size()):
+        next_player_index += 1
+        if next_player_index >= clients.size():
+            next_player_index = 0
+            wrapped = true
+        if not _is_player_active(next_player_index):
+            continue
+        if wrapped:
+            state.turn_number += 1
+        state.current_player_index = next_player_index
+        _broadcast("rpc_turn_started", [state.current_player_index, state.turn_number, state.current_cycle])
+        return
+    assert(false)
 
 
 func _check_btc_goal_victory(player_index: int) -> void:
@@ -640,6 +688,71 @@ func _finish_match(resolved_winner_index: int, reason: String) -> void:
     _clear_pending_action()
     var winner_btc: float = float(state.players[winner_index].bitcoin_balance)
     _broadcast("rpc_game_ended", [winner_index, reason, EconomyV0.BTC_GOAL_TO_WIN, winner_btc])
+
+
+func _eliminate_player(player_index: int, reason: String) -> void:
+    assert(player_index >= 0 and player_index < state.players.size())
+    var player: PlayerState = state.players[player_index]
+    if not player.is_active:
+        return
+    player.is_active = false
+    player.fiat_balance = 0.0
+    player.bitcoin_balance = 0.0
+    _release_player_properties(player_index)
+    _broadcast("rpc_player_eliminated", [player_index, reason])
+    _broadcast("rpc_board_state", [board_state.duplicate(true)])
+    var remaining_active_players: int = _active_player_count()
+    if remaining_active_players <= 1:
+        var surviving_player_index: int = _first_active_player_index()
+        assert(surviving_player_index >= 0)
+        _finish_match(surviving_player_index, "last_player_standing")
+        return
+    if state.current_player_index == player_index:
+        _advance_turn()
+
+
+func _can_player_pay_pending_toll(player_index: int) -> bool:
+    if player_index < 0 or player_index >= state.players.size():
+        return false
+    if str(pending_action.get("type", "")) != "pay_toll":
+        return false
+    var amount: float = float(pending_action.get("amount", 0.0))
+    if amount <= 0.0:
+        return false
+    var player: PlayerState = state.players[player_index]
+    return player.fiat_balance >= amount or player.bitcoin_balance >= 1.0
+
+
+func _release_player_properties(player_index: int) -> void:
+    var tiles: Array = board_state.get("tiles", [])
+    for tile_index in range(tiles.size()):
+        var tile: Dictionary = tiles[tile_index]
+        if int(tile.get("owner_index", -1)) != player_index:
+            continue
+        tile["owner_index"] = -1
+        tiles[tile_index] = tile
+    board_state["tiles"] = tiles
+
+
+func _is_player_active(player_index: int) -> bool:
+    if player_index < 0 or player_index >= state.players.size():
+        return false
+    return bool(state.players[player_index].is_active)
+
+
+func _active_player_count() -> int:
+    var count: int = 0
+    for player in state.players:
+        if player != null and bool(player.is_active):
+            count += 1
+    return count
+
+
+func _first_active_player_index() -> int:
+    for player_index in range(state.players.size()):
+        if _is_player_active(player_index):
+            return player_index
+    return -1
 
 
 func _broadcast(method: String, args: Array) -> void:

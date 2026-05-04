@@ -77,6 +77,10 @@ func rpc_player_identity_changed(_seq: int, _player_index: int, _display_name: S
     pass
 
 @rpc("authority")
+func rpc_player_eliminated(_seq: int, _player_index: int, _reason: String) -> void:
+    pass
+
+@rpc("authority")
 func rpc_dice_rolled(_seq: int, _die_1: int, _die_2: int, _total: int) -> void:
     pass
 
@@ -113,7 +117,7 @@ func rpc_property_acquired(_seq: int, _player_index: int, _tile_index: int, _pri
     pass
 
 @rpc("authority")
-func rpc_toll_paid(_seq: int, _payer_index: int, _owner_index: int, _amount: float) -> void:
+func rpc_toll_paid(_seq: int, _payer_index: int, _owner_index: int, _amount: float, _payment_type: String) -> void:
     pass
 
 @rpc("authority")

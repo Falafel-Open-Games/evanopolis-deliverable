@@ -40,6 +40,10 @@ func rpc_player_identity_changed(seq: int, player_index: int, display_name: Stri
     server_node.rpc_id(peer_id, "rpc_player_identity_changed", seq, player_index, display_name, icon_id, color_id)
 
 
+func rpc_player_eliminated(seq: int, player_index: int, reason: String) -> void:
+    server_node.rpc_id(peer_id, "rpc_player_eliminated", seq, player_index, reason)
+
+
 func rpc_dice_rolled(seq: int, die_1: int, die_2: int, total: int) -> void:
     server_node.rpc_id(peer_id, "rpc_dice_rolled", seq, die_1, die_2, total)
 
@@ -76,8 +80,8 @@ func rpc_property_acquired(seq: int, player_index: int, tile_index: int, price: 
     server_node.rpc_id(peer_id, "rpc_property_acquired", seq, player_index, tile_index, price)
 
 
-func rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float) -> void:
-    server_node.rpc_id(peer_id, "rpc_toll_paid", seq, payer_index, owner_index, amount)
+func rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float, payment_type: String) -> void:
+    server_node.rpc_id(peer_id, "rpc_toll_paid", seq, payer_index, owner_index, amount, payment_type)
 
 
 func rpc_state_snapshot(seq: int, snapshot: Dictionary) -> void:

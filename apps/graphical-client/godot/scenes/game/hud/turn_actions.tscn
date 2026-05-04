@@ -4,7 +4,8 @@
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="2_a31m3"]
 [ext_resource type="Texture2D" uid="uid://iocy85bsb5vl" path="res://assets/cities/2.Irkutsk.png" id="3_e3k5w"]
 [ext_resource type="FontFile" uid="uid://djk2or1x8ndb7" path="res://fonts/JetBrains_Mono/static/JetBrainsMono-ExtraBold.ttf" id="4_4ua6o"]
-[ext_resource type="Script" path="res://scripts/game/hud/turn_actions.gd" id="5_4ua6o"]
+[ext_resource type="Script" uid="uid://c3w4qp04qo8il" path="res://scripts/game/hud/turn_actions.gd" id="5_4ua6o"]
+[ext_resource type="Texture2D" uid="uid://du3jhapf4vij1" path="res://assets/2d/hexagon.png" id="6_e3k5w"]
 
 [node name="TurnActions" type="MarginContainer" unique_id=1812314134]
 custom_minimum_size = Vector2(190, 0)
@@ -30,7 +31,7 @@ layout_mode = 2
 [node name="RollDice" type="Button" parent="ContentContainer/VBoxContainer" unique_id=100298599]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
-size_flags_vertical = 6
+size_flags_vertical = 10
 theme = ExtResource("2_a31m3")
 text = "Roll Dice"
 
@@ -42,6 +43,7 @@ size_flags_vertical = 3
 layout_mode = 2
 
 [node name="CityInfoCard" type="MarginContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer" unique_id=1534963736]
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -81,6 +83,7 @@ size_flags_vertical = 8
 layout_mode = 2
 
 [node name="BuyOverlay" type="MarginContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel" unique_id=1968191226]
+visible = false
 layout_mode = 2
 theme_override_constants/margin_left = 4
 theme_override_constants/margin_top = 4
@@ -170,7 +173,71 @@ theme_override_font_sizes/font_size = 12
 text = "$ 46"
 horizontal_alignment = 2
 
+[node name="TollOverlay" type="MarginContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel" unique_id=376326166]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/TollOverlay" unique_id=459599836]
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_constants/separation = 0
+
+[node name="Owner" type="HBoxContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/TollOverlay/VBoxContainer" unique_id=161740346]
+layout_mode = 2
+
+[node name="OwnerColor" type="MarginContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/TollOverlay/VBoxContainer/Owner" unique_id=1675615259]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/TollOverlay/VBoxContainer/Owner/OwnerColor" unique_id=1495627006]
+custom_minimum_size = Vector2(13, 0)
+layout_mode = 2
+texture = ExtResource("6_e3k5w")
+expand_mode = 1
+
+[node name="OwnerLabel" type="Label" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/TollOverlay/VBoxContainer/Owner" unique_id=788937632]
+custom_minimum_size = Vector2(51, 0)
+layout_mode = 2
+theme = ExtResource("2_a31m3")
+theme_type_variation = &"SmallLabel"
+theme_override_fonts/font = ExtResource("4_4ua6o")
+theme_override_font_sizes/font_size = 9
+text = "Owner:"
+
+[node name="OwnerValue" type="Label" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/TollOverlay/VBoxContainer/Owner" unique_id=766638776]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_a31m3")
+theme_type_variation = &"ResourceLabel"
+theme_override_colors/font_color = Color(0.87058824, 0.52156866, 0.31764707, 1)
+theme_override_font_sizes/font_size = 10
+text = "Alice"
+horizontal_alignment = 2
+
+[node name="Toll" type="HBoxContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/TollOverlay/VBoxContainer" unique_id=1708260582]
+layout_mode = 2
+
+[node name="TollPriceLabel" type="Label" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/TollOverlay/VBoxContainer/Toll" unique_id=1165951053]
+layout_mode = 2
+theme = ExtResource("2_a31m3")
+theme_type_variation = &"SmallLabel"
+theme_override_fonts/font = ExtResource("4_4ua6o")
+theme_override_font_sizes/font_size = 10
+text = "Toll Price:"
+
+[node name="TollPriceValueLabel" type="Label" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer/CityInfoCard/OverlayMargin/InfoPanel/TollOverlay/VBoxContainer/Toll" unique_id=844996144]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_a31m3")
+theme_type_variation = &"ResourceLabel"
+theme_override_font_sizes/font_size = 12
+text = "₿ 1.00 "
+horizontal_alignment = 2
+
 [node name="BuyPassContainer" type="HBoxContainer" parent="ContentContainer/VBoxContainer/PropertyActions/VBoxContainer" unique_id=2042535420]
+visible = false
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 size_flags_vertical = 4

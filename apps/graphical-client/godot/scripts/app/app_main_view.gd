@@ -15,6 +15,7 @@ var _waiting_room_state: WaitingRoomState = null
 var _gameplay_player_states: Array = []
 var _gameplay_event_log_messages: Array = []
 var _gameplay_pawn_positions: Dictionary = { }
+var _gameplay_tile_owner_indices: Dictionary = { }
 var _game_root: Node3D = null
 
 @onready var waiting_room_view: Control = $WaitingRoomMount/WaitingRoomRoot
@@ -46,11 +47,13 @@ func _ready() -> void:
     assert(session_node.has_signal("gameplay_player_states_changed"))
     assert(session_node.has_signal("gameplay_event_log_changed"))
     assert(session_node.has_signal("gameplay_pawn_positions_changed"))
+    assert(session_node.has_signal("gameplay_tile_ownership_changed"))
     assert(session_node.has_method("get_session_state"))
     assert(session_node.has_method("get_waiting_room_state"))
     assert(session_node.has_method("get_gameplay_player_states"))
     assert(session_node.has_method("get_gameplay_event_log_messages"))
     assert(session_node.has_method("get_gameplay_pawn_positions"))
+    assert(session_node.has_method("get_gameplay_tile_owner_indices"))
     assert(session_node.has_method("is_waiting_for_launch"))
     assert(session_node.has_method("is_waiting_room_active"))
     assert(session_node.has_method("is_game_started"))
@@ -59,6 +62,10 @@ func _ready() -> void:
     assert(session_node.has_method("request_player_ready"))
     assert(session_node.has_method("can_request_roll_dice"))
     assert(session_node.has_method("request_roll_dice"))
+    assert(session_node.has_method("can_request_buy_property"))
+    assert(session_node.has_method("request_buy_property"))
+    assert(session_node.has_method("can_request_pay_toll"))
+    assert(session_node.has_method("request_pay_toll"))
     assert(session_node.has_method("can_request_end_turn"))
     assert(session_node.has_method("request_end_turn"))
     assert(session_node.has_method("can_request_player_identity"))
@@ -74,6 +81,7 @@ func _ready() -> void:
     session_node.connect("gameplay_player_states_changed", Callable(self, "_on_gameplay_player_states_changed"))
     session_node.connect("gameplay_event_log_changed", Callable(self, "_on_gameplay_event_log_changed"))
     session_node.connect("gameplay_pawn_positions_changed", Callable(self, "_on_gameplay_pawn_positions_changed"))
+    session_node.connect("gameplay_tile_ownership_changed", Callable(self, "_on_gameplay_tile_ownership_changed"))
 
     _boot_state = boot_node.call("get_boot_state")
     _session_state = session_node.call("get_session_state")
@@ -82,6 +90,7 @@ func _ready() -> void:
     _gameplay_player_states = session_node.call("get_gameplay_player_states")
     _gameplay_event_log_messages = session_node.call("get_gameplay_event_log_messages")
     _gameplay_pawn_positions = session_node.call("get_gameplay_pawn_positions")
+    _gameplay_tile_owner_indices = session_node.call("get_gameplay_tile_owner_indices")
 
     _render_scene()
 
@@ -113,6 +122,10 @@ func _on_gameplay_pawn_positions_changed(tile_positions_by_player_index: Diction
     _gameplay_pawn_positions = tile_positions_by_player_index
     _sync_gameplay_pawn_positions()
 
+func _on_gameplay_tile_ownership_changed(tile_owner_indices_by_tile_index: Dictionary) -> void:
+    _gameplay_tile_owner_indices = tile_owner_indices_by_tile_index
+    _sync_gameplay_tile_ownership()
+
 func _on_ready_button_pressed() -> void:
     session_node.call("request_player_ready")
 
@@ -121,6 +134,12 @@ func _on_identity_save_requested(display_name: String, icon_id: int, color_id: i
 
 func _on_roll_dice_requested() -> void:
     session_node.call("request_roll_dice")
+
+func _on_buy_property_requested(tile_index: int) -> void:
+    session_node.call("request_buy_property", tile_index)
+
+func _on_pay_toll_requested() -> void:
+    session_node.call("request_pay_toll")
 
 func _on_end_turn_requested() -> void:
     session_node.call("request_end_turn")
@@ -186,6 +205,8 @@ func _ensure_game_root() -> void:
     _game_root = GameRootScene.instantiate()
     add_child(_game_root)
     _game_root.connect("roll_dice_requested", Callable(self, "_on_roll_dice_requested"))
+    _game_root.connect("buy_property_requested", Callable(self, "_on_buy_property_requested"))
+    _game_root.connect("pay_toll_requested", Callable(self, "_on_pay_toll_requested"))
     _game_root.connect("end_turn_requested", Callable(self, "_on_end_turn_requested"))
     _sync_gameplay_identity()
 
@@ -202,6 +223,7 @@ func _sync_gameplay_identity() -> void:
     _sync_gameplay_pawn_positions()
     _game_root.call("set_player_slots", _waiting_room_state.slots)
     _sync_gameplay_player_states()
+    _sync_gameplay_tile_ownership()
     _sync_gameplay_turn_info()
     _sync_gameplay_event_log()
     _debug_print_gameplay_state("identity")
@@ -210,6 +232,7 @@ func _sync_gameplay_player_states() -> void:
     if _game_root == null:
         return
     _game_root.call("set_player_states", _gameplay_player_states)
+    _sync_gameplay_tile_ownership()
     _debug_print_gameplay_state("player_states")
 
 func _sync_gameplay_event_log() -> void:
@@ -223,6 +246,11 @@ func _sync_gameplay_pawn_positions() -> void:
         return
     _game_root.call("set_pawn_tile_positions", _gameplay_pawn_positions)
     _debug_print_gameplay_state("pawn_positions")
+
+func _sync_gameplay_tile_ownership() -> void:
+    if _game_root == null:
+        return
+    _game_root.call("set_tile_owner_indices", _gameplay_tile_owner_indices)
 
 func _sync_gameplay_turn_info() -> void:
     if _game_root == null:

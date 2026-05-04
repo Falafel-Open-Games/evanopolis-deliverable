@@ -35,6 +35,7 @@ var connected_player_indexes: Dictionary = { }
 var player_fiat_balances: Dictionary = { }
 var player_bitcoin_balances: Dictionary = { }
 var player_positions: Dictionary = { }
+var player_active_states: Dictionary = { }
 var player_ready_states: Dictionary = { }
 var player_display_names: Dictionary = { }
 var player_icon_ids: Dictionary = { }
@@ -147,6 +148,10 @@ func _handle_player_identity_changed(seq: int, player_index_value: int, display_
     _queue_event(seq, "_apply_player_identity_changed", [player_index_value, display_name, icon_id, color_id])
 
 
+func _handle_player_eliminated(seq: int, player_index_value: int, reason: String) -> void:
+    _queue_event(seq, "_apply_player_eliminated", [player_index_value, reason])
+
+
 func _handle_dice_rolled(seq: int, die_1: int, die_2: int, total: int) -> void:
     _queue_event(seq, "_apply_dice_rolled", [die_1, die_2, total])
 
@@ -183,8 +188,8 @@ func _handle_property_acquired(seq: int, owner_player_index: int, tile_index: in
     _queue_event(seq, "_apply_property_acquired", [owner_player_index, tile_index, price])
 
 
-func _handle_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float) -> void:
-    _queue_event(seq, "_apply_toll_paid", [payer_index, owner_index, amount])
+func _handle_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float, payment_type: String) -> void:
+    _queue_event(seq, "_apply_toll_paid", [payer_index, owner_index, amount, payment_type])
 
 
 func _handle_state_snapshot(seq: int, snapshot: Dictionary) -> void:
@@ -239,6 +244,7 @@ func _apply_game_started(new_game_id: String) -> void:
 
 func _apply_board_state(board: Dictionary) -> void:
     board_state = board
+    _log_server("board state updated: size=%d" % int(board_state.get("size", 0)))
     var size: int = int(board_state.get("size", 0))
     _log_server("board state: size=%d" % size)
 
@@ -307,6 +313,20 @@ func _apply_player_identity_changed(player_index_value: int, display_name: Strin
         "player identity changed: player=%d display_name=%s icon_id=%d color_id=%d"
         % [player_index_value, display_name, icon_id, color_id],
     )
+
+
+func _apply_player_eliminated(player_index_value: int, reason: String) -> void:
+    player_active_states[player_index_value] = false
+    player_fiat_balances[player_index_value] = 0.0
+    player_bitcoin_balances[player_index_value] = 0.0
+    player_positions.erase(player_index_value)
+    if player_index_value == current_player_index:
+        pending_action_type = ""
+        pending_action_tile_index = -1
+        pending_action_owner_index = -1
+        pending_action_amount = 0.0
+        pending_action_buy_price = 0.0
+    _log_server("player eliminated: player=%d reason=%s" % [player_index_value, reason])
 
 
 func _apply_game_ended(winner_index: int, reason: String, btc_goal: float, winner_btc: float) -> void:
@@ -449,21 +469,29 @@ func _apply_property_acquired(owner_player_index: int, tile_index: int, price: f
     _log_server("property acquired: player=%d tile=%d price=%.2f" % [owner_player_index, tile_index, price])
 
 
-func _apply_toll_paid(payer_index: int, owner_index: int, amount: float) -> void:
+func _apply_toll_paid(payer_index: int, owner_index: int, amount: float, payment_type: String) -> void:
     connected_player_indexes[payer_index] = true
     connected_player_indexes[owner_index] = true
-    var payer_fiat_balance: float = float(player_fiat_balances.get(payer_index, 0.0))
-    payer_fiat_balance -= amount
-    player_fiat_balances[payer_index] = payer_fiat_balance
-    var owner_fiat_balance: float = float(player_fiat_balances.get(owner_index, 0.0))
-    owner_fiat_balance += amount
-    player_fiat_balances[owner_index] = owner_fiat_balance
+    if payment_type == "bitcoin":
+        var payer_bitcoin_balance: float = float(player_bitcoin_balances.get(payer_index, 0.0))
+        payer_bitcoin_balance -= amount
+        player_bitcoin_balances[payer_index] = payer_bitcoin_balance
+        var owner_bitcoin_balance: float = float(player_bitcoin_balances.get(owner_index, 0.0))
+        owner_bitcoin_balance += amount
+        player_bitcoin_balances[owner_index] = owner_bitcoin_balance
+    else:
+        var payer_fiat_balance: float = float(player_fiat_balances.get(payer_index, 0.0))
+        payer_fiat_balance -= amount
+        player_fiat_balances[payer_index] = payer_fiat_balance
+        var owner_fiat_balance: float = float(player_fiat_balances.get(owner_index, 0.0))
+        owner_fiat_balance += amount
+        player_fiat_balances[owner_index] = owner_fiat_balance
     pending_action_type = ""
     pending_action_tile_index = -1
     pending_action_owner_index = -1
     pending_action_amount = 0.0
     pending_action_buy_price = 0.0
-    _log_server("toll paid: payer=%d owner=%d amount=%.2f" % [payer_index, owner_index, amount])
+    _log_server("toll paid: payer=%d owner=%d amount=%.2f payment_type=%s" % [payer_index, owner_index, amount, payment_type])
 
 
 func _apply_state_snapshot(snapshot: Dictionary) -> void:
@@ -487,6 +515,7 @@ func _apply_state_snapshot(snapshot: Dictionary) -> void:
     var players: Array = snapshot.get("players", [])
     connected_player_indexes.clear()
     player_positions.clear()
+    player_active_states.clear()
     player_fiat_balances.clear()
     player_bitcoin_balances.clear()
     player_ready_states.clear()
@@ -500,7 +529,9 @@ func _apply_state_snapshot(snapshot: Dictionary) -> void:
             continue
         if bool(player_in_snapshot.get("joined", false)):
             connected_player_indexes[player_index_value] = true
-        player_positions[player_index_value] = int(player_in_snapshot.get("position", -1))
+        player_active_states[player_index_value] = bool(player_in_snapshot.get("is_active", true))
+        if bool(player_active_states[player_index_value]):
+            player_positions[player_index_value] = int(player_in_snapshot.get("position", -1))
         player_fiat_balances[player_index_value] = float(player_in_snapshot.get("fiat_balance", 0.0))
         player_bitcoin_balances[player_index_value] = float(player_in_snapshot.get("bitcoin_balance", 0.0))
         player_ready_states[player_index_value] = bool(player_in_snapshot.get("ready", false))

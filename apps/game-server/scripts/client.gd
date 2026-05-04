@@ -23,6 +23,9 @@ extends RefCounted
 @abstract func rpc_player_identity_changed(seq: int, player_index: int, display_name: String, icon_id: int, color_id: int) -> void
 
 
+@abstract func rpc_player_eliminated(seq: int, player_index: int, reason: String) -> void
+
+
 @abstract func rpc_dice_rolled(seq: int, die_1: int, die_2: int, total: int) -> void
 
 
@@ -51,7 +54,7 @@ extends RefCounted
 
 
 @abstract func rpc_property_acquired(seq: int, player_index: int, tile_index: int, price: float) -> void
-@abstract func rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float) -> void
+@abstract func rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float, payment_type: String) -> void
 
 
 @abstract func rpc_state_snapshot(seq: int, snapshot: Dictionary) -> void

@@ -9,6 +9,8 @@ var fiat_balance: float = 0.0
 var bitcoin_balance: float = 0.0
 var position: int = 0
 var laps: int = 0
+var landing_sequence: int = 0
+var is_active: bool = true
 
 
 func _init(index: int = -1) -> void:

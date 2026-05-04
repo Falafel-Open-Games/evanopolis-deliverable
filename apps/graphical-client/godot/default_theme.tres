@@ -9,7 +9,7 @@
 [ext_resource type="FontFile" uid="uid://djk2or1x8ndb7" path="res://fonts/JetBrains_Mono/static/JetBrainsMono-ExtraBold.ttf" id="4_u7cj8"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u7cj8"]
-bg_color = Color(1, 0.70000005, 0.27999997, 0.627451)
+bg_color = Color(0.29, 0.29, 0.29, 0.627451)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1

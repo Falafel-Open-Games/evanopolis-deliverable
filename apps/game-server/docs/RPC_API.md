@@ -190,11 +190,18 @@ Failure:
 Pays a pending toll using server-stored pending-action metadata.
 
 Success:
-- `rpc_toll_paid(seq, payer_index, owner_index, amount)`
+- `rpc_toll_paid(seq, payer_index, owner_index, amount, payment_type)`
 - `rpc_turn_started(seq, next_player_index, turn_number, cycle)`
 
 Insufficient fiat path:
-- `rpc_action_rejected(0, "insufficient_fiat")`
+- if payer has at least `1.0` BTC, the server transfers `1.0` BTC and emits
+  `rpc_toll_paid(..., 1.0, "bitcoin")`
+- otherwise the server eliminates the payer with
+  `rpc_player_eliminated(seq, payer_index, "toll_unpayable")`
+- after elimination, the server re-broadcasts `rpc_board_state(...)` with the
+  eliminated player's properties released back to the bank
+- if that elimination leaves one active player remaining, the server then emits
+  `rpc_game_ended(seq, winner_index, "last_player_standing", btc_goal, winner_btc)`
 
 Failure:
 - `rpc_action_rejected(0, reason)`
@@ -217,6 +224,7 @@ Failure:
 - `rpc_player_ready_state(seq: int, player_index: int, is_ready: bool, ready_count: int, total_players: int)`
 - `rpc_player_joined(seq: int, player_id: String, player_index: int)`
 - `rpc_player_identity_changed(seq: int, player_index: int, display_name: String, icon_id: int, color_id: int)`
+- `rpc_player_eliminated(seq: int, player_index: int, reason: String)`
 
 ### Movement / landing
 
@@ -238,7 +246,7 @@ row for `tile_index`. For self-owned tiles, `toll_due` and `buy_price` are
 - `rpc_player_balance_changed(seq: int, player_index: int, fiat_delta: float, btc_delta: float, reason: String)`
 - `rpc_cycle_started(seq: int, cycle: int)`
 - `rpc_property_acquired(seq: int, player_index: int, tile_index: int, price: float)`
-- `rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float)`
+- `rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float, payment_type: String)`
 
 ### Reconnect / sync
 
@@ -251,6 +259,7 @@ row for `tile_index`. For self-owned tiles, `toll_due` and `buy_price` are
 state needed for reconnect:
 
 - player identities, seat occupancy, and balances
+- per-player active/eliminated status
 - board/tile state including ownership
 - pawn positions
 - current player, turn number, and cycle

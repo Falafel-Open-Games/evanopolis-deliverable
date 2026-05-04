@@ -97,6 +97,11 @@ func rpc_player_identity_changed(seq: int, player_index: int, display_name: Stri
 
 
 @rpc("authority")
+func rpc_player_eliminated(seq: int, player_index: int, reason: String) -> void:
+    _handle_player_eliminated(seq, player_index, reason)
+
+
+@rpc("authority")
 func rpc_dice_rolled(seq: int, die_1: int, die_2: int, total: int) -> void:
     _handle_dice_rolled(seq, die_1, die_2, total)
 
@@ -139,8 +144,8 @@ func rpc_property_acquired(seq: int, player_index: int, tile_index: int, price: 
 
 
 @rpc("authority")
-func rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float) -> void:
-    _handle_toll_paid(seq, payer_index, owner_index, amount)
+func rpc_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float, payment_type: String) -> void:
+    _handle_toll_paid(seq, payer_index, owner_index, amount, payment_type)
 
 
 @rpc("authority")
@@ -234,6 +239,10 @@ func _handle_player_identity_changed(seq: int, player_index: int, display_name: 
     pass
 
 
+func _handle_player_eliminated(seq: int, player_index: int, reason: String) -> void:
+    pass
+
+
 func _handle_dice_rolled(seq: int, die_1: int, die_2: int, total: int) -> void:
     pass
 
@@ -270,7 +279,7 @@ func _handle_property_acquired(seq: int, player_index: int, tile_index: int, pri
     pass
 
 
-func _handle_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float) -> void:
+func _handle_toll_paid(seq: int, payer_index: int, owner_index: int, amount: float, payment_type: String) -> void:
     pass
 
 

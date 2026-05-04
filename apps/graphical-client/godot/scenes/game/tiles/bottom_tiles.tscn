@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://b3oipirndn8w0"]
+
+[ext_resource type="PackedScene" uid="uid://dcywcnp5oi4iw" path="res://assets/blender/bottom-tiles.glb" id="1_gefj3"]
+
+[node name="bottom-tiles" unique_id=1131267383 instance=ExtResource("1_gefj3")]

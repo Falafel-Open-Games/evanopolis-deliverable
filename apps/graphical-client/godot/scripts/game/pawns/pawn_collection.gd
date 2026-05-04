@@ -16,9 +16,12 @@ var _authoritative_tile_positions_by_player_index: Dictionary = { }
 var _spawn_transforms_by_color_id: Array[Transform3D] = []
 var _legacy_color_slot_transforms: Array[Transform3D] = []
 var _tile_transforms_by_index: Array[Transform3D] = []
+var _tile_height_offsets_by_index: Array[float] = []
 var _template_mesh: Mesh = null
 var _template_materials_by_color_id: Array[Material] = []
 var _pawn_stack_height: float = 1.0
+var _landing_sequence_by_player_index: Dictionary = { }
+var _next_landing_sequence: int = 0
 
 func _ready() -> void:
     assert(initial_positions)
@@ -60,9 +63,13 @@ func sync_gameplay_player_states(player_states: Array) -> void:
         var player_index: int = int(state_variant.player_index)
         if player_index < 0:
             continue
+        if not bool(state_variant.is_active):
+            continue
         var color_id: int = int(state_variant.color_id)
         var pawn: Pawn = ensure_pawn(player_index, color_id)
         pawn.set_color_id(color_id)
+        _landing_sequence_by_player_index[player_index] = int(state_variant.landing_sequence)
+        _next_landing_sequence = max(_next_landing_sequence, int(state_variant.landing_sequence) + 1)
         active_player_indices[player_index] = true
 
     var player_indices: Array = _pawns_by_player_index.keys()
@@ -101,12 +108,25 @@ func set_pawn_transform(player_index: int, board_transform: Transform3D) -> void
 func set_pawn_tile_index(player_index: int, tile_index: int) -> void:
     assert(tile_index >= 0)
     ensure_pawn(player_index)
+    _record_landing_sequence_if_tile_changed(player_index, tile_index)
     _authoritative_tile_positions_by_player_index[player_index] = tile_index
     _apply_authoritative_tile_positions()
 
 func sync_authoritative_tile_positions(tile_positions_by_player_index: Dictionary) -> void:
+    _sync_landing_sequences(tile_positions_by_player_index)
     _authoritative_tile_positions_by_player_index = tile_positions_by_player_index.duplicate(true)
     _apply_authoritative_tile_positions()
+
+func set_tile_height_offsets(tile_height_offsets_by_index: Array[float]) -> void:
+    _tile_height_offsets_by_index = tile_height_offsets_by_index.duplicate()
+    _apply_authoritative_tile_positions()
+
+func duplicate_material_for_color_id(color_id: int) -> Material:
+    var resolved_color_id: int = _resolved_color_id(color_id)
+    var template_material: Material = _template_materials_by_color_id[resolved_color_id]
+    if template_material == null:
+        return null
+    return template_material.duplicate() as Material
 
 func get_tile_transform(tile_index: int) -> Transform3D:
     assert(_tile_transforms_by_index.size() > 0)
@@ -129,9 +149,12 @@ func _apply_authoritative_tile_positions() -> void:
     for tile_index_variant in player_indices_by_tile_index.keys():
         var tile_index: int = int(tile_index_variant)
         var player_indices: Array = player_indices_by_tile_index[tile_index_variant]
-        player_indices.sort()
+        player_indices.sort_custom(func(first: Variant, second: Variant) -> bool:
+            return _landing_sequence_for_player(int(first)) < _landing_sequence_for_player(int(second))
+        )
         var tile_transform: Transform3D = get_tile_transform(tile_index)
         var tile_up: Vector3 = tile_transform.basis.y.normalized()
+        tile_transform.origin += tile_up * _tile_height_offset(tile_index)
         for stack_index in range(player_indices.size()):
             var player_index: int = int(player_indices[stack_index])
             var stacked_transform: Transform3D = tile_transform
@@ -153,11 +176,47 @@ func _player_indices_by_tile_index() -> Dictionary:
         player_indices.append(player_index)
     return player_indices_by_tile_index
 
+func _tile_height_offset(tile_index: int) -> float:
+    if tile_index < 0 or tile_index >= _tile_height_offsets_by_index.size():
+        return 0.0
+    return max(0.0, float(_tile_height_offsets_by_index[tile_index]))
+
+func _sync_landing_sequences(next_tile_positions_by_player_index: Dictionary) -> void:
+    var pending_player_indices: Array[int] = []
+    var player_index_variants: Array = next_tile_positions_by_player_index.keys()
+    player_index_variants.sort()
+    for player_index_variant in player_index_variants:
+        var player_index: int = int(player_index_variant)
+        var next_tile_index: int = int(next_tile_positions_by_player_index.get(player_index_variant, -1))
+        if next_tile_index < 0:
+            continue
+        var previous_tile_index: int = int(_authoritative_tile_positions_by_player_index.get(player_index, -1))
+        if previous_tile_index != next_tile_index:
+            pending_player_indices.append(player_index)
+            continue
+        if not _landing_sequence_by_player_index.has(player_index):
+            _landing_sequence_by_player_index[player_index] = _next_landing_sequence
+            _next_landing_sequence += 1
+    for player_index in pending_player_indices:
+        _landing_sequence_by_player_index[player_index] = _next_landing_sequence
+        _next_landing_sequence += 1
+
+func _record_landing_sequence_if_tile_changed(player_index: int, next_tile_index: int) -> void:
+    var previous_tile_index: int = int(_authoritative_tile_positions_by_player_index.get(player_index, -1))
+    if previous_tile_index == next_tile_index and _landing_sequence_by_player_index.has(player_index):
+        return
+    _landing_sequence_by_player_index[player_index] = _next_landing_sequence
+    _next_landing_sequence += 1
+
+func _landing_sequence_for_player(player_index: int) -> int:
+    return int(_landing_sequence_by_player_index.get(player_index, -1))
+
 func remove_pawn(player_index: int) -> void:
     var pawn: Pawn = _pawns_by_player_index.get(player_index, null) as Pawn
     if pawn == null:
         return
     _pawns_by_player_index.erase(player_index)
+    _landing_sequence_by_player_index.erase(player_index)
     pawn.queue_free()
 
 func clear_pawns() -> void:
@@ -168,6 +227,8 @@ func clear_pawns() -> void:
         pawn.queue_free()
     _pawns_by_player_index.clear()
     _authoritative_tile_positions_by_player_index.clear()
+    _landing_sequence_by_player_index.clear()
+    _next_landing_sequence = 0
 
 func debug_print_pawn_layout(context: String = "") -> void:
     if not _should_print_debug_gameplay_state():

@@ -25,7 +25,7 @@ func test_tile_four_is_patagonia_property_not_legacy_special_tile() -> void:
     var tile: Dictionary = game_match._tile_from_index(4)
     assert_eq(str(tile.get("tile_type", "")), "B", "tile 4 is Patagonia's B property")
     assert_eq(str(tile.get("city", "")), "Patagonia", "tile 4 belongs to Patagonia")
-    assert_eq(str(game_match._action_required_for_tile(str(tile.get("tile_type", "")), -1, 0)), "buy_or_end_turn", "unowned property still offers buy or end turn")
+    assert_eq(str(game_match._action_required_for_tile(-1, 0)), "buy_or_end_turn", "unowned property still offers buy or end turn")
 
 
 func test_legacy_inspection_and_incident_rpc_entry_points_are_inert() -> void:

@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://ba7ecewut65r8" path="res://scenes/game/hud/top_bar.tscn" id="3_pevc5"]
 [ext_resource type="PackedScene" uid="uid://cpmxp51rnmgsr" path="res://scenes/app/main_logo.tscn" id="3_rx5uh"]
 [ext_resource type="PackedScene" uid="uid://bs4isqdfffe5o" path="res://scenes/game/pawns/pawns.tscn" id="4_0krdv"]
+[ext_resource type="PackedScene" path="res://scenes/game/tiles/bottom_tiles.tscn" id="4_ndy65"]
 [ext_resource type="PackedScene" uid="uid://5hkh50ulk56t" path="res://scenes/game/hud/players_list.tscn" id="7_k63du"]
 [ext_resource type="PackedScene" uid="uid://do5yn138o8j4l" path="res://scenes/game/hud/event_log.tscn" id="8_cylga"]
 [ext_resource type="PackedScene" uid="uid://dr1pfhku6r0j5" path="res://scenes/game/hud/turn_actions.tscn" id="9_cylga"]
@@ -80,6 +81,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.9892778)
 
 [node name="tiles" parent="BoardRoot" unique_id=1178582862 instance=ExtResource("3_bca70")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.9350533)
+
+[node name="BottomTiles" parent="BoardRoot" unique_id=1131267383 instance=ExtResource("4_ndy65")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.935)
+visible = false
 
 [node name="PawnRoot" type="Node3D" parent="." unique_id=979076114]
 

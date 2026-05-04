@@ -38,6 +38,10 @@ class NullClient:
         pass
 
 
+    func rpc_player_eliminated(_seq: int, _player_index: int, _reason: String) -> void:
+        pass
+
+
     func rpc_dice_rolled(_seq: int, _die_1: int, _die_2: int, _total: int) -> void:
         pass
 
@@ -74,7 +78,7 @@ class NullClient:
         pass
 
 
-    func rpc_toll_paid(_seq: int, _payer_index: int, _owner_index: int, _amount: float) -> void:
+    func rpc_toll_paid(_seq: int, _payer_index: int, _owner_index: int, _amount: float, _payment_type: String) -> void:
         pass
 
 

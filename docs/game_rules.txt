@@ -14,7 +14,9 @@ CORE DESIGN PRINCIPLES
 GAME OBJECTIVE
 --------------------------------------------------
 
-- First player to reach 20 BITCOIN (₿) wins the game
+- A player wins by either:
+  - reaching 20 BITCOIN (₿), or
+  - being the last active player remaining after all other players have been eliminated
 
 --------------------------------------------------
 CORE RESOURCES
@@ -80,7 +82,8 @@ Each turn follows this sequence:
 2. Move pawn
 3. Resolve landing tile:
    - Unowned → option to BUY
-   - Owned → PAY toll
+   - Owned by another player → PAY toll
+   - Owned by self → no payment, then end turn
 4. End turn:
    - ENERGY allocation is applied
    - FIAT and BITCOIN are generated
@@ -89,10 +92,10 @@ TURN ORDER
 --------------------------------------------------
 
 - The first player in a match is the lowest occupied seat index.
-- Turn order then proceeds by seat index in ascending order.
-- After the last occupied seat, turn order wraps back to the first occupied seat.
+- Turn order then proceeds by seat index in ascending order among active players.
+- After the last active player, turn order wraps back to the first active player.
 - In the current implementation, this means the match starts with player index 0
-  and then cycles through the seated players in order.
+  and then cycles through the active seated players in order.
 
 --------------------------------------------------
 TILE STATES
@@ -144,7 +147,10 @@ IF unowned:
   - Player may BUY using FIAT
 
 IF owned by another player:
-  - Player pays toll in FIAT
+  - Player first tries to pay the toll in FIAT
+  - If the player does not have enough FIAT, the player must instead pay the owner with 1 full BITCOIN
+  - If the player does not have 1 full BITCOIN, the toll remains unresolved until that player ends the turn to acknowledge defeat
+  - After that acknowledgement, that player is eliminated from the game and all of that player's tiles become unowned again
 
 IF owned by self:
   - No penalty
@@ -184,7 +190,7 @@ RESOURCE CONVERSION
 
 SELL:
 - Converts ENERGY into FIAT
-- Used for buying tiles and paying tolls
+- Used for buying tiles and paying tolls when FIAT payment is possible
 
 MINE:
 - Converts ENERGY into BITCOIN
@@ -198,6 +204,7 @@ Each turn includes two key decisions:
 
 1. BOARD DECISION
    - Buy / Pass / Pay
+   - If FIAT is insufficient for a toll, transfer 1 full BITCOIN instead
 
 2. ENERGY DECISION
    - Adjust ENERGY allocation between SELL and MINE
@@ -245,10 +252,18 @@ ROLL → MOVE → BUY / PAY → ALLOCATE ENERGY → PRODUCE → REPEAT
 
 Victory:
 
-First to 20 BITCOIN (₿)
+- First to 20 BITCOIN (₿), or
+- last active player remaining after all other players have been eliminated
 
 Key innovation:
 
 - ENERGY split between FIAT generation and BITCOIN mining
 - Ownership represented by STACKED TILES
 - Physical, readable, UI-independent system
+
+Elimination:
+
+- A player who cannot resolve a toll with FIAT or 1 full BITCOIN is removed from the game
+- That removal happens when the player ends the turn to acknowledge the unpayable toll
+- When a player is removed, their owned tiles return to the bank as unowned tiles
+- The match continues until only one active player remains, or a player reaches 20 BITCOIN

@@ -36,7 +36,7 @@ func test_tile_four_is_patagonia_property_not_legacy_special_tile() -> void:
     var tile: Dictionary = game_match._tile_from_index(4)
     assert_eq(str(tile.get("tile_type", "")), "B", "tile 4 is Patagonia's B property")
     assert_eq(str(tile.get("city", "")), "Patagonia", "tile 4 belongs to Patagonia")
-    assert_eq(str(game_match._action_required_for_tile(str(tile.get("tile_type", "")), -1, 0)), "buy_or_end_turn", "unowned property still offers buy or end turn")
+    assert_eq(str(game_match._action_required_for_tile(-1, 0)), "buy_or_end_turn", "unowned property still offers buy or end turn")
 
 
 func test_roll_emits_landing_context_for_property_tile() -> void:
@@ -177,6 +177,7 @@ func test_pay_toll_resolves_pending_action_and_advances_turn() -> void:
 
     var toll_paid: Array[Dictionary] = _filter_events(client_a, "rpc_toll_paid")
     assert_eq(toll_paid.size(), 1, "toll paid event emitted once")
+    assert_eq(str(toll_paid[0].get("payment_type", "")), "fiat", "fiat toll payment is tagged")
     var turns: Array[Dictionary] = _filter_events(client_a, "rpc_turn_started")
     assert_eq(turns.size(), 2, "next turn starts after pay toll resolution")
     assert_eq(int(turns[1].get("player_index", -1)), 1, "turn advanced to next player")
@@ -208,7 +209,7 @@ func test_pay_toll_rejected_without_pending_action() -> void:
     assert_eq(reason, "no_pending_action", "pay toll requires pending action")
 
 
-func test_pay_toll_insufficient_fiat_keeps_pending_action() -> void:
+func test_pay_toll_insufficient_fiat_falls_back_to_one_bitcoin() -> void:
     var config: Config = Config.from_values("demo_002", 2, 18)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
@@ -224,13 +225,122 @@ func test_pay_toll_insufficient_fiat_keeps_pending_action() -> void:
 
     game_match.rpc_roll_dice("demo_002", "alice")
     game_match.state.players[0].fiat_balance = 0.1
+    game_match.state.players[0].bitcoin_balance = 1.5
+    game_match.state.players[1].bitcoin_balance = 0.25
     var reason: String = game_match.rpc_pay_toll("demo_002", "alice")
-    assert_eq(reason, "insufficient_fiat", "pay toll should fail when payer cannot afford toll")
-    assert_eq(game_match.state.current_player_index, 0, "turn does not advance until toll is resolved")
-    assert_false(game_match.pending_action.is_empty(), "pending toll action remains active")
+    assert_eq(reason, "", "pay toll should succeed with bitcoin fallback")
+    assert_true(game_match.pending_action.is_empty(), "pending toll action clears after bitcoin toll payment")
+    assert_true(is_equal_approx(game_match.state.players[0].bitcoin_balance, 0.5), "payer loses one bitcoin")
+    assert_true(is_equal_approx(game_match.state.players[1].bitcoin_balance, 1.25), "owner gains one bitcoin")
 
     var toll_events: Array[Dictionary] = _filter_events(client_a, "rpc_toll_paid")
-    assert_eq(toll_events.size(), 0, "no toll payment event emitted when player cannot pay")
+    assert_eq(toll_events.size(), 1, "bitcoin toll payment event emitted")
+    assert_eq(str(toll_events[0].get("payment_type", "")), "bitcoin", "bitcoin toll payment is tagged")
+    var turns: Array[Dictionary] = _filter_events(client_a, "rpc_turn_started")
+    assert_eq(turns.size(), 2, "turn advances after bitcoin toll resolution")
+
+
+func test_pay_toll_without_fiat_or_bitcoin_requires_end_turn_acknowledgement() -> void:
+    var config: Config = Config.from_values("demo_002", 3, 18)
+    var game_match: GameMatch = GameMatch.new(config, [])
+    var client_a: MatchTestClient = MatchTestClient.new()
+    var client_b: MatchTestClient = MatchTestClient.new()
+    var client_c: MatchTestClient = MatchTestClient.new()
+    assert_eq(str(game_match.assign_client("alice", client_a).get("reason", "")), "", "first client should register")
+    assert_eq(str(game_match.assign_client("bob", client_b).get("reason", "")), "", "second client should register")
+    assert_eq(str(game_match.assign_client("charlie", client_c).get("reason", "")), "", "third client should register")
+
+    var tiles: Array = game_match.board_state.get("tiles", [])
+    var tile: Dictionary = tiles[0]
+    tile["owner_index"] = 1
+    tiles[3]["owner_index"] = 0
+    tiles[0] = tile
+    game_match.board_state["tiles"] = tiles
+
+    game_match.rpc_roll_dice("demo_002", "alice")
+    game_match.state.players[0].fiat_balance = 0.1
+    game_match.state.players[0].bitcoin_balance = 0.75
+    game_match.state.players[1].bitcoin_balance = 0.25
+    var reason: String = game_match.rpc_pay_toll("demo_002", "alice")
+    assert_eq(reason, "insufficient_toll_funds", "pay toll stays pending until the player acknowledges defeat")
+    assert_false(game_match.has_finished, "match does not end yet")
+    assert_true(game_match.state.players[0].is_active, "payer is still active until end turn acknowledgement")
+    assert_eq(int(game_match._tile_from_index(3).get("owner_index", -1)), 0, "properties are still owned before acknowledgement")
+    assert_eq(game_match.state.current_player_index, 0, "turn does not advance before acknowledgement")
+    var ended_events: Array[Dictionary] = _filter_events(client_a, "rpc_game_ended")
+    assert_eq(ended_events.size(), 0, "match end event is not emitted while multiple players remain")
+    var eliminated_events: Array[Dictionary] = _filter_events(client_a, "rpc_player_eliminated")
+    assert_eq(eliminated_events.size(), 0, "player is not eliminated before acknowledgement")
+    var toll_events: Array[Dictionary] = _filter_events(client_a, "rpc_toll_paid")
+    assert_eq(toll_events.size(), 0, "no toll payment event emitted")
+
+
+func test_end_turn_on_unpayable_toll_eliminates_player_and_releases_properties() -> void:
+    var config: Config = Config.from_values("demo_002", 3, 18)
+    var game_match: GameMatch = GameMatch.new(config, [])
+    var client_a: MatchTestClient = MatchTestClient.new()
+    var client_b: MatchTestClient = MatchTestClient.new()
+    var client_c: MatchTestClient = MatchTestClient.new()
+    assert_eq(str(game_match.assign_client("alice", client_a).get("reason", "")), "", "first client should register")
+    assert_eq(str(game_match.assign_client("bob", client_b).get("reason", "")), "", "second client should register")
+    assert_eq(str(game_match.assign_client("charlie", client_c).get("reason", "")), "", "third client should register")
+
+    var tiles: Array = game_match.board_state.get("tiles", [])
+    var tile: Dictionary = tiles[0]
+    tile["owner_index"] = 1
+    tiles[3]["owner_index"] = 0
+    tiles[0] = tile
+    game_match.board_state["tiles"] = tiles
+
+    game_match.rpc_roll_dice("demo_002", "alice")
+    game_match.state.players[0].fiat_balance = 0.1
+    game_match.state.players[0].bitcoin_balance = 0.75
+    game_match.state.players[1].bitcoin_balance = 0.25
+    assert_eq(game_match.rpc_pay_toll("demo_002", "alice"), "insufficient_toll_funds", "toll remains unresolved")
+    var reason: String = game_match.rpc_end_turn("demo_002", "alice")
+    assert_eq(reason, "", "end turn acknowledges defeat and resolves the turn")
+    assert_false(game_match.has_finished, "match continues when more than one player remains active")
+    assert_false(game_match.state.players[0].is_active, "payer is eliminated")
+    assert_true(is_equal_approx(game_match.state.players[0].fiat_balance, 0.0), "eliminated payer fiat is cleared")
+    assert_true(is_equal_approx(game_match.state.players[0].bitcoin_balance, 0.0), "eliminated payer bitcoin is cleared")
+    assert_eq(int(game_match._tile_from_index(3).get("owner_index", -1)), -1, "eliminated player's property becomes unowned")
+    assert_eq(game_match.state.current_player_index, 1, "turn advances to the next active player")
+    var eliminated_events: Array[Dictionary] = _filter_events(client_a, "rpc_player_eliminated")
+    assert_eq(eliminated_events.size(), 1, "player eliminated event emitted")
+    assert_eq(int(eliminated_events[0].get("player_index", -1)), 0, "alice is the eliminated player")
+    assert_eq(str(eliminated_events[0].get("reason", "")), "toll_unpayable", "elimination reason recorded")
+    var board_events: Array[Dictionary] = _filter_events(client_a, "rpc_board_state")
+    assert_true(board_events.size() >= 2, "board state is re-broadcast after releasing properties")
+    var toll_events_after_ack: Array[Dictionary] = _filter_events(client_a, "rpc_toll_paid")
+    assert_eq(toll_events_after_ack.size(), 0, "no toll payment event emitted when player is eliminated")
+
+
+func test_pay_toll_without_fiat_or_bitcoin_ends_match_when_one_player_remains() -> void:
+    var config: Config = Config.from_values("demo_002", 2, 18)
+    var game_match: GameMatch = GameMatch.new(config, [])
+    var client_a: MatchTestClient = MatchTestClient.new()
+    var client_b: MatchTestClient = MatchTestClient.new()
+    assert_eq(str(game_match.assign_client("alice", client_a).get("reason", "")), "", "first client should register")
+    assert_eq(str(game_match.assign_client("bob", client_b).get("reason", "")), "", "second client should register")
+
+    var tiles: Array = game_match.board_state.get("tiles", [])
+    var tile: Dictionary = tiles[0]
+    tile["owner_index"] = 1
+    tiles[0] = tile
+    game_match.board_state["tiles"] = tiles
+
+    game_match.rpc_roll_dice("demo_002", "alice")
+    game_match.state.players[0].fiat_balance = 0.1
+    game_match.state.players[0].bitcoin_balance = 0.75
+    game_match.state.players[1].bitcoin_balance = 0.25
+    assert_eq(game_match.rpc_pay_toll("demo_002", "alice"), "insufficient_toll_funds", "toll remains unresolved until acknowledgement")
+    var reason: String = game_match.rpc_end_turn("demo_002", "alice")
+    assert_eq(reason, "", "end turn acknowledges defeat")
+    assert_true(game_match.has_finished, "match ends when one active player remains")
+    assert_eq(game_match.winner_index, 1, "remaining active player wins")
+    assert_eq(game_match.end_reason, "last_player_standing", "match ends with last_player_standing reason")
+    var ended_events: Array[Dictionary] = _filter_events(client_a, "rpc_game_ended")
+    assert_eq(ended_events.size(), 1, "game ended event emitted")
 
 
 func test_actions_are_rejected_after_match_finished() -> void:
