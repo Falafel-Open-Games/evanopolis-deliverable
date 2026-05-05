@@ -21,8 +21,7 @@ Work in this order unless a blocker forces a change:
 3. `.github/workflows/`
 4. `apps/web-wrapper/`
 5. `apps/graphical-client/`
-6. `apps/text-client/` only as a support/testing tool
-7. `apps/auth-server/` only as a public integration stub for the private auth repo
+6. `apps/auth-server/` only as a public integration stub for the private auth repo
 
 ## Workflow Notes
 
@@ -76,7 +75,6 @@ Body line two."`
 - `apps/game-server/` is the Godot headless multiplayer server and authoritative rules runtime.
 - `apps/web-wrapper/` is the browser shell for room creation, invite links, referral flow, invitation acceptance, and launch into the game.
 - `apps/graphical-client/` is the final player-facing game client.
-- `apps/text-client/` is a debugging and testing client, not the main deliverable surface.
 - `deploy/` contains Docker, Compose, staging, and cloud deployment assets.
 - `docs/` contains migration notes, runbooks, architecture, and delivery plans.
 - `tests/` is for cross-app integration and environment verification assets.
@@ -95,7 +93,6 @@ Body line two."`
 - Keep the server authoritative.
 - Preserve deterministic ordering and reconnect safety.
 - Keep tests focused on rules, session flow, auth handoff, and real server behavior.
-- Do not treat the text client as part of the core runtime architecture.
 
 ### `apps/web-wrapper`
 

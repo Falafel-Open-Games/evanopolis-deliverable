@@ -3,9 +3,9 @@
 This document is the canonical RPC contract for the migrated Godot game-server.
 
 The shared RPC surface is implemented in `scripts/headless_rpc.gd`. Server-side
-handling lives in `scripts/server_main.gd`. The text client implementation in
-`scripts/client_main.gd` is useful as a behavioral reference for reconnect,
-sync, and prompt flow, but it is not the source of truth.
+handling lives in `scripts/server_main.gd`. The support client implementation
+in `scripts/client_main.gd` is still useful as a behavioral reference for
+reconnect, sync, and prompt flow, but it is not the source of truth.
 
 ## Transport
 

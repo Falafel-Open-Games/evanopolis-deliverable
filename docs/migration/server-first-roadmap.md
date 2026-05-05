@@ -43,7 +43,6 @@ before client polish.
 
 ## Phase 4: Client Migration
 
-- Bring in the text client only as a debugging tool.
 - Bring in the graphical client only after the server stack is stable enough for focused validation.
 
 ## Non-Goals For This First Migration Step

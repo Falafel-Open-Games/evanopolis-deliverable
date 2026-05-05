@@ -385,14 +385,6 @@ Old-rules assumptions inside it:
 - inspection resolution prompt
 - old snapshot logging fields
 
-4. Text-client README
-
-- apps/text-client/README.md
-
-Status:
-
-- manual testing guide
-- contains old gameplay validation expectations
 
 5. Wrapper planning docs
 
@@ -622,4 +614,3 @@ FILES MOST IMPORTANT TO OPEN FIRST
 - apps/game-server/tests/test_match_inspection.gd
 - apps/graphical-client/docs/design/evanopolis_v1_gameplay_mockup_atacama.html
 - apps/graphical-client/godot/scripts/app/session_check.gd
-

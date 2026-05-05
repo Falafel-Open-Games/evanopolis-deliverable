@@ -21,17 +21,18 @@ explicitly linked from here as an active runbook.
   definitions on first valid join.
 - `apps/web-wrapper` already performs wallet auth, room creation, invite
   lookup, payment submission and verification, and launch-payload storage.
-- `/launch.html` is still only an embedded-client placeholder. There is not yet
-  a real playable graphical client wired into the public wrapper.
-- `apps/graphical-client/` is still a placeholder folder.
-- `apps/text-client/` still depends on `../evanopolis-ui-slice` for manual
-  remote testing.
+- `/launch.html` now hands the saved launch payload into the real graphical
+  client over the wrapper-owned iframe bridge.
+- `apps/graphical-client/` is now a real Godot client with waiting room,
+  gameplay board, action UI, energy allocation, reconnect-aware session state,
+  and a documented devlog trail through `011`.
 
 ## Delivery Gates
 
 Delivery is not done until all of these are true:
 
-- a real client launches into live gameplay from the wrapper
+- a real client launches into live gameplay from the wrapper in both local and
+  staging validation paths
 - game admission is enforced authoritatively, not only by wrapper-side payment
   checks
 - one local path and one staging path can be rerun from documented commands
@@ -49,8 +50,6 @@ above:
 - root `docker-compose.yml` if `just dev` and the current runbook are good
   enough
 - broad cleanup of old planning docs beyond making them clearly archival
-- migration of the text client unless it is the fastest way to validate real
-  gameplay
 - trimming non-essential support code unless it directly reduces delivery risk
 - removal of baked-in demo assets unless they confuse the active path
 
@@ -58,34 +57,16 @@ above:
 
 Work in this order unless a blocker forces a change.
 
-### 1. Replace The Launch Placeholder With A Real Playable Client
-
-Status: launch blocker
-
-Why this matters:
-
-- the wrapper currently hands players into `/launch.html`, but that page still
-  renders a placeholder iframe instead of the real game client
-- without this, the public flow ends before actual gameplay
-
-Done when:
-
-- a migrated client from `../evanopolis-ui-slice/godot` is mounted through the
-  wrapper-owned launch surface
-- the client consumes the current launch payload (`token`, `game_id`,
-  `game_server_url`, `player_address`)
-- a player can enter a live match from the wrapper and reach real gameplay
-
-### 2. Make Paid Admission Authoritative At Join Time
+### 1. Enforce Admission Authoritatively At Join Time
 
 Status: launch blocker
 
 Why this matters:
 
 - the wrapper already performs payment submission and verification
-- the server-side runtime does not yet show authoritative payment or admission
-  enforcement in code
-- wrapper-only gating is bypassable and is not enough for a real launch
+- the public browser path is not enough by itself; the server must reject joins
+  that do not satisfy the trusted admission rule
+- this remains the main missing launch-grade protection in the public stack
 
 Done when:
 
@@ -95,7 +76,7 @@ Done when:
 - automated coverage exists for allowed join, rejected join, and reconnect
   behavior
 
-### 3. Prove The Full Local Two-Player Flow
+### 2. Prove The Full Local Two-Player Browser Flow
 
 Status: critical validation
 
@@ -104,11 +85,11 @@ Done when:
 - the sibling auth repo boots cleanly
 - the public stack boots from documented commands
 - two players can authenticate, create a room, open an invite, complete
-  payment, join the same match, start, and play
+  payment, join the same match, start, launch the graphical client, and play
 - reconnect is validated for at least one player
 - the manual checklist lives in one obvious runbook path
 
-### 4. Prove The Same Flow In Staging
+### 3. Prove The Same Flow In Staging
 
 Status: critical validation
 
@@ -119,6 +100,23 @@ Done when:
 - a real external end-to-end flow works for auth, invite, payment, join,
   gameplay, and reconnect
 - operator-facing validation notes are captured in one obvious runbook path
+
+### 4. Close The Highest-Value Graphical Client Readability Gaps
+
+Status: important but not launch-blocking unless they hide authoritative state
+
+Focus here:
+
+- center-board dice presentation from `rpc_dice_rolled(...)`
+- gameplay feedback that keeps turn results readable without relying on logs
+- only the narrowest polish needed to make real matches understandable during
+  validation
+
+Do not turn this into:
+
+- a broad visual redesign
+- speculative camera or animation work disconnected from match readability
+- client-side rule simulation
 
 ### 5. Fix Only Blocker-Level Bugs Found By Steps 1-4
 
@@ -178,22 +176,19 @@ Done when:
 ### `apps/web-wrapper`
 
 - Current state: auth, room create, invite lookup, payment verification, and
-  launch-payload handoff are in place.
-- Open work: replace the launch placeholder with the real client and rerun full
-  manual validation locally and in staging.
+  launch-payload handoff into the embedded graphical client are in place.
+- Open work: rerun the full manual browser flow locally and in staging against
+  the real exported client, then document the working path.
 
 ### `apps/graphical-client`
 
-- Current state: placeholder only.
-- Open work: this is the highest-impact missing deliverable surface in the
-  repo.
-- Source candidate: `../evanopolis-ui-slice/godot`.
-
-### `apps/text-client`
-
-- Current state: still external to this repo for remote validation.
-- Use it only if it is the fastest path to prove gameplay while the graphical
-  client migration is still underway.
+- Current state: active gameplay client with waiting room, board integration,
+  action controls, energy allocation, reconnect-aware session state, and a web
+  export path used by the wrapper.
+- Open work: finish the highest-value gameplay readability slices and validate
+  the real browser launch/reconnect flow repeatedly.
+- Immediate next slice: center-board dice presentation, tracked in
+  `apps/graphical-client/docs/devlog/011.md`.
 
 ### `deploy/` And Runbooks
 
@@ -208,6 +203,23 @@ These stay out of the critical path unless a launch blocker forces them in:
 
 - add a root `docker-compose.yml`
 - reduce or archive old migration docs further
+- update stale app READMEs and planning docs that still describe the graphical
+  client and `/launch.html` as placeholders
 - document a cleaner operator JWT path for remote testing
 - remove baked-in or demo-era assets once the final client path is stable
 - trim migrated support code in `apps/game-server` once coverage is preserved
+
+## Future Devlog Candidates
+
+These are likely future slices, but they should not enter the active delivery
+sequence until they are promoted into a concrete devlog or become validation
+blockers.
+
+- music and sound
+- camera movement and framing polish
+- win / lose screens
+- add an open source license
+- add a credits page
+- polish the waiting room
+- polish gameplay event feedback
+- make the landing page and room creation pages visually strong

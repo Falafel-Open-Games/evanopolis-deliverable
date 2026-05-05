@@ -100,8 +100,6 @@ The current intended flow is:
   Browser shell around room creation, invitations, and launch flow.
 - [apps/graphical-client/](./apps/graphical-client/README.md)
   Final player-facing client target.
-- [apps/text-client/](./apps/text-client/README.md)
-  Debugging and testing client, not the main deliverable surface.
 - [TODO.md](./TODO.md)
   Active delivery source of truth for launch blockers, sequencing, and parking lot items.
 - [deploy/](./deploy/README.md)
