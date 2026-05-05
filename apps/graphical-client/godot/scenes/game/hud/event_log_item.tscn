@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://12tkpljdw221"]
 
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="1_fd87n"]
-[ext_resource type="FontFile" uid="uid://bu2qutftugb1o" path="res://fonts/Noto_Color_Emoji/NotoColorEmoji-Regular.ttf" id="2_q6ju1"]
+[ext_resource type="FontFile" uid="uid://bu2qutftugb1o" path="res://fonts/Noto_Color_Emoji/NotoColorEmoji-Regular-GameplaySubset.ttf" id="2_q6ju1"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q6ju1"]
 bg_color = Color(0.6, 0.35515118, 0.26904127, 1)

@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://dn0dknmykby1v" path="res://scripts/game/hud/event_log_panel.gd" id="1_bd4m2"]
 [ext_resource type="PackedScene" uid="uid://dxfoynfa302k7" path="res://scenes/app/panel_blurried_bg.tscn" id="2_rbb66"]
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="3_qyssl"]
-[ext_resource type="FontFile" uid="uid://48vhvynb4wuw" path="res://fonts/Noto_Emoji/static/NotoEmoji-Light.ttf" id="4_2gcyc"]
+[ext_resource type="FontFile" uid="uid://48vhvynb4wuw" path="res://fonts/Noto_Emoji/static/NotoEmoji-Light-GameplaySubset.ttf" id="4_2gcyc"]
 [ext_resource type="PackedScene" uid="uid://12tkpljdw221" path="res://scenes/game/hud/event_log_item.tscn" id="5_7t5kf"]
 
 [node name="EventLog" type="MarginContainer" unique_id=1558601936]

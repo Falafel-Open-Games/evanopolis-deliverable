@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bgneirixn2gn3" path="res://scripts/game/hud/players_list_panel.gd" id="1_7o14m"]
 [ext_resource type="PackedScene" uid="uid://dxfoynfa302k7" path="res://scenes/app/panel_blurried_bg.tscn" id="2_ekxnl"]
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="3_ddofn"]
-[ext_resource type="FontFile" uid="uid://48vhvynb4wuw" path="res://fonts/Noto_Emoji/static/NotoEmoji-Light.ttf" id="4_5siil"]
+[ext_resource type="FontFile" uid="uid://48vhvynb4wuw" path="res://fonts/Noto_Emoji/static/NotoEmoji-Light-GameplaySubset.ttf" id="4_5siil"]
 [ext_resource type="PackedScene" uid="uid://fgk2cmer2rch" path="res://scenes/game/hud/player_list_card.tscn" id="5_a6xho"]
 
 [node name="PlayersList" type="MarginContainer" unique_id=1938680914]
