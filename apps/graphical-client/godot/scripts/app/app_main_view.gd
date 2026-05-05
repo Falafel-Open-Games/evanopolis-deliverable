@@ -274,6 +274,11 @@ func _sync_gameplay_turn_info() -> void:
         int(turn_state.get("current_player_index", -1))
     )
     _game_root.call(
+        "set_dice_values",
+        int(turn_state.get("die_1", 6)),
+        int(turn_state.get("die_2", 6))
+    )
+    _game_root.call(
         "set_turn_action_state",
         bool(turn_state.get("can_roll_dice", false)),
         bool(turn_state.get("can_end_turn", false)),

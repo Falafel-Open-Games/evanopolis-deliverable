@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://ddnp1ai0xltso"]
+
+[ext_resource type="PackedScene" uid="uid://bgm40cickia63" path="res://assets/D6.glb" id="1_ykcht"]
+
+[node name="D6" unique_id=1922615818 instance=ExtResource("1_ykcht")]

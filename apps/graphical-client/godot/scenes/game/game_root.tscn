@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://cpmxp51rnmgsr" path="res://scenes/app/main_logo.tscn" id="3_rx5uh"]
 [ext_resource type="PackedScene" uid="uid://bs4isqdfffe5o" path="res://scenes/game/pawns/pawns.tscn" id="4_0krdv"]
 [ext_resource type="PackedScene" uid="uid://b3oipirndn8w0" path="res://scenes/game/tiles/bottom_tiles.tscn" id="4_ndy65"]
+[ext_resource type="PackedScene" uid="uid://ddnp1ai0xltso" path="res://scenes/game/d_6.tscn" id="5_a6cr8"]
 [ext_resource type="PackedScene" uid="uid://5hkh50ulk56t" path="res://scenes/game/hud/players_list.tscn" id="7_k63du"]
 [ext_resource type="PackedScene" uid="uid://do5yn138o8j4l" path="res://scenes/game/hud/event_log.tscn" id="8_cylga"]
 [ext_resource type="PackedScene" uid="uid://b3sdtqdh2syty" path="res://scenes/game/hud/energy_allocation.tscn" id="11_a6cr8"]
@@ -87,6 +88,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.9350533)
 [node name="BottomTiles" parent="BoardRoot" unique_id=1131267383 instance=ExtResource("4_ndy65")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.935)
 visible = false
+
+[node name="Dices" type="Node3D" parent="BoardRoot" unique_id=575083848]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06374994, -1.935)
+
+[node name="D6A" parent="BoardRoot/Dices" unique_id=1922615818 instance=ExtResource("5_a6cr8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0, 0)
+
+[node name="D6B" parent="BoardRoot/Dices" unique_id=428291115 instance=ExtResource("5_a6cr8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0, 0)
 
 [node name="PawnRoot" type="Node3D" parent="." unique_id=979076114]
 

@@ -105,6 +105,8 @@ var _pending_action_type: String = ""
 var _pending_action_tile_index: int = -1
 var _pending_property_action: Dictionary = { }
 var _has_rolled_current_turn: bool = false
+var _last_die_1: int = 6
+var _last_die_2: int = 6
 var _roll_request_pending: bool = false
 var _buy_property_request_pending: bool = false
 var _pay_toll_request_pending: bool = false
@@ -158,6 +160,8 @@ func get_gameplay_turn_state() -> Dictionary:
         "current_player_name": current_player_name,
         "is_local_turn": _current_turn_player_index == _local_player_index,
         "is_local_winner": _winner_index >= 0 and _winner_index == _local_player_index,
+        "die_1": _last_die_1,
+        "die_2": _last_die_2,
         "can_roll_dice": can_request_roll_dice(),
         "can_buy_property": can_request_buy_property(),
         "can_end_turn": can_request_end_turn(),
@@ -826,6 +830,8 @@ func rpc_turn_started(_seq: int, player_index: int, turn_number: int, _cycle: in
 func rpc_dice_rolled(_seq: int, die_1: int, die_2: int, total: int) -> void:
     _roll_request_pending = false
     _has_rolled_current_turn = true
+    _last_die_1 = die_1
+    _last_die_2 = die_2
     _append_gameplay_event_log_message(
         "%s rolled %d + %d = %d" % [
             _event_log_player_name(_current_turn_player_index),

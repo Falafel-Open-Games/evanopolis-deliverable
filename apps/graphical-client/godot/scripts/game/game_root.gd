@@ -8,6 +8,14 @@ const EventLogPanelView = preload("res://scripts/game/hud/event_log_panel.gd")
 const EnergyAllocationView = preload("res://scripts/game/hud/energy_allocation.gd")
 const TurnActionsView = preload("res://scripts/game/hud/turn_actions.gd")
 const DEBUG_GAMEPLAY_ARGUMENT: String = "--debug"
+const DIE_FACE_NORMALS: Dictionary = {
+    1: Vector3.DOWN,
+    2: Vector3.RIGHT,
+    3: Vector3.BACK,
+    4: Vector3.FORWARD,
+    5: Vector3.LEFT,
+    6: Vector3.UP,
+}
 
 signal roll_dice_requested()
 signal end_turn_requested()
@@ -18,6 +26,9 @@ signal energy_allocation_requested(sell_percent: int)
 @onready var board_root: Node3D = get_node(^"BoardRoot")
 @onready var top_tiles_root: Node3D = get_node(^"BoardRoot/tiles")
 @onready var bottom_tiles_root: Node3D = get_node(^"BoardRoot/BottomTiles")
+@onready var dice_root: Node3D = get_node(^"BoardRoot/Dices")
+@onready var die_a: Node3D = get_node(^"BoardRoot/Dices/D6A")
+@onready var die_b: Node3D = get_node(^"BoardRoot/Dices/D6B")
 @onready var pawn_root: Node3D = get_node(^"PawnRoot")
 @onready var pawn_collection: PawnCollectionView = get_node(^"PawnRoot/pawns")
 @onready var hud_root: CanvasLayer = get_node(^"HudRoot")
@@ -40,6 +51,9 @@ func _ready() -> void:
     assert(board_root)
     assert(top_tiles_root)
     assert(bottom_tiles_root)
+    assert(dice_root)
+    assert(die_a)
+    assert(die_b)
     assert(pawn_root)
     assert(pawn_collection)
     assert(hud_root)
@@ -59,6 +73,7 @@ func _ready() -> void:
     energy_allocation.allocation_requested.connect(_on_energy_allocation_requested)
     set_turn_action_state(false, false, false, { })
     set_energy_allocation_state(50, false, 0.0, 0.0, false)
+    set_dice_values(6, 6)
 
 func set_local_player_identity(icon_id: int, color_id: int) -> void:
     if not is_node_ready():
@@ -72,6 +87,13 @@ func set_turn_info(turn_number: int, player_name: String, is_local_turn: bool, c
         return
     top_bar.set_turn_info(turn_number, player_name, is_local_turn)
     players_list_panel.set_current_turn_player_index(current_player_index)
+
+func set_dice_values(die_1: int, die_2: int) -> void:
+    if not is_node_ready():
+        call_deferred("set_dice_values", die_1, die_2)
+        return
+    _set_die_face_up(die_a, die_1)
+    _set_die_face_up(die_b, die_2)
 
 func set_player_states(player_states: Array) -> void:
     if not is_node_ready():
@@ -238,6 +260,21 @@ func _has_debug_argument() -> bool:
 
 func _on_energy_allocation_requested(sell_percent: int) -> void:
     energy_allocation_requested.emit(sell_percent)
+
+func _set_die_face_up(die_node: Node3D, face_value: int) -> void:
+    assert(die_node != null)
+    assert(DIE_FACE_NORMALS.has(face_value))
+    die_node.basis = _basis_for_face_up(face_value)
+
+func _basis_for_face_up(face_value: int) -> Basis:
+    assert(DIE_FACE_NORMALS.has(face_value))
+    var face_normal: Vector3 = DIE_FACE_NORMALS[face_value]
+    if face_normal == Vector3.UP:
+        return Basis.IDENTITY
+    if face_normal == Vector3.DOWN:
+        return Basis(Vector3.FORWARD, PI)
+    var rotation_axis: Vector3 = face_normal.cross(Vector3.UP).normalized()
+    return Basis(rotation_axis, PI * 0.5)
 
 func _capture_tile_stack_nodes() -> void:
     _top_tile_nodes_by_index = _resolve_tile_nodes_by_index(top_tiles_root, "TileInstance")
