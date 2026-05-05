@@ -30,7 +30,7 @@ const WaitingRoomStateModel = preload("res://scripts/app/models/waiting_room_sta
 const WaitingRoomSlotModel = preload("res://scripts/app/models/waiting_room_slot.gd")
 const SessionTransport = preload("res://scripts/app/session_transport.gd")
 
-const DEFAULT_IDENTITY_ICON_ID: int = 11
+const DEFAULT_IDENTITY_ICON_ID: int = 0
 const DEFAULT_IDENTITY_COLOR_ID: int = 0
 
 signal session_state_changed(state: StatusCardState)

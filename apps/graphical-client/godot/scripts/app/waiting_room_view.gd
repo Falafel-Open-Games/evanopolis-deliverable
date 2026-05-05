@@ -4,13 +4,14 @@ const WaitingRoomState = preload("res://scripts/app/models/waiting_room_state.gd
 const WaitingRoomSlot = preload("res://scripts/app/models/waiting_room_slot.gd")
 const WaitingRoomSeatScene = preload("res://scenes/app/waiting_room_seat.tscn")
 
-const DEFAULT_IDENTITY_ICON_FRAME: int = 11
+const DEFAULT_IDENTITY_ICON_FRAME: int = 0
 const DEFAULT_IDENTITY_COLOR_ID: int = 0
 
 signal ready_requested
 signal identity_save_requested(display_name: String, icon_id: int, color_id: int)
 
 var _waiting_room_state: WaitingRoomState = null
+var _ready_after_identity_save: bool = false
 
 @export var waiting_room_title_label: Label
 @export var ready_button: Button
@@ -51,6 +52,10 @@ func set_identity_save_enabled(is_enabled: bool) -> void:
     identity_editor_ui.set_save_enabled(is_enabled)
 
 func _on_ready_button_pressed() -> void:
+    if identity_editor_ui.has_unsaved_identity_changes():
+        if identity_editor_ui.submit_identity():
+            _ready_after_identity_save = true
+        return
     ready_requested.emit()
 
 func _on_identity_save_requested(display_name: String, icon_id: int, color_id: int) -> void:
@@ -61,6 +66,7 @@ func _configure_static_copy() -> void:
     pass
 
 func _show_placeholder() -> void:
+    _ready_after_identity_save = false
     waiting_room_title_label.text = "Preparing launch handoff"
     identity_card.set_identity("Player", "No player id yet", DEFAULT_IDENTITY_ICON_FRAME, DEFAULT_IDENTITY_COLOR_ID)
     identity_editor_ui.set_local_player_id("")
@@ -96,11 +102,18 @@ func _render_waiting_room() -> void:
     ]
 
     if _waiting_room_state.local_player_ready:
+        _ready_after_identity_save = false
         ready_button.text = "Ready Locked In"
     elif _waiting_room_state.ready_request_pending:
         ready_button.text = "Sending Ready…"
+    elif _ready_after_identity_save:
+        ready_button.text = "Saving Identity…"
     else:
         ready_button.text = "Ready"
+
+    if _should_send_ready_after_identity_save():
+        _ready_after_identity_save = false
+        ready_requested.emit()
 
     _rebuild_seats()
 
@@ -139,3 +152,14 @@ func _used_color_ids_for_other_players() -> Array[int]:
             continue
         used_color_ids.append(slot.color_id)
     return used_color_ids
+
+func _should_send_ready_after_identity_save() -> bool:
+    if not _ready_after_identity_save:
+        return false
+    if _waiting_room_state == null:
+        return false
+    if _waiting_room_state.local_player_ready:
+        return false
+    if _waiting_room_state.ready_request_pending:
+        return false
+    return not identity_editor_ui.has_unsaved_identity_changes()

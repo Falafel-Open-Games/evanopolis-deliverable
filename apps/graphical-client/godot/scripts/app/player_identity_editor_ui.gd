@@ -42,6 +42,30 @@ var _icon_choice_controls: Array[Control] = []
 var _icon_choice_texture_rects: Array[TextureRect] = []
 var _icon_scroll_index: int = 0
 
+func focus_display_name() -> void:
+    if not is_node_ready():
+        call_deferred("focus_display_name")
+        return
+    display_name_line_edit.grab_focus()
+    display_name_line_edit.select_all()
+    display_name_line_edit.caret_column = display_name_line_edit.text.length()
+
+func has_unsaved_identity_changes() -> bool:
+    return _has_unsaved_changes()
+
+func can_submit_identity() -> bool:
+    return not display_name_line_edit.text.strip_edges().is_empty()
+
+func submit_identity() -> bool:
+    if not can_submit_identity():
+        return false
+    identity_save_requested.emit(
+        display_name_line_edit.text.strip_edges(),
+        _selected_icon_id,
+        color_picker.get_selected_color_id()
+    )
+    return true
+
 func _ready() -> void:
     assert(preview_card)
     assert(display_name_line_edit)
@@ -122,10 +146,7 @@ func set_unavailable_color_ids(color_ids: Array) -> void:
     color_picker.set_disabled_color_ids(color_ids)
 
 func _on_save_button_pressed() -> void:
-    var display_name: String = display_name_line_edit.text.strip_edges()
-    if display_name.is_empty():
-        return
-    identity_save_requested.emit(display_name, _selected_icon_id, color_picker.get_selected_color_id())
+    submit_identity()
 
 func _emit_identity_draft() -> void:
     var display_name: String = display_name_line_edit.text.strip_edges()

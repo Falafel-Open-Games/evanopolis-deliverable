@@ -4,6 +4,7 @@ extends Node
 @export var identity_edit_button: Button
 @export var middle_column_panel: Panel
 @export var middle_column_close_button: Button
+@export var identity_editor_ui: PlayerIdentityEditorUI
 
 const TRANSITION_SECONDS: float = 0.24
 
@@ -17,6 +18,7 @@ func _ready() -> void:
     assert(identity_edit_button)
     assert(middle_column_panel)
     assert(middle_column_close_button)
+    assert(identity_editor_ui)
 
     _expanded_info_width = collapsible_info_column.custom_minimum_size.x
     if _expanded_info_width <= 0.0:
@@ -77,6 +79,9 @@ func _on_transition_finished(is_identity_editor_open: bool) -> void:
     if not _is_identity_edit_open:
         middle_column_panel.visible = false
         _set_middle_column_alpha(0.0)
+        return
+
+    identity_editor_ui.focus_display_name()
 
 func _set_info_column_width(width_value: float) -> void:
     var current_minimum_size: Vector2 = collapsible_info_column.custom_minimum_size

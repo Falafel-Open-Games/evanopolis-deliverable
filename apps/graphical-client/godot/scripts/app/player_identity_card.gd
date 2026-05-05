@@ -11,7 +11,7 @@ const PLAYER_REPRESENTATION_COLORS: Array[Color] = [
     Color(0.556863, 0.141176, 0.666667, 1.0),
     Color(1.0, 0.839216, 0.0, 1.0),
 ]
-const DEFAULT_ICON_FRAME: int = 11
+const DEFAULT_ICON_FRAME: int = 0
 const DEFAULT_COLOR_ID: int = 0
 
 @export var avatar_box: AvatarBox

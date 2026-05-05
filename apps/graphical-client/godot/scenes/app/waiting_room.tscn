@@ -25,12 +25,13 @@ room_facts_label = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPane
 seats_vbox = NodePath("SafeMargin/RootVBox/MainRow/RosterColumn/RosterPanelBorder/RosterMargin/RosterVBox/SeatsVBox")
 identity_editor_ui = NodePath("SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder/PlayerIdentityEditorUI")
 
-[node name="WaitingRoomLayoutController" type="Node" parent="." unique_id=1560968820 node_paths=PackedStringArray("collapsible_info_column", "identity_edit_button", "middle_column_panel", "middle_column_close_button")]
+[node name="WaitingRoomLayoutController" type="Node" parent="." unique_id=1560968820 node_paths=PackedStringArray("collapsible_info_column", "identity_edit_button", "middle_column_panel", "middle_column_close_button", "identity_editor_ui")]
 script = ExtResource("1_waiting_room_layout_controller")
 collapsible_info_column = NodePath("../SafeMargin/RootVBox/MainRow/InfoColumn")
 identity_edit_button = NodePath("../SafeMargin/RootVBox/MainRow/InfoColumn/IdentityPanelBorder/IdentityMargin/IdentityVBox/VBoxContainer/EditIdentityButton")
 middle_column_panel = NodePath("../SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder")
 middle_column_close_button = NodePath("../SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder/PlayerIdentityEditorUI/vbox/HBoxContainer2/CloseButton")
+identity_editor_ui = NodePath("../SafeMargin/RootVBox/MainRow/MiddleColumn/EditIdentityPanelBorder/PlayerIdentityEditorUI")
 
 [node name="SafeMargin" type="MarginContainer" parent="." unique_id=485763566]
 layout_mode = 1
