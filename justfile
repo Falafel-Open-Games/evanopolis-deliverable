@@ -9,7 +9,7 @@ test:
   cd apps/rooms-api && npm test
   cd apps/game-server && godot --headless --path . --log-file /tmp/evanopolis-game-server-gut.log -s addons/gut/gut_cmdln.gd -gconfig=res://.gutconfig.json -gexit
 
-dev:
+dev *args='':
   #!/usr/bin/env bash
   set -euo pipefail
 
@@ -17,7 +17,23 @@ dev:
   rooms_api_base_url="${ROOMS_API_BASE_URL:-http://127.0.0.1:3001}"
   rooms_api_lookup_template="${ROOMS_API_LOOKUP_TEMPLATE:-/v0/rooms/%s}"
   game_server_port="${GAME_SERVER_PORT:-9010}"
+  game_server_docker_image="${GAME_SERVER_DOCKER_IMAGE:-ghcr.io/falafel-open-games/evanopolis-game-server:latest}"
+  use_docker=false
   declare -a pids=()
+  declare -a dev_args=({{args}})
+
+  for arg in "${dev_args[@]}"; do
+    case "$arg" in
+      --docker)
+        use_docker=true
+        ;;
+      *)
+        printf 'Unknown argument for `just dev`: %s\n' "$arg" >&2
+        printf 'Usage: just dev [--docker]\n' >&2
+        exit 2
+        ;;
+    esac
+  done
 
   ensure_node_app_deps() {
     local app_path="$1"
@@ -69,27 +85,28 @@ dev:
 
   trap cleanup EXIT INT TERM
 
-  if command -v godot >/dev/null 2>&1; then
+  if [ "$use_docker" = true ]; then
+    if ! command -v docker >/dev/null 2>&1; then
+      printf 'Missing dependency: install `docker` to run apps/game-server with `just dev --docker`.\n' >&2
+      exit 127
+    fi
+
+    game_server_runner=docker
+
+    printf 'Refreshing evanopolis-game-server Docker image from %s because `--docker` was requested.\n' "$game_server_docker_image"
+    docker pull "$game_server_docker_image"
+    docker image rm -f evanopolis-game-server >/dev/null 2>&1 || true
+    docker tag "$game_server_docker_image" evanopolis-game-server
+  elif command -v godot >/dev/null 2>&1; then
     printf 'Preparing apps/game-server with a headless Godot import...\n'
     (
       cd apps/game-server
       just import
     )
     game_server_runner=local
-  elif command -v docker >/dev/null 2>&1; then
-    game_server_runner=docker
-
-    if ! docker image inspect evanopolis-game-server >/dev/null 2>&1; then
-      printf 'Local godot not found; building evanopolis-game-server Docker image...\n'
-      (
-        cd apps/game-server
-        just docker-build
-      )
-    else
-      printf 'Local godot not found; using existing evanopolis-game-server Docker image.\n'
-    fi
   else
-    printf 'Missing dependency: install `godot` or `docker` to run apps/game-server.\n' >&2
+    printf 'Missing dependency: install `godot` to run apps/game-server locally.\n' >&2
+    printf 'If you want the container path explicitly, run `just dev --docker`.\n' >&2
     exit 127
   fi
 
@@ -148,7 +165,7 @@ dev:
   printf '\nAuth must already be running at %s.\n' "$auth_base_url"
   printf 'Open http://127.0.0.1:5173/ when Vite is ready.\n'
   if [ "$game_server_runner" = "docker" ]; then
-    printf 'Game server is running from Docker because local `godot` was not found.\n'
+    printf 'Game server is running from Docker because `--docker` was requested.\n'
   fi
   printf 'Press Ctrl-C to stop rooms-api, game-server, and web-wrapper together.\n\n'
 
