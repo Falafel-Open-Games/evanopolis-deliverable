@@ -29,6 +29,8 @@ var next_event_seq: int = 1
 var board_state: Dictionary = { }
 var pending_action: Dictionary = { }
 var has_rolled_current_turn: bool = false
+var last_die_1: int = 6
+var last_die_2: int = 6
 var require_explicit_ready: bool = false
 var next_landing_seq: int = 1
 
@@ -239,6 +241,8 @@ func rpc_roll_dice(game_id: String, player_id: String) -> void:
     var die_1: int = rng.randi_range(1, 6)
     var die_2: int = rng.randi_range(1, 6)
     var total: int = die_1 + die_2
+    last_die_1 = die_1
+    last_die_2 = die_2
     _broadcast("rpc_dice_rolled", [die_1, die_2, total])
     _server_move_pawn(total)
     has_rolled_current_turn = true
@@ -604,6 +608,8 @@ func build_state_snapshot() -> Dictionary:
         "players": players_snapshot,
         "pending_action": pending_action.duplicate(true),
         "has_rolled_current_turn": has_rolled_current_turn,
+        "last_die_1": last_die_1,
+        "last_die_2": last_die_2,
         "ready_count": _ready_player_count(),
         "next_landing_seq": next_landing_seq,
     }
@@ -634,6 +640,8 @@ func restore_from_snapshot(snapshot: Dictionary) -> String:
     board_state = snapshot_board_state.duplicate(true)
     pending_action = snapshot.get("pending_action", { }).duplicate(true)
     has_rolled_current_turn = bool(snapshot.get("has_rolled_current_turn", false))
+    last_die_1 = int(snapshot.get("last_die_1", 6))
+    last_die_2 = int(snapshot.get("last_die_2", 6))
     next_event_seq = int(snapshot.get("last_sequence", 0)) + 1
     if next_event_seq < 1:
         next_event_seq = 1

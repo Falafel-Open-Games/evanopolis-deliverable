@@ -236,6 +236,23 @@ func test_sync_snapshot_reflects_moved_pawn_state() -> void:
     assert_eq(int(player_zero.get("position", 0)), 0, "snapshot position reflects moved pawn")
 
 
+func test_sync_snapshot_includes_last_dice_roll() -> void:
+    var config: Config = Config.from_values("demo_002", 2, 24)
+    var server: HeadlessServer = HeadlessServer.new()
+    var game_match = server.create_match(config)
+    server.authorize_peer(11, "alice")
+    server.authorize_peer(12, "bob")
+    assert_eq(str(server.register_remote_client("demo_002", "alice", 11, null).get("reason", "")), "", "alice joins")
+    assert_eq(str(server.register_remote_client("demo_002", "bob", 12, null).get("reason", "")), "", "bob joins")
+
+    assert_eq(str(server.rpc_roll_dice("demo_002", "alice", 11).get("reason", "")), "", "roll succeeds")
+    var sync_result: Dictionary = server.rpc_sync_request("demo_002", "alice", 11)
+    assert_eq(str(sync_result.get("reason", "")), "", "sync succeeds")
+    var snapshot: Dictionary = sync_result.get("snapshot", { })
+    assert_eq(int(snapshot.get("last_die_1", -1)), game_match.last_die_1, "snapshot includes first die")
+    assert_eq(int(snapshot.get("last_die_2", -1)), game_match.last_die_2, "snapshot includes second die")
+
+
 func test_reconnect_sync_includes_authoritative_player_balance_changes() -> void:
     var config: Config = Config.from_values("demo_002", 2, 24)
     var server: HeadlessServer = HeadlessServer.new()

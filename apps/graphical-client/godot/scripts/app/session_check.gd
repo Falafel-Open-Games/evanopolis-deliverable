@@ -629,6 +629,8 @@ func rpc_state_snapshot(_seq: int, snapshot: Dictionary) -> void:
     _current_turn_number = int(snapshot.get("turn_number", _current_turn_number))
     _current_turn_player_index = int(snapshot.get("current_player_index", _current_turn_player_index))
     _has_rolled_current_turn = bool(snapshot.get("has_rolled_current_turn", false))
+    _last_die_1 = int(snapshot.get("last_die_1", 6))
+    _last_die_2 = int(snapshot.get("last_die_2", 6))
     _buy_property_request_pending = false
     _pay_toll_request_pending = false
     _pending_action_type = ""
