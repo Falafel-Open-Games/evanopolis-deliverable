@@ -41,9 +41,8 @@ size = Vector3(10, 1, 10)
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_agidj"]
 albedo_color = Color(0.34, 0.21958335, 0.05099999, 1)
 
-[node name="GameRoot" type="Node3D" unique_id=408025639 node_paths=PackedStringArray("energy_allocation", "top_bar", "players_list_panel", "event_log_panel", "turn_actions")]
+[node name="GameRoot" type="Node3D" unique_id=408025639 node_paths=PackedStringArray("top_bar", "players_list_panel", "event_log_panel", "turn_actions")]
 script = ExtResource("1_game_root")
-energy_allocation = NodePath("HudRoot/SafeMargin/VBoxContainer/HBoxContainer/VBoxContainer/EnergyAllocation")
 top_bar = NodePath("HudRoot/SafeMargin/VBoxContainer/TopBar")
 players_list_panel = NodePath("HudRoot/SafeMargin/VBoxContainer/HBoxContainer/GameInfo/PlayersList")
 event_log_panel = NodePath("HudRoot/SafeMargin/VBoxContainer/HBoxContainer/GameInfo/EventLog")
@@ -106,6 +105,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.935)
 [node name="HudRoot" type="CanvasLayer" parent="." unique_id=1810049097]
 
 [node name="InitialLogo" parent="HudRoot" unique_id=2033182455 instance=ExtResource("3_rx5uh")]
+visible = false
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
@@ -159,22 +159,16 @@ layout_mode = 2
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="EnergyAllocation" parent="HudRoot/SafeMargin/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=2051949682 instance=ExtResource("11_a6cr8")]
+[node name="EnergyAllocation" parent="HudRoot/SafeMargin" unique_id=2051949682 instance=ExtResource("11_a6cr8")]
 layout_mode = 2
-size_flags_horizontal = 1
-size_flags_vertical = 10
+size_flags_vertical = 0
+theme_override_constants/margin_top = 64
 
-[node name="CentralArea" type="MarginContainer" parent="HudRoot/SafeMargin" unique_id=176550503]
-custom_minimum_size = Vector2(220, 0)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 8
-theme_override_constants/margin_top = 67
-
-[node name="HudIntroController" type="Node" parent="HudRoot" unique_id=1251668087 node_paths=PackedStringArray("top_bar", "players_list", "event_log", "turn_actions", "initial_logo")]
+[node name="HudIntroController" type="Node" parent="HudRoot" unique_id=1251668087 node_paths=PackedStringArray("top_bar", "players_list", "event_log", "turn_actions", "energy_allocation", "initial_logo")]
 script = ExtResource("2_8k27q")
 top_bar = NodePath("../SafeMargin/VBoxContainer/TopBar")
 players_list = NodePath("../SafeMargin/VBoxContainer/HBoxContainer/GameInfo/PlayersList")
 event_log = NodePath("../SafeMargin/VBoxContainer/HBoxContainer/GameInfo/EventLog")
 turn_actions = NodePath("../SafeMargin/VBoxContainer/HBoxContainer/VBoxContainer/TurnActions")
+energy_allocation = NodePath("../SafeMargin/EnergyAllocation")
 initial_logo = NodePath("../InitialLogo")

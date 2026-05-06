@@ -291,7 +291,14 @@ func _sync_gameplay_turn_info() -> void:
         bool(turn_state.get("can_set_energy_allocation", false)),
         float(turn_state.get("sell_100_fiat_total", 0.0)),
         float(turn_state.get("mine_100_btc_total", 0.0)),
-        bool(turn_state.get("energy_allocation_request_pending", false))
+        bool(turn_state.get("energy_allocation_request_pending", false)),
+        (
+            not bool(turn_state.get("is_local_turn", false))
+            and (
+                float(turn_state.get("sell_100_fiat_total", 0.0)) > 0.0
+                or float(turn_state.get("mine_100_btc_total", 0.0)) > 0.0
+            )
+        )
     )
     _debug_print_gameplay_state("turn_info")
 

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://b3sdtqdh2syty"]
 
-[ext_resource type="Script" path="res://scripts/game/hud/energy_allocation.gd" id="1_1t2l8"]
+[ext_resource type="Script" uid="uid://bis81aki3bmah" path="res://scripts/game/hud/energy_allocation.gd" id="1_1t2l8"]
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="1_e1hnk"]
 [ext_resource type="PackedScene" uid="uid://dxfoynfa302k7" path="res://scenes/app/panel_blurried_bg.tscn" id="2_cjbq1"]
 
@@ -16,16 +16,16 @@ bg_color = Color(0.11764706, 0.6627451, 0.54901963, 1)
 bg_color = Color(0.11764706, 0.6627451, 0.54901963, 1)
 
 [node name="EnergyAllocation" type="MarginContainer" unique_id=2051949682]
-script = ExtResource("1_1t2l8")
 size_flags_horizontal = 4
 size_flags_vertical = 4
+script = ExtResource("1_1t2l8")
+
+[node name="PanelBlurriedBg" parent="." unique_id=1137042040 instance=ExtResource("2_cjbq1")]
+layout_mode = 2
 
 [node name="Panel" type="Panel" parent="." unique_id=568257413]
 layout_mode = 2
 theme = ExtResource("1_e1hnk")
-
-[node name="PanelBlurriedBg" parent="." unique_id=1137042040 instance=ExtResource("2_cjbq1")]
-layout_mode = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=1709196722]
 layout_mode = 2

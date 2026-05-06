@@ -646,7 +646,7 @@ func rpc_state_snapshot(_seq: int, snapshot: Dictionary) -> void:
     _apply_player_positions_snapshot(snapshot)
     _apply_waiting_room_snapshot(snapshot)
     _gameplay_event_log_messages.clear()
-    _append_gameplay_event_log_message("🔄 Game state updated from snapshot")
+    _append_gameplay_event_log_message("Game state sincronized")
     if _match_has_finished and int(snapshot.get("winner_index", -1)) >= 0:
         _append_gameplay_snapshot_winner_message(
             int(snapshot.get("winner_index", -1)),
@@ -794,6 +794,7 @@ func rpc_game_ended(_seq: int, winner_index: int, _reason: String, _btc_goal: fl
 @rpc("authority")
 func rpc_board_state(_seq: int, board: Dictionary) -> void:
     _board_state = board.duplicate(true)
+    _emit_gameplay_player_states()
     _emit_gameplay_tile_ownership()
     _emit_gameplay_turn_state()
 

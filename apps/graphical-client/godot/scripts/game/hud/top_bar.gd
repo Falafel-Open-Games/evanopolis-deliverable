@@ -9,23 +9,23 @@ const OTHER_TURN_COLOR: Color = Color(0.980392, 0.94902, 0.870588, 1.0)
 
 @export var avatar_box: AvatarBoxControl
 @onready var turn_label: Label = get_node(^"MarginContainer/HBoxContainer/VBoxContainer/TurnLabel")
-@onready var game_goal_value_label: Label = get_node(^"MarginContainer/HBoxContainer/GameGoal/MarginContainer/VBoxContainer/HBoxContainer/Label")
-@onready var game_goal_progress_bar: ProgressBar = get_node(^"MarginContainer/HBoxContainer/GameGoal/MarginContainer/ProgressBar")
+@onready var bitcoin_value_label: Label = get_node(^"MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer3/VBoxContainer2/BitcoinValue")
+@onready var bitcoin_progress_bar: ProgressBar = get_node(^"MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer3/VBoxContainer2/ProgressBar")
 @onready var fiat_value_label: Label = get_node(^"MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer/VBoxContainer/FiatValue")
-@onready var energy_value_label: Label = get_node(^"MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer2/VBoxContainer2/EnergyValue")
+@onready var energy_value_label: Label = get_node(^"MarginContainer/HBoxContainer/GameGoal/MarginContainer/VBoxContainer/Label")
 
 func _ready() -> void:
     assert(avatar_box)
     assert(turn_label)
-    assert(game_goal_value_label)
-    assert(game_goal_progress_bar)
+    assert(bitcoin_value_label)
+    assert(bitcoin_progress_bar)
     assert(fiat_value_label)
     assert(energy_value_label)
-    game_goal_value_label.text = "₿ %.1f/%.0f" % [
+    bitcoin_value_label.text = "₿ %.1f/%.0f" % [
         GameEconomyConfigModel.INITIAL_BITCOIN_BALANCE,
         GameEconomyConfigModel.BITCOIN_GOAL_TO_WIN,
     ]
-    game_goal_progress_bar.max_value = GameEconomyConfigModel.BITCOIN_GOAL_TO_WIN
+    bitcoin_progress_bar.max_value = GameEconomyConfigModel.BITCOIN_GOAL_TO_WIN
     fiat_value_label.text = "$ %.2f" % GameEconomyConfigModel.INITIAL_FIAT_BALANCE
     energy_value_label.text = "⚡ %d" % GameEconomyConfigModel.INITIAL_ENERGY_BALANCE
 
@@ -36,11 +36,11 @@ func set_local_player_identity(icon_id: int, color_id: int) -> void:
 func set_local_player_resources(fiat_balance: float, energy_amount: int, bitcoin_balance: float) -> void:
     fiat_value_label.text = "$ %.2f" % fiat_balance
     energy_value_label.text = "⚡ %d" % energy_amount
-    game_goal_value_label.text = "₿ %.1f/%.0f" % [
+    bitcoin_value_label.text = "₿ %.1f/%.0f" % [
         bitcoin_balance,
         GameEconomyConfigModel.BITCOIN_GOAL_TO_WIN,
     ]
-    game_goal_progress_bar.value = bitcoin_balance
+    bitcoin_progress_bar.value = bitcoin_balance
 
 func set_turn_info(turn_number: int, player_name: String, is_local_turn: bool) -> void:
     var resolved_turn_number: int = max(1, turn_number)

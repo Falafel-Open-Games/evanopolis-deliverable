@@ -13,22 +13,25 @@ var _current_mine_100_btc_total: float = 0.0
 var _accepted_sell_percent: int = 50
 var _can_submit_allocation: bool = false
 var _ignore_slider_value_changed: bool = false
+var _should_show: bool = false
 
 func _ready() -> void:
     assert(sell_vs_mine_slider)
     assert(submit_allocation_button)
     assert(energy_preview_label)
     assert(mine_preview_label)
+    visible = false
     sell_vs_mine_slider.value_changed.connect(_on_sell_vs_mine_slider_value_changed)
     submit_allocation_button.pressed.connect(_on_submit_allocation_button_pressed)
-    set_energy_allocation_state(50, false, 0.0, 0.0, false)
+    set_energy_allocation_state(50, false, 0.0, 0.0, false, false)
 
 func set_energy_allocation_state(
     sell_percent: int,
     can_edit: bool,
     sell_100_fiat_total: float,
     mine_100_btc_total: float,
-    is_request_pending: bool
+    is_request_pending: bool,
+    should_show: bool
 ) -> void:
     if not is_node_ready():
         call_deferred(
@@ -37,9 +40,12 @@ func set_energy_allocation_state(
             can_edit,
             sell_100_fiat_total,
             mine_100_btc_total,
-            is_request_pending
+            is_request_pending,
+            should_show
         )
         return
+    _should_show = should_show
+    visible = should_show
     _accepted_sell_percent = clampi(sell_percent, 0, 100)
     _current_sell_100_fiat_total = maxf(0.0, sell_100_fiat_total)
     _current_mine_100_btc_total = maxf(0.0, mine_100_btc_total)
@@ -91,3 +97,6 @@ func _format_preview_amount(value: float, decimals: int) -> String:
             break
         text = text.substr(0, text.length() - 1)
     return text
+
+func should_show_in_intro() -> bool:
+    return _should_show

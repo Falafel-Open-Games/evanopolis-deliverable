@@ -9,6 +9,7 @@ const TOP_BAR_FADE_SECONDS: float = 1.0
 @export var players_list: Control
 @export var event_log: Control
 @export var turn_actions: Control
+@export var energy_allocation: Control
 @export var initial_logo: Control
 
 var _intro_tween: Tween
@@ -19,6 +20,7 @@ func _ready() -> void:
     assert(players_list)
     assert(event_log)
     assert(turn_actions)
+    assert(energy_allocation)
     assert(initial_logo)
     _configure_initial_state()
     call_deferred("play_intro")
@@ -42,11 +44,16 @@ func play_intro() -> void:
     _intro_tween.tween_callback(_show_control.bind(top_bar))
     _intro_tween.tween_callback(_show_control.bind(players_list))
     _intro_tween.tween_callback(_show_control.bind(event_log))
+    _intro_tween.tween_callback(_show_energy_allocation_if_needed)
     _intro_tween.set_parallel(true)
     _intro_tween.tween_method(_set_control_alpha.bind(top_bar), top_bar.modulate.a, 1.0, TOP_BAR_FADE_SECONDS)
     _intro_tween.tween_method(_set_control_alpha.bind(players_list), players_list.modulate.a, 1.0, TOP_BAR_FADE_SECONDS)
     _intro_tween.tween_method(_set_control_alpha.bind(event_log), event_log.modulate.a, 1.0, TOP_BAR_FADE_SECONDS)
     _intro_tween.tween_method(_set_control_alpha.bind(turn_actions), turn_actions.modulate.a, 1.0, TOP_BAR_FADE_SECONDS)
+    if _should_fade_in_energy_allocation():
+        _intro_tween.tween_method(_set_control_alpha.bind(energy_allocation), energy_allocation.modulate.a, 1.0, TOP_BAR_FADE_SECONDS)
+    _intro_tween.set_parallel(false)
+    _intro_tween.tween_callback(_restore_energy_allocation_alpha_if_hidden)
 
 func _configure_initial_state() -> void:
     _show_control(initial_logo)
@@ -57,6 +64,8 @@ func _configure_initial_state() -> void:
     _set_control_alpha(0.0, players_list)
     _show_control(event_log)
     _set_control_alpha(0.0, event_log)
+    _hide_control(energy_allocation)
+    _set_control_alpha(0.0, energy_allocation)
     _set_control_alpha(0.0, turn_actions)
 
 func _show_control(target: Control) -> void:
@@ -68,3 +77,20 @@ func _hide_control(target: Control) -> void:
 func _set_control_alpha(alpha_value: float, target: Control) -> void:
     var current_modulate: Color = target.modulate
     target.modulate = Color(current_modulate.r, current_modulate.g, current_modulate.b, alpha_value)
+
+func _show_energy_allocation_if_needed() -> void:
+    if _should_fade_in_energy_allocation():
+        _show_control(energy_allocation)
+
+func _should_fade_in_energy_allocation() -> bool:
+    if energy_allocation == null:
+        return false
+    if energy_allocation.has_method("should_show_in_intro"):
+        return bool(energy_allocation.call("should_show_in_intro"))
+    return energy_allocation.visible
+
+func _restore_energy_allocation_alpha_if_hidden() -> void:
+    if energy_allocation == null:
+        return
+    if not energy_allocation.visible:
+        _set_control_alpha(1.0, energy_allocation)

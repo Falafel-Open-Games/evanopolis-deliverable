@@ -40,6 +40,7 @@ signal pay_toll_requested()
 
 var _current_property_action_tile_index: int = -1
 var _current_can_end_turn: bool = false
+var _default_size_flags_vertical: int = 0
 
 func _ready() -> void:
     assert(roll_dice_button)
@@ -62,6 +63,7 @@ func _ready() -> void:
     assert(pay_toll_button)
     assert(end_turn_button)
     assert(winning_panel)
+    _default_size_flags_vertical = size_flags_vertical
     roll_dice_button.pressed.connect(_on_roll_dice_pressed)
     pass_button.pressed.connect(_on_pass_pressed)
     buy_button.pressed.connect(_on_buy_pressed)
@@ -95,6 +97,7 @@ func set_turn_action_state(
     end_turn_button.disabled = not can_end_turn
     winning_panel.visible = is_local_winner
     _set_property_action_state(resolved_property_action)
+    _update_size_flags_for_current_state()
 
 func _on_roll_dice_pressed() -> void:
     roll_dice_button.disabled = true
@@ -215,3 +218,16 @@ func _has_debug_argument() -> bool:
         if argument == DEBUG_GAMEPLAY_ARGUMENT or argument.begins_with("%s=" % DEBUG_GAMEPLAY_ARGUMENT):
             return true
     return false
+
+func _update_size_flags_for_current_state() -> void:
+    var is_roll_dice_only: bool = (
+        visible
+        and roll_dice_button.visible
+        and not property_actions.visible
+        and not end_turn_button.visible
+        and not winning_panel.visible
+    )
+    if is_roll_dice_only:
+        size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+        return
+    size_flags_vertical = _default_size_flags_vertical

@@ -33,7 +33,7 @@ signal energy_allocation_requested(sell_percent: int)
 @onready var pawn_collection: PawnCollectionView = get_node(^"PawnRoot/pawns")
 @onready var hud_root: CanvasLayer = get_node(^"HudRoot")
 @onready var camera_rig: Node3D = get_node(^"CameraRig")
-@export var energy_allocation: EnergyAllocationView
+@onready var energy_allocation: EnergyAllocationView = find_child("EnergyAllocation", true, false) as EnergyAllocationView
 
 @export var top_bar: TopBarView
 @export var players_list_panel: PlayersListPanelView
@@ -72,7 +72,7 @@ func _ready() -> void:
     turn_actions.end_turn_requested.connect(_on_end_turn_pressed)
     energy_allocation.allocation_requested.connect(_on_energy_allocation_requested)
     set_turn_action_state(false, false, false, { })
-    set_energy_allocation_state(50, false, 0.0, 0.0, false)
+    set_energy_allocation_state(50, false, 0.0, 0.0, false, false)
     set_dice_values(6, 6)
 
 func set_local_player_identity(icon_id: int, color_id: int) -> void:
@@ -138,7 +138,8 @@ func set_energy_allocation_state(
     can_edit: bool,
     sell_100_fiat_total: float,
     mine_100_btc_total: float,
-    is_request_pending: bool
+    is_request_pending: bool,
+    should_show: bool
 ) -> void:
     if not is_node_ready():
         call_deferred(
@@ -147,7 +148,8 @@ func set_energy_allocation_state(
             can_edit,
             sell_100_fiat_total,
             mine_100_btc_total,
-            is_request_pending
+            is_request_pending,
+            should_show
         )
         return
     energy_allocation.set_energy_allocation_state(
@@ -155,7 +157,8 @@ func set_energy_allocation_state(
         can_edit,
         sell_100_fiat_total,
         mine_100_btc_total,
-        is_request_pending
+        is_request_pending,
+        should_show
     )
 
 func set_pawn_tile_positions(tile_positions_by_player_index: Dictionary) -> void:
