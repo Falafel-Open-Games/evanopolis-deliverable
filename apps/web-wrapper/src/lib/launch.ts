@@ -43,6 +43,33 @@ export function loadLaunchPayload(): LaunchPayload | null {
   }
 }
 
+export function normalizeLaunchPayload(args: {
+  payload: LaunchPayload | null;
+  runtimeConfig: RuntimeConfig;
+  requestedGameId: string | null;
+}): LaunchPayload | null {
+  const { payload, runtimeConfig, requestedGameId } = args;
+  if (payload === null) {
+    return null;
+  }
+
+  const normalizedGameId =
+    requestedGameId !== null && requestedGameId.trim().length > 0
+      ? requestedGameId.trim()
+      : payload.gameId;
+  const normalizedGameServerUrl = runtimeConfig.gameServerUrl.trim();
+
+  if (normalizedGameId.length === 0 || normalizedGameServerUrl.length === 0) {
+    return null;
+  }
+
+  return {
+    ...payload,
+    gameId: normalizedGameId,
+    gameServerUrl: normalizedGameServerUrl,
+  };
+}
+
 export function clearLaunchPayload(): void {
   window.sessionStorage.removeItem(LAUNCH_PAYLOAD_STORAGE_KEY);
 }

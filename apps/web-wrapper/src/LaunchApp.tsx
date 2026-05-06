@@ -5,6 +5,7 @@ import {
   buildLaunchPayload,
   clearLaunchPayload,
   loadLaunchPayload,
+  normalizeLaunchPayload,
   saveLaunchPayload,
 } from "./lib/launch";
 import {
@@ -34,7 +35,13 @@ function loadRequestedGameId(): string | null {
 export function LaunchApp() {
   const runtimeConfig = useMemo(() => getRuntimeConfig(), []);
   const requestedGameId = useMemo(() => loadRequestedGameId(), []);
-  const [launchPayload, setLaunchPayload] = useState(() => loadLaunchPayload());
+  const [launchPayload, setLaunchPayload] = useState(() =>
+    normalizeLaunchPayload({
+      payload: loadLaunchPayload(),
+      runtimeConfig,
+      requestedGameId,
+    }),
+  );
   const graphicalClientUrl = useMemo(() => {
     const configuredUrl = runtimeConfig.graphicalClientUrl.trim();
     if (configuredUrl.length === 0) {
@@ -50,6 +57,30 @@ export function LaunchApp() {
   const [isBridgeBound, setIsBridgeBound] = useState(false);
   const [isRecoveringLaunch, setIsRecoveringLaunch] = useState(false);
   const [recoveryMessage, setRecoveryMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const normalizedLaunchPayload = normalizeLaunchPayload({
+      payload: launchPayload,
+      runtimeConfig,
+      requestedGameId,
+    });
+    if (normalizedLaunchPayload === null) {
+      if (launchPayload !== null) {
+        clearLaunchPayload();
+        setLaunchPayload(null);
+      }
+      return;
+    }
+
+    if (
+      launchPayload === null ||
+      normalizedLaunchPayload.gameId !== launchPayload.gameId ||
+      normalizedLaunchPayload.gameServerUrl !== launchPayload.gameServerUrl
+    ) {
+      saveLaunchPayload(normalizedLaunchPayload);
+      setLaunchPayload(normalizedLaunchPayload);
+    }
+  }, [launchPayload, requestedGameId, runtimeConfig]);
 
   useEffect(() => {
     setIsBridgeBound(true);

@@ -100,6 +100,7 @@ export function App() {
         Number(roomDraft.playerCount),
       );
       setCreatedRoom(room);
+      setInviteInput(buildInviteUrl(room.gameId, room.createdBy));
       setRoomStatusMessage(
         `Room created for ${room.playerCount} players at ${formatEntryFeeLabel(room.entryFeeTier)}.`,
       );

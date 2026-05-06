@@ -18,7 +18,9 @@ dev *args='':
   rooms_api_lookup_template="${ROOMS_API_LOOKUP_TEMPLATE:-/v0/rooms/%s}"
   game_server_port="${GAME_SERVER_PORT:-9010}"
   game_server_docker_image="${GAME_SERVER_DOCKER_IMAGE:-ghcr.io/falafel-open-games/evanopolis-game-server:latest}"
+  web_wrapper_port="${WEB_WRAPPER_PORT:-5173}"
   use_docker=false
+  use_static_wrapper=false
   declare -a pids=()
   declare -a dev_args=({{args}})
 
@@ -27,9 +29,12 @@ dev *args='':
       --docker)
         use_docker=true
         ;;
+      --static-wrapper)
+        use_static_wrapper=true
+        ;;
       *)
         printf 'Unknown argument for `just dev`: %s\n' "$arg" >&2
-        printf 'Usage: just dev [--docker]\n' >&2
+        printf 'Usage: just dev [--docker] [--static-wrapper]\n' >&2
         exit 2
         ;;
     esac
@@ -53,6 +58,39 @@ dev *args='':
       cd "$app_path"
       npm ci
     )
+  }
+
+  require_command() {
+    local bin_name="$1"
+    local install_hint="$2"
+
+    if command -v "$bin_name" >/dev/null 2>&1; then
+      return
+    fi
+
+    printf 'Missing dependency: install `%s` to %s.\n' "$bin_name" "$install_hint" >&2
+    exit 127
+  }
+
+  build_static_web_wrapper() {
+    local dist_runtime_config_path="apps/web-wrapper/dist/runtime-config.js"
+
+    printf 'Building static web-wrapper bundle...\n'
+    (
+      cd apps/web-wrapper
+      AUTH_BASE_URL="$auth_base_url" \
+      ROOMS_API_BASE_URL="$rooms_api_base_url" \
+      ROOMS_BASE_URL="$rooms_api_base_url" \
+      npm run build
+    )
+
+    printf '%s\n' \
+      'window.__EVANOPOLIS_CONFIG__ = {' \
+      '  authBaseUrl: window.location.origin,' \
+      '  roomsBaseUrl: window.location.origin,' \
+      '  gameServerUrl: window.location.origin.replace(/^http/, "ws"),' \
+      '};' \
+      > "$dist_runtime_config_path"
   }
 
   require_auth_health() {
@@ -112,6 +150,9 @@ dev *args='':
 
   ensure_node_app_deps apps/rooms-api tsx
   ensure_node_app_deps apps/web-wrapper vite
+  if [ "$use_static_wrapper" = true ]; then
+    require_command python3 "serve the static web-wrapper bundle"
+  fi
   require_auth_health
 
   local_rooms_data_file="${ROOMS_DATA_FILE:-$HOME/.evanopolis/rooms.json}"
@@ -151,21 +192,37 @@ dev *args='':
   fi
   pids+=("$!")
 
-  printf 'Starting web-wrapper on http://127.0.0.1:5173\n'
-  (
-    cd apps/web-wrapper
-    exec env \
-      AUTH_BASE_URL="$auth_base_url" \
-      ROOMS_API_BASE_URL="$rooms_api_base_url" \
-      ROOMS_BASE_URL="$rooms_api_base_url" \
-      npm run dev
-  ) &
+  if [ "$use_static_wrapper" = true ]; then
+    printf 'Starting static web-wrapper on http://127.0.0.1:%s\n' "$web_wrapper_port"
+    build_static_web_wrapper
+    (
+      exec python3 scripts/serve_static_wrapper.py \
+        --root apps/web-wrapper/dist \
+        --port "$web_wrapper_port" \
+        --auth-base-url "$auth_base_url" \
+        --rooms-base-url "$rooms_api_base_url" \
+        --game-server-url "ws://127.0.0.1:${game_server_port}"
+    ) &
+  else
+    printf 'Starting web-wrapper on http://127.0.0.1:%s\n' "$web_wrapper_port"
+    (
+      cd apps/web-wrapper
+      exec env \
+        AUTH_BASE_URL="$auth_base_url" \
+        ROOMS_API_BASE_URL="$rooms_api_base_url" \
+        ROOMS_BASE_URL="$rooms_api_base_url" \
+        npm run dev -- --host 127.0.0.1 --port "$web_wrapper_port"
+    ) &
+  fi
   pids+=("$!")
 
   printf '\nAuth must already be running at %s.\n' "$auth_base_url"
-  printf 'Open http://127.0.0.1:5173/ when Vite is ready.\n'
+  printf 'Open http://127.0.0.1:%s/ when the web-wrapper is ready.\n' "$web_wrapper_port"
   if [ "$game_server_runner" = "docker" ]; then
     printf 'Game server is running from Docker because `--docker` was requested.\n'
+  fi
+  if [ "$use_static_wrapper" = true ]; then
+    printf 'Web wrapper is running from a static production build because `--static-wrapper` was requested.\n'
   fi
   printf 'Press Ctrl-C to stop rooms-api, game-server, and web-wrapper together.\n\n'
 

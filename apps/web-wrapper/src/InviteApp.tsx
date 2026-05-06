@@ -19,6 +19,10 @@ function buildLandingUrl(): string {
   return new URL("/", window.location.origin).toString();
 }
 
+function isRoomNotFoundStatus(status: string): boolean {
+  return status.trim() === "Room not found.";
+}
+
 export function InviteApp() {
   const [recoveryInput, setRecoveryInput] = useState<string>("");
   const [roomDetails, setRoomDetails] = useState<PublicRoom | null>(null);
@@ -34,6 +38,8 @@ export function InviteApp() {
     roomIdFromUrl.length > 0 ? roomIdFromUrl : recoveryRoomId;
   const isInviteFirstLanding = roomIdFromUrl.length > 0;
   const runtimeConfig = useMemo(() => getRuntimeConfig(), []);
+  const isMissingInvite =
+    roomLookupState === "error" && isRoomNotFoundStatus(roomLookupStatus);
   const {
     authSession,
     authStatusMessage,
@@ -91,7 +97,9 @@ export function InviteApp() {
         <h1>
           {isInviteFirstLanding
             ? roomLookupState === "error"
-              ? "This invite could not be found."
+              ? isMissingInvite
+                ? "This invite could not be found."
+                : "This invite could not be loaded."
               : roomDetails !== null
               ? `${roomDetails.creatorDisplayName} invited you to a match.`
               : "You have been invited to a live match."
@@ -100,7 +108,9 @@ export function InviteApp() {
         <p className="hero-copy">
           {isInviteFirstLanding
             ? roomLookupState === "error"
-              ? "The room may have expired or the invite link may be invalid. Check the link or ask the host for a new invite."
+              ? isMissingInvite
+                ? "The room may have expired or the invite link may be invalid. Check the link or ask the host for a new invite."
+                : "The invite lookup failed before the room details could be loaded. Check the status below and retry."
               : roomDetails !== null
               ? `Join ${roomDetails.creatorDisplayName}'s room, complete the entry payment, and continue into the match.`
               : "This page is the invite destination. Confirm the room below and continue through the join flow."
