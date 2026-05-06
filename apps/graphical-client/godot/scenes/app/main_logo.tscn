@@ -2,15 +2,29 @@
 
 [ext_resource type="Texture2D" uid="uid://fswqge4gw827" path="res://assets/2d/wordmark_v4.png" id="1_vq8rc"]
 [ext_resource type="Texture2D" uid="uid://b02jfjlfjcyde" path="res://assets/2d/avatar_sheet_shadows_removed.png" id="2_k5epq"]
+[ext_resource type="Texture2D" uid="uid://bmg7lktcjx8uj" path="res://assets/2d/wordmark_placeholder.png" id="2_sh3od"]
 
 [node name="MainLogo" type="MarginContainer" unique_id=2033182455]
 size_flags_horizontal = 4
 
 [node name="LogoTexture2" type="TextureRect" parent="." unique_id=634550000]
+visible = false
 texture_filter = 2
 custom_minimum_size = Vector2(180, 67.3)
 layout_mode = 2
 texture = ExtResource("1_vq8rc")
+expand_mode = 2
+stretch_mode = 5
+
+[node name="placeholder logo" type="MarginContainer" parent="." unique_id=612655011]
+layout_mode = 2
+theme_override_constants/margin_left = 3
+
+[node name="LogoTexture3" type="TextureRect" parent="placeholder logo" unique_id=618433436]
+texture_filter = 2
+custom_minimum_size = Vector2(180, 67.3)
+layout_mode = 2
+texture = ExtResource("2_sh3od")
 expand_mode = 2
 stretch_mode = 5
 
