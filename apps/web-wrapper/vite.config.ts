@@ -24,6 +24,11 @@ const roomsProxyTarget = normalizeBaseUrl(
   "http://127.0.0.1:3001",
 );
 
+const gameServerProxyTarget = normalizeBaseUrl(
+  processEnv.GAME_SERVER_URL ?? processEnv.VITE_GAME_SERVER_URL,
+  "ws://127.0.0.1:9010",
+);
+
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -42,6 +47,12 @@ export default defineConfig({
         target: roomsProxyTarget,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/__rooms_proxy__/, ""),
+      },
+      "/__game_server_proxy__": {
+        target: gameServerProxyTarget,
+        changeOrigin: true,
+        ws: true,
+        rewrite: () => "/",
       },
     },
   },

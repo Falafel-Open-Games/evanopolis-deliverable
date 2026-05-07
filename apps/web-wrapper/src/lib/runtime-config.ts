@@ -29,6 +29,10 @@ function getDevProxyBaseUrl(proxyPath: string): string {
   return `${window.location.origin}${proxyPath}`;
 }
 
+function isLocalBrowserHost(host: string): boolean {
+  return host === "localhost" || host === "127.0.0.1";
+}
+
 function getTunneledAuthBaseUrl(host: string): string | null {
   if (host.startsWith("tabletop-demo.")) {
     return `${window.location.protocol}//${host.replace(/^tabletop-demo\./, "tabletop-demo-auth.")}`;
@@ -52,7 +56,7 @@ function getDefaultAuthBaseUrl(): string {
     return getDevProxyBaseUrl("/__auth_proxy__");
   }
 
-  if (host === "localhost" || host === "127.0.0.1") {
+  if (isLocalBrowserHost(host)) {
     return "http://localhost:3000";
   }
 
@@ -61,6 +65,25 @@ function getDefaultAuthBaseUrl(): string {
   }
 
   return window.location.origin;
+}
+
+function getDefaultRoomsBaseUrl(): string {
+  if (import.meta.env.DEV) {
+    return getDevProxyBaseUrl("/__rooms_proxy__");
+  }
+
+  return window.location.origin;
+}
+
+function getDefaultGameServerUrl(): string {
+  if (import.meta.env.DEV) {
+    if (isLocalBrowserHost(window.location.hostname)) {
+      return "ws://127.0.0.1:9010";
+    }
+    return window.location.origin.replace(/^http/, "ws") + "/__game_server_proxy__";
+  }
+
+  return window.location.origin.replace(/^http/, "ws");
 }
 
 function getDefaultPaymentAddresses(expectedChainId: string): {
@@ -102,14 +125,12 @@ export function getRuntimeConfig(): RuntimeConfig {
     roomsBaseUrl:
       runtimeOverride.roomsBaseUrl?.trim() ||
       import.meta.env.VITE_ROOMS_BASE_URL ||
-      (import.meta.env.DEV
-        ? getDevProxyBaseUrl("/__rooms_proxy__")
-        : "http://127.0.0.1:3001"),
+      getDefaultRoomsBaseUrl(),
     expectedChainId: configuredExpectedChainId,
     gameServerUrl:
       runtimeOverride.gameServerUrl?.trim() ||
       import.meta.env.VITE_GAME_SERVER_URL ||
-      "ws://127.0.0.1:9010",
+      getDefaultGameServerUrl(),
     graphicalClientUrl:
       runtimeOverride.graphicalClientUrl?.trim() ||
       import.meta.env.VITE_GRAPHICAL_CLIENT_URL ||

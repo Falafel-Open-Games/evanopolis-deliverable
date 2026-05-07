@@ -222,4 +222,5 @@ blockers.
 - add a credits page
 - polish the waiting room
 - polish gameplay event feedback
+- better handling and feedback for in-match socket disconnections
 - make the landing page and room creation pages visually strong

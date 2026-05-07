@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { signInWithWallet } from "./lib/auth";
 import {
   buildLaunchPayload,
+  createLaunchId,
   clearLaunchPayload,
   loadLaunchPayload,
   normalizeLaunchPayload,
@@ -32,12 +33,23 @@ function loadRequestedGameId(): string | null {
   return normalizedGameId.length > 0 ? normalizedGameId : null;
 }
 
+function loadRequestedLaunchId(): string | null {
+  const launchId = new URL(window.location.href).searchParams.get("launch_id");
+  if (launchId === null) {
+    return null;
+  }
+
+  const normalizedLaunchId = launchId.trim();
+  return normalizedLaunchId.length > 0 ? normalizedLaunchId : null;
+}
+
 export function LaunchApp() {
   const runtimeConfig = useMemo(() => getRuntimeConfig(), []);
   const requestedGameId = useMemo(() => loadRequestedGameId(), []);
+  const requestedLaunchId = useMemo(() => loadRequestedLaunchId(), []);
   const [launchPayload, setLaunchPayload] = useState(() =>
     normalizeLaunchPayload({
-      payload: loadLaunchPayload(),
+      payload: loadLaunchPayload(requestedLaunchId),
       runtimeConfig,
       requestedGameId,
     }),
@@ -66,7 +78,7 @@ export function LaunchApp() {
     });
     if (normalizedLaunchPayload === null) {
       if (launchPayload !== null) {
-        clearLaunchPayload();
+        clearLaunchPayload(requestedLaunchId);
         setLaunchPayload(null);
       }
       return;
@@ -77,10 +89,10 @@ export function LaunchApp() {
       normalizedLaunchPayload.gameId !== launchPayload.gameId ||
       normalizedLaunchPayload.gameServerUrl !== launchPayload.gameServerUrl
     ) {
-      saveLaunchPayload(normalizedLaunchPayload);
+      saveLaunchPayload(normalizedLaunchPayload, requestedLaunchId);
       setLaunchPayload(normalizedLaunchPayload);
     }
-  }, [launchPayload, requestedGameId, runtimeConfig]);
+  }, [launchPayload, requestedGameId, requestedLaunchId, runtimeConfig]);
 
   useEffect(() => {
     setIsBridgeBound(true);
@@ -126,7 +138,7 @@ export function LaunchApp() {
   }, [graphicalClientOrigin, launchPayload]);
 
   function handleReturnHome() {
-    clearLaunchPayload();
+    clearLaunchPayload(requestedLaunchId);
     window.location.assign(buildLandingUrl());
   }
 
@@ -146,7 +158,10 @@ export function LaunchApp() {
         gameId: requestedGameId,
         playerAddress: session.address,
       });
-      saveLaunchPayload(recoveredLaunchPayload);
+      saveLaunchPayload(
+        recoveredLaunchPayload,
+        requestedLaunchId ?? createLaunchId(),
+      );
       setLaunchPayload(recoveredLaunchPayload);
       setRecoveryMessage(null);
     } catch (error) {

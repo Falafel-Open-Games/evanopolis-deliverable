@@ -9,6 +9,7 @@ import {
 import {
   buildLaunchPayload,
   buildLaunchUrl,
+  createLaunchId,
   saveLaunchPayload,
 } from "../lib/launch";
 import {
@@ -364,8 +365,9 @@ export function JoinGamePanel({
       return;
     }
 
-    saveLaunchPayload(launchPayload);
-    window.location.assign(buildLaunchUrl(launchPayload));
+    const launchId = createLaunchId();
+    saveLaunchPayload(launchPayload, launchId);
+    window.location.assign(buildLaunchUrl(launchPayload, launchId));
   }
 
   return (

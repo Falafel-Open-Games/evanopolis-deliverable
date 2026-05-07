@@ -1,4 +1,4 @@
-var _a, _b, _c, _d, _e;
+var _a, _b, _c, _d, _e, _f;
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 var processEnv = (_b = (_a = globalThis.process) === null || _a === void 0 ? void 0 : _a.env) !== null && _b !== void 0 ? _b : {};
@@ -7,6 +7,7 @@ function normalizeBaseUrl(url, fallback) {
 }
 var authProxyTarget = normalizeBaseUrl((_c = processEnv.AUTH_BASE_URL) !== null && _c !== void 0 ? _c : processEnv.VITE_AUTH_BASE_URL, "http://127.0.0.1:3000");
 var roomsProxyTarget = normalizeBaseUrl((_e = (_d = processEnv.ROOMS_BASE_URL) !== null && _d !== void 0 ? _d : processEnv.ROOMS_API_BASE_URL) !== null && _e !== void 0 ? _e : processEnv.VITE_ROOMS_BASE_URL, "http://127.0.0.1:3001");
+var gameServerProxyTarget = normalizeBaseUrl((_f = processEnv.GAME_SERVER_URL) !== null && _f !== void 0 ? _f : processEnv.VITE_GAME_SERVER_URL, "ws://127.0.0.1:9010");
 export default defineConfig({
     plugins: [react()],
     server: {
@@ -25,6 +26,12 @@ export default defineConfig({
                 target: roomsProxyTarget,
                 changeOrigin: true,
                 rewrite: function (path) { return path.replace(/^\/__rooms_proxy__/, ""); },
+            },
+            "/__game_server_proxy__": {
+                target: gameServerProxyTarget,
+                changeOrigin: true,
+                ws: true,
+                rewrite: function () { return "/"; },
             },
         },
     },
