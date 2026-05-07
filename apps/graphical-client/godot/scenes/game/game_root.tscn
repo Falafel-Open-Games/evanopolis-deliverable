@@ -23,13 +23,12 @@ sky_material = SubResource("ProceduralSkyMaterial_f3gwi")
 
 [sub_resource type="Environment" id="Environment_scx5b"]
 background_mode = 2
-background_energy_multiplier = 0.57
+background_energy_multiplier = 0.8
 sky = SubResource("Sky_kdtot")
 sky_custom_fov = 115.8
 ambient_light_source = 3
-tonemap_mode = 4
-tonemap_exposure = 1.46
-tonemap_agx_contrast = 1.05
+tonemap_mode = 2
+tonemap_agx_contrast = 1.0
 ssao_enabled = true
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_k63du"]
@@ -53,7 +52,7 @@ environment = SubResource("Environment_scx5b")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1205018361]
 transform = Transform3D(0.7071067, -0.49999997, 0.49999997, 0, 0.70710677, 0.70710677, -0.7071067, -0.49999997, 0.49999997, 0, 0, 0)
-light_energy = 0.5
+light_energy = 0.4
 shadow_enabled = true
 sky_mode = 1
 
