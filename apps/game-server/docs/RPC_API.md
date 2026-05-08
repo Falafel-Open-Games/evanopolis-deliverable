@@ -242,7 +242,7 @@ Failure:
 
 ### Match lifecycle
 
-- `rpc_game_started(seq: int, new_game_id: String)`
+- `rpc_game_started(seq: int, new_game_id: String, pawn_positions_by_player_index: Dictionary)`
 - `rpc_board_state(seq: int, board: Dictionary)`
 - `rpc_turn_started(seq: int, player_index: int, turn_number: int, cycle: int)`
 - `rpc_game_ended(seq: int, winner_index: int, reason: String, btc_goal: float, winner_btc: float)`

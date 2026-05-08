@@ -799,9 +799,10 @@ func rpc_board_state(_seq: int, board: Dictionary) -> void:
     _emit_gameplay_turn_state()
 
 @rpc("authority")
-func rpc_game_started(_seq: int, _new_game_id: String) -> void:
+func rpc_game_started(_seq: int, _new_game_id: String, pawn_positions_by_player_index: Dictionary) -> void:
     _ready_request_pending = false
     _match_has_started = true
+    _player_tile_positions = pawn_positions_by_player_index.duplicate(true)
     _append_gameplay_event_log_message("🎮️ Game started")
     _update_state(
         SessionPhase.GAME_STARTED,
@@ -809,6 +810,7 @@ func rpc_game_started(_seq: int, _new_game_id: String) -> void:
         "The server has started the match and the waiting room is handing off to the gameplay scene.",
         "The gameplay root now owns the player-facing match presentation."
     )
+    _emit_gameplay_pawn_positions()
     _emit_gameplay_player_states()
     _debug_print_authoritative_gameplay_state("game_started")
 

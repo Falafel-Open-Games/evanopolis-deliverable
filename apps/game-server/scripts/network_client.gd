@@ -12,8 +12,8 @@ func _init(server_host: Node, peer: int) -> void:
     assert(peer_id > 0)
 
 
-func rpc_game_started(seq: int, new_game_id: String) -> void:
-    server_node.rpc_id(peer_id, "rpc_game_started", seq, new_game_id)
+func rpc_game_started(seq: int, new_game_id: String, pawn_positions_by_player_index: Dictionary) -> void:
+    server_node.rpc_id(peer_id, "rpc_game_started", seq, new_game_id, pawn_positions_by_player_index)
 
 
 func rpc_board_state(seq: int, board: Dictionary) -> void:

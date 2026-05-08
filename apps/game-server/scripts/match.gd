@@ -61,7 +61,7 @@ func start_game() -> void:
         return
     has_started = true
     has_rolled_current_turn = false
-    _broadcast("rpc_game_started", [state.game_id])
+    _broadcast("rpc_game_started", [state.game_id, _player_positions_snapshot()])
     _broadcast("rpc_board_state", [board_state])
     _broadcast("rpc_turn_started", [state.current_player_index, state.turn_number, state.current_cycle])
 
@@ -909,6 +909,15 @@ func _starting_tile_for_color(color_id: int) -> int:
     normalized_color_id = normalized_color_id % MAX_WAITING_ROOM_COLOR_COUNT
     # The six color slots follow the board's named tile order, not importer order.
     return VISUAL_RING_START_TILES_BY_COLOR_ID[normalized_color_id]
+
+func _player_positions_snapshot() -> Dictionary:
+    var positions_by_player_index: Dictionary = { }
+    for player_index in range(state.players.size()):
+        var player: PlayerState = state.players[player_index]
+        if not player.is_active:
+            continue
+        positions_by_player_index[player_index] = player.position
+    return positions_by_player_index
 
 
 func _wrap_tile_index(tile_index: int) -> int:

@@ -7,6 +7,10 @@ const ANCHOR_EPSILON: float = 0.001
 const MIN_PAWN_STACK_HEIGHT: float = 0.01
 const VISUAL_RING_START_TILES_BY_COLOR_ID: Array[int] = [12, 15, 0, 3, 6, 9]
 const DEBUG_GAMEPLAY_ARGUMENT: String = "--debug"
+const OFFBOARD_STAGING_TRANSFORM: Transform3D = Transform3D(
+    Basis.IDENTITY,
+    Vector3(0.0, -1000.0, 0.0)
+)
 
 @onready var initial_positions: Node3D = get_node(^"InitialPositions")
 @onready var pawn_instances: Node3D = get_node(^"PawnInstances")
@@ -117,11 +121,11 @@ func get_default_spawn_transform(color_id: int) -> Transform3D:
     assert(_spawn_transforms_by_color_id.size() > 0)
     return _spawn_transforms_by_color_id[_resolved_color_id(color_id)]
 
-func _spawn_transform_for_player(player_index: int, color_id: int) -> Transform3D:
+func _spawn_transform_for_player(player_index: int, _color_id: int) -> Transform3D:
     var tile_index: int = int(_authoritative_tile_positions_by_player_index.get(player_index, -1))
     if tile_index >= 0 and _tile_transforms_by_index.size() > 0:
         return get_tile_transform(tile_index)
-    return get_default_spawn_transform(color_id)
+    return OFFBOARD_STAGING_TRANSFORM
 
 func _apply_authoritative_tile_positions() -> void:
     var player_indices_by_tile_index: Dictionary = _player_indices_by_tile_index()

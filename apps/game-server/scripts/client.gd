@@ -2,7 +2,7 @@
 class_name Client
 extends RefCounted
 
-@abstract func rpc_game_started(seq: int, new_game_id: String) -> void
+@abstract func rpc_game_started(seq: int, new_game_id: String, pawn_positions_by_player_index: Dictionary) -> void
 
 
 @abstract func rpc_board_state(seq: int, board: Dictionary) -> void

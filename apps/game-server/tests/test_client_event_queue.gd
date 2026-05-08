@@ -78,7 +78,7 @@ func test_join_requests_snapshot_sync_and_drops_pre_sync_events() -> void:
     client.player_id = "p2"
     client.game_id = "pending"
 
-    client._handle_game_started(3, "demo_002")
+    client._handle_game_started(3, "demo_002", { })
     client._handle_turn_started(4, 0, 1, 1)
 
     assert_eq(client.pending_events.size(), 2, "events queue before join acceptance")

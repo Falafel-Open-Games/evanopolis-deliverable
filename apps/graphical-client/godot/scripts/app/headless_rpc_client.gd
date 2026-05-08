@@ -41,7 +41,7 @@ func rpc_set_energy_allocation(_game_id: String, _player_id: String, _sell_perce
     pass
 
 @rpc("authority")
-func rpc_game_started(_seq: int, _new_game_id: String) -> void:
+func rpc_game_started(_seq: int, _new_game_id: String, _pawn_positions_by_player_index: Dictionary) -> void:
     pass
 
 @rpc("authority")

@@ -5,12 +5,13 @@ class_name MatchTestClient
 var events: Array[Dictionary] = []
 
 
-func rpc_game_started(seq: int, new_game_id: String) -> void:
+func rpc_game_started(seq: int, new_game_id: String, pawn_positions_by_player_index: Dictionary) -> void:
     events.append(
         {
             "method": "rpc_game_started",
             "seq": seq,
             "game_id": new_game_id,
+            "pawn_positions_by_player_index": pawn_positions_by_player_index.duplicate(true),
         },
     )
 

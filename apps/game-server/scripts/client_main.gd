@@ -110,8 +110,8 @@ func _exit_with_code(code: int) -> void:
     get_tree().quit(code)
 
 
-func _handle_game_started(seq: int, new_game_id: String) -> void:
-    _queue_event(seq, "_apply_game_started", [new_game_id])
+func _handle_game_started(seq: int, new_game_id: String, pawn_positions_by_player_index: Dictionary) -> void:
+    _queue_event(seq, "_apply_game_started", [new_game_id, pawn_positions_by_player_index])
 
 
 func _handle_board_state(seq: int, board: Dictionary) -> void:
@@ -235,7 +235,7 @@ func _flush_events() -> int:
     return applied_count
 
 
-func _apply_game_started(new_game_id: String) -> void:
+func _apply_game_started(new_game_id: String, _pawn_positions_by_player_index: Dictionary) -> void:
     game_id = new_game_id
     match_has_started = true
     local_ready_sent = false
