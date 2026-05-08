@@ -24,8 +24,8 @@ signal pay_toll_requested()
 signal energy_allocation_requested(sell_percent: int)
 
 @onready var board_root: Node3D = get_node(^"BoardRoot")
-@onready var top_tiles_root: Node3D = get_node(^"BoardRoot/tiles")
-@onready var bottom_tiles_root: Node3D = get_node(^"BoardRoot/BottomTiles")
+@onready var land_tiles_root: Node3D = get_node(^"BoardRoot/tiles")
+@onready var owner_tiles_root: Node3D = get_node(^"BoardRoot/BottomTiles")
 @onready var dice_root: Node3D = get_node(^"BoardRoot/Dices")
 @onready var die_a: Node3D = get_node(^"BoardRoot/Dices/D6A")
 @onready var die_b: Node3D = get_node(^"BoardRoot/Dices/D6B")
@@ -42,15 +42,19 @@ signal energy_allocation_requested(sell_percent: int)
 
 var _player_color_ids_by_index: Dictionary = { }
 var _tile_owner_indices_by_tile_index: Dictionary = { }
-var _top_tile_nodes_by_index: Dictionary = { }
-var _top_tile_original_transforms_by_index: Dictionary = { }
-var _bottom_tile_nodes_by_index: Dictionary = { }
-var _bottom_tile_heights_by_index: Array[float] = []
+var _land_tile_nodes_by_index: Dictionary = { }
+var _land_tile_original_transforms_by_index: Dictionary = { }
+var _land_tile_heights_by_index: Array[float] = []
+var _base_tile_materials_by_suffix: Dictionary = { }
+var _top_tile_materials_by_suffix: Dictionary = { }
+var _owner_tile_nodes_by_index: Dictionary = { }
+var _owner_tile_original_transforms_by_index: Dictionary = { }
+var _owner_tile_heights_by_index: Array[float] = []
 
 func _ready() -> void:
     assert(board_root)
-    assert(top_tiles_root)
-    assert(bottom_tiles_root)
+    assert(land_tiles_root)
+    assert(owner_tiles_root)
     assert(dice_root)
     assert(die_a)
     assert(die_b)
@@ -63,7 +67,7 @@ func _ready() -> void:
     assert(top_bar)
     assert(players_list_panel)
     assert(event_log_panel)
-    pawn_collection.bind_board_tiles(top_tiles_root)
+    pawn_collection.bind_board_tiles(land_tiles_root)
     _capture_tile_stack_nodes()
     _apply_property_stack_visuals()
     turn_actions.roll_dice_requested.connect(_on_roll_dice_pressed)
@@ -280,57 +284,80 @@ func _basis_for_face_up(face_value: int) -> Basis:
     return Basis(rotation_axis, PI * 0.5)
 
 func _capture_tile_stack_nodes() -> void:
-    _top_tile_nodes_by_index = _resolve_tile_nodes_by_index(top_tiles_root, "TileInstance")
-    _bottom_tile_nodes_by_index = _resolve_tile_nodes_by_index(bottom_tiles_root)
-    _top_tile_original_transforms_by_index.clear()
-    for tile_index_variant in _top_tile_nodes_by_index.keys():
-        var tile_index: int = int(tile_index_variant)
-        var top_tile: Node3D = _top_tile_nodes_by_index[tile_index_variant] as Node3D
-        assert(top_tile != null)
-        _top_tile_original_transforms_by_index[tile_index] = top_tile.transform
-
+    _land_tile_nodes_by_index = _resolve_tile_nodes_by_index(land_tiles_root, "TileInstance")
+    _owner_tile_nodes_by_index = _resolve_tile_nodes_by_index(owner_tiles_root)
+    _base_tile_materials_by_suffix = _resolve_materials_by_suffix(land_tiles_root, "BaseTileMaterial_")
+    _top_tile_materials_by_suffix = _resolve_materials_by_suffix(land_tiles_root, "TopTileMaterial_")
+    _land_tile_original_transforms_by_index.clear()
     var max_tile_index: int = -1
-    for tile_index_variant in _bottom_tile_nodes_by_index.keys():
-        max_tile_index = max(max_tile_index, int(tile_index_variant))
-    _bottom_tile_heights_by_index.clear()
-    _bottom_tile_heights_by_index.resize(max_tile_index + 1)
-    bottom_tiles_root.visible = true
-    for tile_index_variant in _bottom_tile_nodes_by_index.keys():
+    for tile_index_variant in _land_tile_nodes_by_index.keys():
         var tile_index: int = int(tile_index_variant)
-        var bottom_tile: Node3D = _bottom_tile_nodes_by_index[tile_index_variant] as Node3D
-        assert(bottom_tile != null)
-        _bottom_tile_heights_by_index[tile_index] = _node_visual_height(bottom_tile)
-        bottom_tile.visible = false
-    pawn_collection.set_tile_height_offsets(_bottom_tile_heights_by_index)
+        var land_tile: Node3D = _land_tile_nodes_by_index[tile_index_variant] as Node3D
+        assert(land_tile != null)
+        var side_index: int = tile_index / 3
+        var tile_suffix: String = "%03d" % side_index
+        assert(_base_tile_materials_by_suffix.has(tile_suffix))
+        _apply_material_to_meshes(land_tile, _base_tile_materials_by_suffix[tile_suffix] as Material)
+        _land_tile_original_transforms_by_index[tile_index] = land_tile.transform
+        max_tile_index = max(max_tile_index, tile_index)
+
+    for tile_index_variant in _owner_tile_nodes_by_index.keys():
+        max_tile_index = max(max_tile_index, int(tile_index_variant))
+    _land_tile_heights_by_index.clear()
+    _land_tile_heights_by_index.resize(max_tile_index + 1)
+    for tile_index_variant in _land_tile_nodes_by_index.keys():
+        var land_tile_index: int = int(tile_index_variant)
+        var land_tile_node: Node3D = _land_tile_nodes_by_index[tile_index_variant] as Node3D
+        assert(land_tile_node != null)
+        _land_tile_heights_by_index[land_tile_index] = _node_visual_height(land_tile_node)
+
+    _owner_tile_original_transforms_by_index.clear()
+    _owner_tile_heights_by_index.clear()
+    _owner_tile_heights_by_index.resize(max_tile_index + 1)
+    owner_tiles_root.visible = true
+    for tile_index_variant in _owner_tile_nodes_by_index.keys():
+        var tile_index: int = int(tile_index_variant)
+        var owner_tile: Node3D = _owner_tile_nodes_by_index[tile_index_variant] as Node3D
+        assert(owner_tile != null)
+        _owner_tile_original_transforms_by_index[tile_index] = owner_tile.transform
+        _owner_tile_heights_by_index[tile_index] = _node_visual_height(owner_tile)
+        owner_tile.visible = false
+    pawn_collection.set_tile_height_offsets([])
 
 func _apply_property_stack_visuals() -> void:
-    if _bottom_tile_nodes_by_index.is_empty():
+    if _owner_tile_nodes_by_index.is_empty():
         return
 
     var tile_height_offsets: Array[float] = []
-    tile_height_offsets.resize(_bottom_tile_heights_by_index.size())
-    for tile_index_variant in _bottom_tile_nodes_by_index.keys():
+    tile_height_offsets.resize(_owner_tile_heights_by_index.size())
+    for tile_index_variant in _owner_tile_nodes_by_index.keys():
         var tile_index: int = int(tile_index_variant)
-        var bottom_tile: Node3D = _bottom_tile_nodes_by_index[tile_index_variant] as Node3D
-        assert(bottom_tile != null)
+        var owner_tile: Node3D = _owner_tile_nodes_by_index[tile_index_variant] as Node3D
+        assert(owner_tile != null)
 
         var is_owned: bool = _tile_owner_indices_by_tile_index.has(tile_index)
-        bottom_tile.visible = is_owned
+        owner_tile.visible = is_owned
+        var owner_original_transform: Transform3D = _owner_tile_original_transforms_by_index[tile_index]
+        owner_tile.transform = owner_original_transform
         if is_owned:
             var owner_index: int = int(_tile_owner_indices_by_tile_index[tile_index])
             var owner_color_id: int = int(_player_color_ids_by_index.get(owner_index, -1))
-            var owner_material: Material = pawn_collection.duplicate_material_for_color_id(owner_color_id)
-            if owner_material != null:
-                _apply_material_to_meshes(bottom_tile, owner_material)
-            tile_height_offsets[tile_index] = float(_bottom_tile_heights_by_index[tile_index])
+            var owner_tile_suffix: String = "%03d" % owner_color_id
+            assert(_top_tile_materials_by_suffix.has(owner_tile_suffix))
+            _apply_material_to_meshes(owner_tile, _top_tile_materials_by_suffix[owner_tile_suffix] as Material)
+            var land_tile_height: float = 0.0
+            if tile_index < _land_tile_heights_by_index.size():
+                land_tile_height = float(_land_tile_heights_by_index[tile_index])
+            var owner_tile_height: float = float(_owner_tile_heights_by_index[tile_index])
+            var stacked_owner_transform: Transform3D = owner_original_transform
+            stacked_owner_transform.origin += stacked_owner_transform.basis.y.normalized() * land_tile_height
+            owner_tile.transform = stacked_owner_transform
+            tile_height_offsets[tile_index] = owner_tile_height
 
-        if _top_tile_nodes_by_index.has(tile_index):
-            var top_tile: Node3D = _top_tile_nodes_by_index[tile_index] as Node3D
-            assert(top_tile != null)
-            var original_transform: Transform3D = _top_tile_original_transforms_by_index[tile_index]
-            var stacked_transform: Transform3D = original_transform
-            stacked_transform.origin += stacked_transform.basis.y.normalized() * tile_height_offsets[tile_index]
-            top_tile.transform = stacked_transform
+        if _land_tile_nodes_by_index.has(tile_index):
+            var land_tile: Node3D = _land_tile_nodes_by_index[tile_index] as Node3D
+            assert(land_tile != null)
+            land_tile.transform = _land_tile_original_transforms_by_index[tile_index]
 
     pawn_collection.set_tile_height_offsets(tile_height_offsets)
 
@@ -388,12 +415,53 @@ func _node_visual_height(node: Node3D) -> float:
     return max(0.0, max_y - min_y)
 
 func _collect_mesh_instances(node: Node, result: Array[MeshInstance3D]) -> void:
+    var current_mesh_instance: MeshInstance3D = node as MeshInstance3D
+    if current_mesh_instance != null:
+        result.append(current_mesh_instance)
     for child in node.get_children():
         var mesh_instance: MeshInstance3D = child as MeshInstance3D
         if mesh_instance != null:
             result.append(mesh_instance)
             continue
         _collect_mesh_instances(child, result)
+
+func _first_mesh_material(node: Node) -> Material:
+    var meshes: Array[MeshInstance3D] = []
+    _collect_mesh_instances(node, meshes)
+    for mesh_instance in meshes:
+        var active_material: Material = mesh_instance.get_active_material(0)
+        if active_material != null:
+            return active_material
+        if mesh_instance.material_override != null:
+            return mesh_instance.material_override
+    return null
+
+func _resolve_materials_by_suffix(root: Node, required_prefix: String) -> Dictionary:
+    var materials_by_suffix: Dictionary = { }
+    var candidate_nodes: Array[Node] = []
+    _collect_named_nodes(root, candidate_nodes, required_prefix)
+    for candidate_node in candidate_nodes:
+        var suffix: String = _node_name_suffix(candidate_node)
+        if suffix.is_empty():
+            continue
+        var material: Material = _first_mesh_material(candidate_node)
+        assert(material != null)
+        materials_by_suffix[suffix] = material
+    return materials_by_suffix
+
+func _collect_named_nodes(node: Node, result: Array[Node], required_prefix: String) -> void:
+    var node_name: String = String(node.name)
+    if node_name.begins_with(required_prefix):
+        result.append(node)
+    for child in node.get_children():
+        _collect_named_nodes(child, result, required_prefix)
+
+func _node_name_suffix(node: Node) -> String:
+    var node_name: String = String(node.name)
+    var underscore_index: int = node_name.rfind("_")
+    if underscore_index < 0 or underscore_index >= node_name.length() - 1:
+        return ""
+    return node_name.substr(underscore_index + 1)
 
 func _apply_material_to_meshes(node: Node, material: Material) -> void:
     for child in node.get_children():

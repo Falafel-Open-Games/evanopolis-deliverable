@@ -37,6 +37,159 @@ import_script/path=""
 materials/extract=2
 materials/extract_format=0
 materials/extract_path=""
-_subresources={}
+_subresources={
+"materials": {
+"@MATERIAL:0": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_0.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_0.tres"
+},
+"@MATERIAL:1": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_1.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_1.tres"
+},
+"@MATERIAL:10": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_10.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_10.tres"
+},
+"@MATERIAL:11": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_11.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_11.tres"
+},
+"@MATERIAL:12": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_12.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_12.tres"
+},
+"@MATERIAL:13": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_13.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_13.tres"
+},
+"@MATERIAL:14": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_14.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_14.tres"
+},
+"@MATERIAL:15": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_15.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_15.tres"
+},
+"@MATERIAL:16": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_16.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_16.tres"
+},
+"@MATERIAL:17": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_17.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_17.tres"
+},
+"@MATERIAL:2": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_2.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_2.tres"
+},
+"@MATERIAL:3": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_3.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_3.tres"
+},
+"@MATERIAL:4": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_4.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_4.tres"
+},
+"@MATERIAL:5": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_5.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_5.tres"
+},
+"@MATERIAL:6": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_6.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_6.tres"
+},
+"@MATERIAL:7": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_7.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_7.tres"
+},
+"@MATERIAL:8": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_8.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_8.tres"
+},
+"@MATERIAL:9": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/@MATERIAL_9.tres",
+"use_external/path": "res://assets/blender/@MATERIAL_9.tres"
+},
+"Material.001": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material.001.tres",
+"use_external/path": "uid://cv5jbx8hnukpi"
+},
+"Material.002": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material.002.tres",
+"use_external/path": "uid://cnlrnljr7mqqs"
+},
+"Material.003": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material.003.tres",
+"use_external/path": "uid://bbs8cbvfcgw7h"
+},
+"Material.004": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material.004.tres",
+"use_external/path": "uid://dx6ljfsjra622"
+},
+"Material.005": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material.005.tres",
+"use_external/path": "uid://di7ik4h0381yn"
+},
+"Material.006": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material.006.tres",
+"use_external/path": "uid://bv4gcovwljsmw"
+},
+"Material.008": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material.008.tres",
+"use_external/path": "uid://h7nkyn7g1pmu"
+},
+"Material.009": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material.009.tres",
+"use_external/path": "uid://dc1hcx0ip4gnl"
+},
+"Material.010": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material.010.tres",
+"use_external/path": "uid://i3lxsa2iifm2"
+},
+"Material.011": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material.011.tres",
+"use_external/path": "uid://bbfw02qnj5sy3"
+},
+"Material.012": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material.012.tres",
+"use_external/path": "uid://cg1cea8ueajsn"
+},
+"Material.013": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material.013.tres",
+"use_external/path": "uid://dxb0eo8xkena7"
+}
+}
+}
 gltf/naming_version=2
 gltf/embedded_image_handling=1
