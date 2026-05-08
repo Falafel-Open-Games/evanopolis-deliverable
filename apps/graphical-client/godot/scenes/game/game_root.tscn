@@ -23,11 +23,13 @@ sky_material = SubResource("ProceduralSkyMaterial_f3gwi")
 
 [sub_resource type="Environment" id="Environment_scx5b"]
 background_mode = 2
-background_energy_multiplier = 0.8
+background_energy_multiplier = 0.96
 sky = SubResource("Sky_kdtot")
 sky_custom_fov = 115.8
 ambient_light_source = 3
 tonemap_mode = 2
+tonemap_exposure = 0.8
+tonemap_white = 2.0
 tonemap_agx_contrast = 1.0
 ssao_enabled = true
 
@@ -51,7 +53,7 @@ turn_actions = NodePath("HudRoot/SafeMargin/VBoxContainer/HBoxContainer/VBoxCont
 environment = SubResource("Environment_scx5b")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1205018361]
-transform = Transform3D(0.7071067, -0.49999997, 0.49999997, 0, 0.70710677, 0.70710677, -0.7071067, -0.49999997, 0.49999997, 0, 0, 0)
+transform = Transform3D(0.7071068, -0.5, 0.5, 0, 0.7071068, 0.70710677, -0.7071068, -0.5, 0.5, 0, 0, 1.9355111)
 light_energy = 0.4
 shadow_enabled = true
 sky_mode = 1
@@ -59,11 +61,11 @@ sky_mode = 1
 [node name="CameraRig" type="Node3D" parent="." unique_id=1640706551]
 
 [node name="GameCamera" type="Camera3D" parent="CameraRig" unique_id=1957603148]
-transform = Transform3D(1, 0, 0, 0, 0.898794, 0.43837112, 0, -0.43837112, 0.898794, 0, 8.587578, 15.020298)
+transform = Transform3D(1, 0, 0, 0, 0.82903755, 0.55919284, 0, -0.55919284, 0.82903755, 0, 5.43, 7.582)
 current = true
-fov = 8.0
+fov = 19.0
 size = 2.399
-far = 30.0
+far = 75.0
 
 [node name="BoardRoot" type="Node3D" parent="." unique_id=1523784243]
 
@@ -74,33 +76,31 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 shape = SubResource("BoxShape3D_k63du")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="BoardRoot/StaticBody3D" unique_id=1702885146]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.015847921, -0.5, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.01240415, -0.5, 0)
 mesh = SubResource("BoxMesh_cylga")
 surface_material_override/0 = SubResource("StandardMaterial3D_agidj")
 
 [node name="energy-diorama-pack" parent="BoardRoot" unique_id=625056848 instance=ExtResource("2_rx5uh")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.9892778)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.053766727)
 
 [node name="tiles" parent="BoardRoot" unique_id=1178582862 instance=ExtResource("3_bca70")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.9350533)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.00045776367)
 
 [node name="BottomTiles" parent="BoardRoot" unique_id=1131267383 instance=ExtResource("4_ndy65")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.935)
-visible = false
 
 [node name="Dices" type="Node3D" parent="BoardRoot" unique_id=575083848]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06374994, -1.935)
 
 [node name="D6A" parent="BoardRoot/Dices" unique_id=1922615818 instance=ExtResource("5_a6cr8")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.1, 0, 1.9355111)
 
 [node name="D6B" parent="BoardRoot/Dices" unique_id=428291115 instance=ExtResource("5_a6cr8")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.1, 0, 1.9355111)
 
 [node name="PawnRoot" type="Node3D" parent="." unique_id=979076114]
 
 [node name="pawns" parent="PawnRoot" unique_id=1452365867 instance=ExtResource("4_0krdv")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.935)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.00051116943)
 
 [node name="HudRoot" type="CanvasLayer" parent="." unique_id=1810049097]
 

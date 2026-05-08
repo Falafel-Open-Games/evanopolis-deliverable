@@ -37,6 +37,34 @@ import_script/path=""
 materials/extract=2
 materials/extract_format=0
 materials/extract_path=""
-_subresources={}
+_subresources={
+"materials": {
+"Material_0.002": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material_0.002.tres",
+"use_external/path": "uid://cmj7c5u61ku3y"
+},
+"Material_0.003": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material_0.003.tres",
+"use_external/path": "uid://c3q1dhrh5mv4c"
+},
+"Material_0.004": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material_0.004.tres",
+"use_external/path": "uid://ch5khwfqrfyyp"
+},
+"Material_0.005": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material_0.005.tres",
+"use_external/path": "uid://b6wqb5qk7c30r"
+},
+"Material_0.006": {
+"use_external/enabled": true,
+"use_external/fallback_path": "res://assets/blender/Material_0.006.tres",
+"use_external/path": "uid://c1cy7vt6t423h"
+}
+}
+}
 gltf/naming_version=2
 gltf/embedded_image_handling=1

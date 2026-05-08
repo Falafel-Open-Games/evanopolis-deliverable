@@ -2,14 +2,14 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://0q6fvixghprv"
+uid="uid://cl53y66wpuc34"
 path.s3tc="res://.godot/imported/energy-diorama-pack_Image_1_3.png-1f2d7d8babfa1bdf9403db0072a99242.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "296399c6aa5fef0919d0ae32c7fdde64"
+"md5": "c57e43a58427f8e20a60eb30e9f8943e"
 }
 
 [deps]

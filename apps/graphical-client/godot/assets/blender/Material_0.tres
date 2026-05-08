@@ -1,6 +1,6 @@
 [gd_resource type="StandardMaterial3D" format=3 uid="uid://b8pwdt2mu46br"]
 
-[ext_resource type="Texture2D" uid="uid://c4d2b6jkfo5or" path="res://assets/blender/energy-diorama-pack_Image_1.png" id="1_2umcw"]
+[ext_resource type="Texture2D" uid="uid://c16olhercqpmr" path="res://assets/blender/energy-diorama-pack_Image_1.png" id="1_2umcw"]
 [ext_resource type="Texture2D" uid="uid://bbj7x6ww0vnaa" path="res://assets/blender/energy-diorama-pack_Image_2_512.png" id="2_gtd5p"]
 
 [resource]

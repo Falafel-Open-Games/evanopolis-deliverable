@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://c3q1dhrh5mv4c"]
+
+[ext_resource type="Texture2D" uid="uid://cqcdmdwomwkn2" path="res://assets/blender/energy-diorama-pack_Image_1_1.png" id="1_axoqr"]
+
+[resource]
+resource_name = "Material_0.003"
+albedo_texture = ExtResource("1_axoqr")
+roughness = 0.5
