@@ -25,7 +25,7 @@ explicitly linked from here as an active runbook.
   client over the wrapper-owned iframe bridge.
 - `apps/graphical-client/` is now a real Godot client with waiting room,
   gameplay board, action UI, energy allocation, reconnect-aware session state,
-  and a documented devlog trail through `011`.
+  and a documented devlog trail through `012`.
 
 ## Delivery Gates
 
@@ -107,8 +107,9 @@ Status: important but not launch-blocking unless they hide authoritative state
 
 Focus here:
 
-- center-board dice presentation from `rpc_dice_rolled(...)`
-- gameplay feedback that keeps turn results readable without relying on logs
+- resilient in-match disconnect handling and reconnect feedback
+- gameplay feedback that keeps transport failures understandable without relying
+  on browser-console errors
 - only the narrowest polish needed to make real matches understandable during
   validation
 
@@ -185,10 +186,10 @@ Done when:
 - Current state: active gameplay client with waiting room, board integration,
   action controls, energy allocation, reconnect-aware session state, and a web
   export path used by the wrapper.
-- Open work: finish the highest-value gameplay readability slices and validate
-  the real browser launch/reconnect flow repeatedly.
-- Immediate next slice: center-board dice presentation, tracked in
-  `apps/graphical-client/docs/devlog/011.md`.
+- Open work: improve in-match disconnect handling and validate the real browser
+  launch/reconnect flow repeatedly.
+- Immediate next slice: in-match disconnect feedback and reconnect recovery,
+  tracked in `apps/graphical-client/docs/devlog/012.md`.
 
 ### `deploy/` And Runbooks
 
@@ -222,5 +223,4 @@ blockers.
 - add a credits page
 - polish the waiting room
 - polish gameplay event feedback
-- better handling and feedback for in-match socket disconnections
 - make the landing page and room creation pages visually strong
