@@ -27,6 +27,11 @@ func disconnect_transport() -> void:
         multiplayer.multiplayer_peer = null
     _websocket_peer = null
 
+func is_connected_to_server() -> bool:
+    if _websocket_peer == null:
+        return false
+    return _websocket_peer.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED
+
 func _on_connected_to_server() -> void:
     connected.emit()
 

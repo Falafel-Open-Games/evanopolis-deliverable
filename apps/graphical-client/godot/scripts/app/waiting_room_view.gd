@@ -62,12 +62,12 @@ func _on_identity_save_requested(display_name: String, icon_id: int, color_id: i
     identity_save_requested.emit(display_name, icon_id, color_id)
 
 func _configure_static_copy() -> void:
-    # info_body_label.text = ""
-    pass
+    info_body_label.text = "Buy energy-producing tiles, charge tolls when rivals land on them, and split your energy between selling for fiat or mining Bitcoin in a race to be the first player to reach 20 Bitcoin."
 
 func _show_placeholder() -> void:
     _ready_after_identity_save = false
     waiting_room_title_label.text = "Preparing launch handoff"
+    _configure_static_copy()
     identity_card.set_identity("Player", "No player id yet", DEFAULT_IDENTITY_ICON_FRAME, DEFAULT_IDENTITY_COLOR_ID)
     identity_editor_ui.set_local_player_id("")
     identity_editor_ui.sync_authoritative_identity("", "", DEFAULT_IDENTITY_ICON_FRAME, DEFAULT_IDENTITY_COLOR_ID)
@@ -81,7 +81,7 @@ func _render_waiting_room() -> void:
         _show_placeholder()
         return
 
-    waiting_room_title_label.text = "Waiting for players"
+    waiting_room_title_label.text = _waiting_room_status_text()
     identity_card.set_identity(
         _waiting_room_state.local_display_name,
         _short_player_id(_waiting_room_state.local_player_id),
@@ -100,6 +100,7 @@ func _render_waiting_room() -> void:
         _waiting_room_state.ready_count,
         _waiting_room_state.room_capacity,
     ]
+    _configure_static_copy()
 
     if _waiting_room_state.local_player_ready:
         _ready_after_identity_save = false
@@ -163,3 +164,11 @@ func _should_send_ready_after_identity_save() -> bool:
     if _waiting_room_state.ready_request_pending:
         return false
     return not identity_editor_ui.has_unsaved_identity_changes()
+
+func _waiting_room_status_text() -> String:
+    if _waiting_room_state == null:
+        return "Waiting for players"
+    var footer_note: String = _waiting_room_state.footer_note.strip_edges()
+    if not footer_note.is_empty():
+        return footer_note
+    return "Waiting for players"
