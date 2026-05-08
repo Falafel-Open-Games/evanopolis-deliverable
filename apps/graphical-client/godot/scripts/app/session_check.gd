@@ -53,9 +53,19 @@ enum SessionPhase {
     FAILED,
 }
 
+enum GameplayConnectionPhase {
+    CONNECTED,
+    CONNECTION_LOST,
+    RECONNECTING,
+    RESYNCING,
+    FAILED,
+}
+
 const MAX_CONNECT_ATTEMPTS: int = 2
+const GAMEPLAY_RECONNECT_DELAYS_SECONDS: Array[float] = [1.0, 2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 15.0, 15.0, 15.0]
 const RETRY_DELAY_SECONDS: float = 0.75
 const DEBUG_GAMEPLAY_ARGUMENT: String = "--debug"
+const RECONNECT_EVENT_LOG_KEY_PREFIX: String = "reconnect_status_"
 
 @export var boot_node: AppBoot
 
@@ -66,6 +76,7 @@ var _session_state: StatusCardState = StatusCardState.new(
     "This is the first server-backed step after the wrapper handoff."
 )
 var _phase: SessionPhase
+var _gameplay_connection_phase: GameplayConnectionPhase = GameplayConnectionPhase.CONNECTED
 var _current_player_id: String
 var _local_player_index: int
 var _has_auth_ok: bool
@@ -73,6 +84,7 @@ var _has_join_accepted: bool
 var _has_snapshot: bool
 var _connect_attempts: int
 var _retry_timer: Timer
+var _gameplay_reconnect_timer: Timer
 var _session_transport: SessionTransport
 var _room_game_id: String
 var _room_capacity: int
@@ -112,6 +124,9 @@ var _buy_property_request_pending: bool = false
 var _pay_toll_request_pending: bool = false
 var _end_turn_request_pending: bool = false
 var _energy_allocation_request_pending: bool = false
+var _gameplay_reconnect_attempts: int = 0
+var _active_reconnect_event_log_key: String = ""
+var _reconnect_event_log_sequence: int = 0
 
 func _ready() -> void:
     assert(boot_node)
@@ -160,6 +175,8 @@ func get_gameplay_turn_state() -> Dictionary:
         "current_player_name": current_player_name,
         "is_local_turn": _current_turn_player_index == _local_player_index,
         "is_local_winner": _winner_index >= 0 and _winner_index == _local_player_index,
+        "connection_state": _gameplay_connection_phase_name(),
+        "connection_interactive": _is_gameplay_connection_interactive(),
         "die_1": _last_die_1,
         "die_2": _last_die_2,
         "can_roll_dice": can_request_roll_dice(),
@@ -240,6 +257,8 @@ func can_request_player_identity() -> bool:
 func can_request_roll_dice() -> bool:
     if _phase != SessionPhase.GAME_STARTED:
         return false
+    if not _is_gameplay_connection_interactive():
+        return false
     if _launch_payload == null:
         return false
     if _current_player_id.is_empty():
@@ -258,6 +277,8 @@ func can_request_roll_dice() -> bool:
 
 func can_request_end_turn() -> bool:
     if _phase != SessionPhase.GAME_STARTED:
+        return false
+    if not _is_gameplay_connection_interactive():
         return false
     if _launch_payload == null:
         return false
@@ -286,6 +307,8 @@ func can_request_end_turn() -> bool:
 func can_request_buy_property(tile_index: int = -1) -> bool:
     if _phase != SessionPhase.GAME_STARTED:
         return false
+    if not _is_gameplay_connection_interactive():
+        return false
     if _launch_payload == null:
         return false
     if _current_player_id.is_empty():
@@ -309,6 +332,8 @@ func can_request_buy_property(tile_index: int = -1) -> bool:
 func can_request_pay_toll() -> bool:
     if _phase != SessionPhase.GAME_STARTED:
         return false
+    if not _is_gameplay_connection_interactive():
+        return false
     if _launch_payload == null:
         return false
     if _current_player_id.is_empty():
@@ -331,6 +356,8 @@ func can_request_pay_toll() -> bool:
 
 func can_request_energy_allocation() -> bool:
     if _phase != SessionPhase.GAME_STARTED:
+        return false
+    if not _is_gameplay_connection_interactive():
         return false
     if _launch_payload == null:
         return false
@@ -482,6 +509,7 @@ func _on_launch_payload_received(payload: LaunchPayloadModel) -> void:
         return
 
     _launch_payload = payload
+    _gameplay_connection_phase = GameplayConnectionPhase.CONNECTED
     _current_player_id = ""
     _local_player_index = -1
     _has_auth_ok = false
@@ -523,6 +551,9 @@ func _on_launch_payload_received(payload: LaunchPayloadModel) -> void:
     _pay_toll_request_pending = false
     _end_turn_request_pending = false
     _energy_allocation_request_pending = false
+    _gameplay_reconnect_attempts = 0
+    _active_reconnect_event_log_key = ""
+    _reconnect_event_log_sequence = 0
     _connect_to_server()
 
 func _connect_to_server() -> void:
@@ -538,6 +569,14 @@ func _connect_to_server() -> void:
 
 func _on_connected_to_server() -> void:
     assert(_launch_payload)
+    if _is_gameplay_reconnect_in_progress():
+        _has_auth_ok = false
+        _has_join_accepted = false
+        _has_snapshot = false
+        _set_gameplay_connection_phase(GameplayConnectionPhase.RECONNECTING)
+        rpc_id(1, "rpc_auth", _launch_payload._token)
+        return
+
     _update_state(
         SessionPhase.AUTHENTICATING,
         "Authenticating session",
@@ -547,11 +586,20 @@ func _on_connected_to_server() -> void:
     rpc_id(1, "rpc_auth", _launch_payload._token)
 
 func _on_connection_failed() -> void:
+    if _phase == SessionPhase.GAME_STARTED and _is_gameplay_reconnect_in_progress():
+        if _gameplay_reconnect_attempts <= GAMEPLAY_RECONNECT_DELAYS_SECONDS.size():
+            _schedule_gameplay_reconnect_retry()
+            return
+        _fail_gameplay_reconnect("Reconnect failed. Refresh to try again.")
+        return
     if _try_schedule_retry("The multiplayer connection to the game server failed."):
         return
     _fail_session("The multiplayer connection to the game server failed.")
 
 func _on_server_disconnected() -> void:
+    if _phase == SessionPhase.GAME_STARTED:
+        _begin_gameplay_reconnect()
+        return
     if _phase == SessionPhase.READY or _phase == SessionPhase.GAME_STARTED:
         return
     if _try_schedule_retry("The game server disconnected during session setup."):
@@ -562,7 +610,19 @@ func _on_server_disconnected() -> void:
 func rpc_auth_ok(player_id: String, _exp: int) -> void:
     assert(_launch_payload)
     if player_id.strip_edges() == "":
+        if _phase == SessionPhase.GAME_STARTED and _is_gameplay_reconnect_in_progress():
+            _fail_gameplay_reconnect("Reconnect failed because the server returned an empty player id.")
+            return
         _fail_session("The game server returned an empty player id.")
+        return
+
+    if _phase == SessionPhase.GAME_STARTED and _is_gameplay_reconnect_in_progress():
+        if not _current_player_id.is_empty() and player_id != _current_player_id:
+            _fail_gameplay_reconnect("Reconnect failed because the server authenticated a different player id.")
+            return
+        _current_player_id = player_id
+        _has_auth_ok = true
+        rpc_id(1, "rpc_join", _launch_payload._game_id, player_id)
         return
 
     _current_player_id = player_id
@@ -577,16 +637,39 @@ func rpc_auth_ok(player_id: String, _exp: int) -> void:
 
 @rpc("authority")
 func rpc_auth_error(reason: String) -> void:
+    if _phase == SessionPhase.GAME_STARTED and _is_gameplay_reconnect_in_progress():
+        _fail_gameplay_reconnect("Reconnect failed during authentication: %s" % reason)
+        return
     _fail_session("Authentication failed: %s" % reason)
 
 @rpc("authority")
 func rpc_join_accepted(_seq: int, player_id: String, player_index: int, last_seq: int) -> void:
     assert(_launch_payload)
     if not _has_auth_ok:
+        if _phase == SessionPhase.GAME_STARTED and _is_gameplay_reconnect_in_progress():
+            _fail_gameplay_reconnect("Reconnect failed because join success arrived before auth completed.")
+            return
         _fail_session("Received join success before auth completed.")
         return
     if player_id != _current_player_id:
+        if _phase == SessionPhase.GAME_STARTED and _is_gameplay_reconnect_in_progress():
+            _fail_gameplay_reconnect("Reconnect failed because the server accepted a different player id.")
+            return
         _fail_session("The server accepted a different player id than the one that authenticated.")
+        return
+
+    if _phase == SessionPhase.GAME_STARTED and _is_gameplay_reconnect_in_progress():
+        _has_join_accepted = true
+        _local_player_index = player_index
+        _known_player_ids[player_index] = player_id
+        _set_gameplay_connection_phase(GameplayConnectionPhase.RESYNCING)
+        _upsert_gameplay_event_log_message(
+            _current_reconnect_event_log_key(),
+            "Reconnected. Syncing game state.",
+            -1,
+            "🔄"
+        )
+        rpc_id(1, "rpc_sync_request", _launch_payload._game_id, player_id, last_seq)
         return
 
     _has_join_accepted = true
@@ -625,6 +708,7 @@ func rpc_action_rejected(_seq: int, reason: String) -> void:
 
 @rpc("authority")
 func rpc_state_snapshot(_seq: int, snapshot: Dictionary) -> void:
+    var is_gameplay_resync: bool = _phase == SessionPhase.GAME_STARTED and _is_gameplay_reconnect_in_progress()
     _has_snapshot = true
     _current_turn_number = int(snapshot.get("turn_number", _current_turn_number))
     _current_turn_player_index = int(snapshot.get("current_player_index", _current_turn_player_index))
@@ -645,8 +729,16 @@ func rpc_state_snapshot(_seq: int, snapshot: Dictionary) -> void:
         _pending_property_action = _build_property_action_state_from_pending_action(pending_action)
     _apply_player_positions_snapshot(snapshot)
     _apply_waiting_room_snapshot(snapshot)
-    _gameplay_event_log_messages.clear()
-    _append_gameplay_event_log_message("Game state sincronized")
+    if not is_gameplay_resync:
+        _gameplay_event_log_messages.clear()
+        _append_gameplay_event_log_message("Game state synchronized", -1, "🔄")
+    else:
+        _upsert_gameplay_event_log_message(
+            _current_reconnect_event_log_key(),
+            "Game state synchronized",
+            -1,
+            "🔄"
+        )
     if _match_has_finished and int(snapshot.get("winner_index", -1)) >= 0:
         _append_gameplay_snapshot_winner_message(
             int(snapshot.get("winner_index", -1)),
@@ -661,10 +753,29 @@ func rpc_state_snapshot(_seq: int, snapshot: Dictionary) -> void:
 @rpc("authority")
 func rpc_sync_complete(_seq: int, _final_seq: int) -> void:
     if not _has_join_accepted:
+        if _phase == SessionPhase.GAME_STARTED and _is_gameplay_reconnect_in_progress():
+            _fail_gameplay_reconnect("Reconnect failed because sync completion arrived before join acceptance.")
+            return
         _fail_session("Received sync completion before join acceptance.")
         return
     if not _has_snapshot:
+        if _phase == SessionPhase.GAME_STARTED and _is_gameplay_reconnect_in_progress():
+            _fail_gameplay_reconnect("Reconnect failed because sync completion arrived before state snapshot.")
+            return
         _fail_session("Received sync completion before state snapshot.")
+        return
+
+    if _phase == SessionPhase.GAME_STARTED and _is_gameplay_reconnect_in_progress():
+        _gameplay_reconnect_attempts = 0
+        _set_gameplay_connection_phase(GameplayConnectionPhase.CONNECTED)
+        _upsert_gameplay_event_log_message(
+            _current_reconnect_event_log_key(),
+            "Gameplay resumed",
+            -1,
+            "🔄"
+        )
+        _active_reconnect_event_log_key = ""
+        _emit_gameplay_turn_state()
         return
 
     if _match_has_started:
@@ -1083,6 +1194,7 @@ func _apply_waiting_room_snapshot(snapshot: Dictionary) -> void:
     _current_turn_number = int(snapshot.get("turn_number", _current_turn_number))
     _current_turn_player_index = int(snapshot.get("current_player_index", _current_turn_player_index))
     var players: Array = snapshot.get("players", [])
+    var snapshot_local_player_index: int = -1
     _room_capacity = max(_room_capacity, players.size())
     if _ready_players.size() < _room_capacity:
         _ready_players.resize(_room_capacity)
@@ -1102,6 +1214,8 @@ func _apply_waiting_room_snapshot(snapshot: Dictionary) -> void:
             var player_id: String = str(player_in_snapshot.get("player_id", ""))
             if not player_id.is_empty():
                 _known_player_ids[player_index] = player_id
+                if not _current_player_id.is_empty() and player_id == _current_player_id:
+                    snapshot_local_player_index = player_index
         _known_player_display_names[player_index] = str(player_in_snapshot.get("display_name", ""))
         _known_player_icon_ids[player_index] = int(player_in_snapshot.get("icon_id", -1))
         _known_player_color_ids[player_index] = int(player_in_snapshot.get("color_id", -1))
@@ -1117,6 +1231,8 @@ func _apply_waiting_room_snapshot(snapshot: Dictionary) -> void:
         )
         if bool(player_in_snapshot.get("ready", false)):
             _ready_players[player_index] = true
+    if snapshot_local_player_index >= 0:
+        _local_player_index = snapshot_local_player_index
     _emit_waiting_room_state()
 
 func _emit_waiting_room_state() -> void:
@@ -1324,6 +1440,34 @@ func _append_gameplay_event_log_message(message: String, player_index: int = -1,
     })
     _emit_gameplay_event_log_messages()
 
+func _upsert_gameplay_event_log_message(
+    key: String,
+    message: String,
+    player_index: int = -1,
+    icon: String = ""
+) -> void:
+    for event_index in range(_gameplay_event_log_messages.size()):
+        var event_entry: Variant = _gameplay_event_log_messages[event_index]
+        if not (event_entry is Dictionary):
+            continue
+        var event_dictionary: Dictionary = event_entry
+        if str(event_dictionary.get("key", "")) != key:
+            continue
+        event_dictionary["message"] = message
+        event_dictionary["color_id"] = _player_color_id(player_index) if player_index >= 0 else -1
+        event_dictionary["icon"] = icon
+        _gameplay_event_log_messages[event_index] = event_dictionary
+        _emit_gameplay_event_log_messages()
+        return
+
+    _gameplay_event_log_messages.append({
+        "key": key,
+        "message": message,
+        "color_id": _player_color_id(player_index) if player_index >= 0 else -1,
+        "icon": icon,
+    })
+    _emit_gameplay_event_log_messages()
+
 func _append_gameplay_snapshot_winner_message(winner_index: int, end_reason: String) -> void:
     if end_reason == "btc_goal_reached":
         _append_gameplay_event_log_message(
@@ -1428,6 +1572,105 @@ func _has_debug_argument() -> bool:
         if argument == DEBUG_GAMEPLAY_ARGUMENT or argument.begins_with("%s=" % DEBUG_GAMEPLAY_ARGUMENT):
             return true
     return false
+
+func _is_gameplay_connection_interactive() -> bool:
+    return _gameplay_connection_phase == GameplayConnectionPhase.CONNECTED
+
+func _is_gameplay_reconnect_in_progress() -> bool:
+    return (
+        _gameplay_connection_phase == GameplayConnectionPhase.CONNECTION_LOST
+        or _gameplay_connection_phase == GameplayConnectionPhase.RECONNECTING
+        or _gameplay_connection_phase == GameplayConnectionPhase.RESYNCING
+    )
+
+func _gameplay_connection_phase_name() -> String:
+    match _gameplay_connection_phase:
+        GameplayConnectionPhase.CONNECTED:
+            return "connected"
+        GameplayConnectionPhase.CONNECTION_LOST:
+            return "connection_lost"
+        GameplayConnectionPhase.RECONNECTING:
+            return "reconnecting"
+        GameplayConnectionPhase.RESYNCING:
+            return "resyncing"
+        GameplayConnectionPhase.FAILED:
+            return "failed"
+    return "connected"
+
+func _set_gameplay_connection_phase(phase: int) -> void:
+    _gameplay_connection_phase = phase as GameplayConnectionPhase
+
+func _clear_gameplay_request_pending_flags() -> void:
+    _roll_request_pending = false
+    _buy_property_request_pending = false
+    _pay_toll_request_pending = false
+    _end_turn_request_pending = false
+    _energy_allocation_request_pending = false
+
+func _begin_gameplay_reconnect() -> void:
+    if _gameplay_connection_phase == GameplayConnectionPhase.FAILED:
+        return
+    if _is_gameplay_reconnect_in_progress():
+        return
+    _set_gameplay_connection_phase(GameplayConnectionPhase.CONNECTION_LOST)
+    _gameplay_reconnect_attempts = 0
+    _clear_gameplay_request_pending_flags()
+    _reconnect_event_log_sequence += 1
+    _active_reconnect_event_log_key = "%s%d" % [RECONNECT_EVENT_LOG_KEY_PREFIX, _reconnect_event_log_sequence]
+    _upsert_gameplay_event_log_message(
+        _current_reconnect_event_log_key(),
+        "Connection lost. Reconnecting.",
+        -1,
+        "⚠️"
+    )
+    _emit_gameplay_turn_state()
+    _start_gameplay_reconnect_attempt()
+
+func _schedule_gameplay_reconnect_retry() -> void:
+    if _gameplay_reconnect_timer == null:
+        _gameplay_reconnect_timer = Timer.new()
+        _gameplay_reconnect_timer.one_shot = true
+        add_child(_gameplay_reconnect_timer)
+        _gameplay_reconnect_timer.timeout.connect(_on_gameplay_reconnect_timer_timeout)
+    var retry_delay_seconds: float = _next_gameplay_reconnect_delay_seconds()
+    var next_attempt_number: int = _gameplay_reconnect_attempts + 1
+    _set_gameplay_connection_phase(GameplayConnectionPhase.RECONNECTING)
+    _upsert_gameplay_event_log_message(
+        _current_reconnect_event_log_key(),
+        "Reconnect attempt %d failed. Retrying in %.0fs." % [next_attempt_number - 1, retry_delay_seconds],
+        -1,
+        "🔄"
+    )
+    _gameplay_reconnect_timer.start(retry_delay_seconds)
+    _emit_gameplay_turn_state()
+
+func _start_gameplay_reconnect_attempt() -> void:
+    assert(_launch_payload)
+    _gameplay_reconnect_attempts += 1
+    _set_gameplay_connection_phase(GameplayConnectionPhase.RECONNECTING)
+    _session_transport.disconnect_transport()
+    _session_transport.connect_to_server(_launch_payload._game_server_url)
+    _emit_gameplay_turn_state()
+
+func _on_gameplay_reconnect_timer_timeout() -> void:
+    _start_gameplay_reconnect_attempt()
+
+func _fail_gameplay_reconnect(message: String) -> void:
+    _set_gameplay_connection_phase(GameplayConnectionPhase.FAILED)
+    _clear_gameplay_request_pending_flags()
+    _upsert_gameplay_event_log_message(_current_reconnect_event_log_key(), message, -1, "⚠️")
+    _active_reconnect_event_log_key = ""
+    _emit_gameplay_turn_state()
+
+func _next_gameplay_reconnect_delay_seconds() -> float:
+    if _gameplay_reconnect_attempts <= 0:
+        return GAMEPLAY_RECONNECT_DELAYS_SECONDS[0]
+    var delay_index: int = mini(_gameplay_reconnect_attempts - 1, GAMEPLAY_RECONNECT_DELAYS_SECONDS.size() - 1)
+    return float(GAMEPLAY_RECONNECT_DELAYS_SECONDS[delay_index])
+
+func _current_reconnect_event_log_key() -> String:
+    assert(not _active_reconnect_event_log_key.is_empty())
+    return _active_reconnect_event_log_key
 
 
 func _try_schedule_retry(message: String) -> bool:
