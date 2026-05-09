@@ -271,7 +271,8 @@ func _sync_gameplay_turn_info() -> void:
         int(turn_state.get("turn_number", 1)),
         str(turn_state.get("current_player_name", "Player")),
         bool(turn_state.get("is_local_turn", false)),
-        int(turn_state.get("current_player_index", -1))
+        int(turn_state.get("current_player_index", -1)),
+        bool(turn_state.get("is_match_finished", false))
     )
     _game_root.call(
         "set_dice_values",

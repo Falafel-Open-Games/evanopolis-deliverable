@@ -85,12 +85,19 @@ func set_local_player_identity(icon_id: int, color_id: int) -> void:
         return
     top_bar.set_local_player_identity(icon_id, color_id)
 
-func set_turn_info(turn_number: int, player_name: String, is_local_turn: bool, current_player_index: int) -> void:
+func set_turn_info(
+    turn_number: int,
+    player_name: String,
+    is_local_turn: bool,
+    current_player_index: int,
+    is_match_finished: bool = false
+) -> void:
     if not is_node_ready():
-        call_deferred("set_turn_info", turn_number, player_name, is_local_turn, current_player_index)
+        call_deferred("set_turn_info", turn_number, player_name, is_local_turn, current_player_index, is_match_finished)
         return
     top_bar.set_turn_info(turn_number, player_name, is_local_turn)
     players_list_panel.set_current_turn_player_index(current_player_index)
+    players_list_panel.set_match_finished(is_match_finished)
 
 func set_dice_values(die_1: int, die_2: int) -> void:
     if not is_node_ready():

@@ -178,6 +178,7 @@ func get_gameplay_turn_state() -> Dictionary:
         "current_player_name": current_player_name,
         "is_local_turn": _current_turn_player_index == _local_player_index,
         "is_local_winner": _winner_index >= 0 and _winner_index == _local_player_index,
+        "is_match_finished": _match_has_finished,
         "connection_state": _gameplay_connection_phase_name(),
         "connection_interactive": _is_gameplay_connection_interactive(),
         "die_1": _last_die_1,
