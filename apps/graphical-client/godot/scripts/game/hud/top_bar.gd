@@ -12,7 +12,7 @@ const OTHER_TURN_COLOR: Color = Color(0.980392, 0.94902, 0.870588, 1.0)
 @onready var bitcoin_value_label: Label = get_node(^"MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer3/VBoxContainer2/BitcoinValue")
 @onready var bitcoin_progress_bar: ProgressBar = get_node(^"MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer3/VBoxContainer2/ProgressBar")
 @onready var fiat_value_label: Label = get_node(^"MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer/VBoxContainer/FiatValue")
-@onready var energy_value_label: Label = get_node(^"MarginContainer/HBoxContainer/GameGoal/MarginContainer/VBoxContainer/Label")
+@onready var energy_value_label: Label = get_node(^"MarginContainer/HBoxContainer/EnergyPanel/MarginContainer/VBoxContainer/Label")
 
 func _ready() -> void:
     assert(avatar_box)
