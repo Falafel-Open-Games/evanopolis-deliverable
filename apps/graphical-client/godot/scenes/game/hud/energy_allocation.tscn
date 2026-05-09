@@ -4,6 +4,18 @@
 [ext_resource type="Theme" uid="uid://chh78tpswepp7" path="res://default_theme.tres" id="1_e1hnk"]
 [ext_resource type="PackedScene" uid="uid://dxfoynfa302k7" path="res://scenes/app/panel_blurried_bg.tscn" id="2_cjbq1"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cjbq1"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.101960786, 0.101960786, 0.101960786, 0.8980392)
+corner_radius_top_left = 10
+corner_radius_top_right = 9
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a6cr8"]
 content_margin_top = 7.0
 bg_color = Color(0.8235294, 0.49803922, 0.30588236, 1)
@@ -22,6 +34,13 @@ script = ExtResource("1_1t2l8")
 
 [node name="PanelBlurriedBg" parent="." unique_id=1137042040 instance=ExtResource("2_cjbq1")]
 layout_mode = 2
+
+[node name="Panel2" type="Panel" parent="." unique_id=1302456100]
+clip_contents = true
+custom_minimum_size = Vector2(0, 29)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_cjbq1")
 
 [node name="Panel" type="Panel" parent="." unique_id=568257413]
 layout_mode = 2
@@ -46,6 +65,16 @@ theme = ExtResource("1_e1hnk")
 theme_type_variation = &"SubsectionTitle"
 theme_override_colors/font_color = Color(0.078431375, 0.69803923, 0.5882353, 1)
 text = "Sell Energy"
+
+[node name="SellEnergyLabel2" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1335281602]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("1_e1hnk")
+theme_type_variation = &"SubsectionTitle"
+theme_override_colors/font_color = Color(0.8, 0.6117647, 0.28627452, 1)
+theme_override_font_sizes/font_size = 15
+text = "↵↳"
+horizontal_alignment = 1
 
 [node name="MineBitcoinLabel" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1954739404]
 layout_mode = 2

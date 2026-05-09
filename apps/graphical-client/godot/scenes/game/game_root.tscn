@@ -162,7 +162,7 @@ size_flags_vertical = 3
 [node name="EnergyAllocation" parent="HudRoot/SafeMargin" unique_id=2051949682 instance=ExtResource("11_a6cr8")]
 layout_mode = 2
 size_flags_vertical = 0
-theme_override_constants/margin_top = 64
+theme_override_constants/margin_top = 51
 
 [node name="HudIntroController" type="Node" parent="HudRoot" unique_id=1251668087 node_paths=PackedStringArray("top_bar", "players_list", "event_log", "turn_actions", "energy_allocation", "initial_logo")]
 script = ExtResource("2_8k27q")

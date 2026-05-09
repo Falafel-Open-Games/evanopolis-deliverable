@@ -87,7 +87,8 @@ func _update_energy_allocation_previews(sell_percent: int) -> void:
 
 func _update_submit_allocation_button() -> void:
     var has_pending_change: bool = int(round(sell_vs_mine_slider.value)) != _accepted_sell_percent
-    submit_allocation_button.disabled = not _can_submit_allocation or not has_pending_change
+    submit_allocation_button.visible = _can_submit_allocation
+    submit_allocation_button.disabled = not has_pending_change
 
 func _format_preview_amount(value: float, decimals: int) -> String:
     var text: String = String.num(value, decimals)
