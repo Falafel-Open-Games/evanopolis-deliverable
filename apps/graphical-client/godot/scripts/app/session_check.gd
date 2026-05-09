@@ -921,7 +921,7 @@ func rpc_energy_allocation_changed(_seq: int, player_index: int, sell_percent: i
     _emit_gameplay_turn_state()
 
 @rpc("authority")
-func rpc_player_eliminated(_seq: int, player_index: int, reason: String) -> void:
+func rpc_player_eliminated(_seq: int, player_index: int, _reason: String) -> void:
     _active_players[player_index] = false
     _player_fiat_balances[player_index] = 0.0
     _player_bitcoin_balances[player_index] = 0.0

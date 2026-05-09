@@ -5,8 +5,8 @@ const TopBarView = preload("res://scripts/game/hud/top_bar.gd")
 const PlayersListPanelView = preload("res://scripts/game/hud/players_list_panel.gd")
 const PawnCollectionView = preload("res://scripts/game/pawns/pawn_collection.gd")
 const EventLogPanelView = preload("res://scripts/game/hud/event_log_panel.gd")
-const EnergyAllocationView = preload("res://scripts/game/hud/energy_allocation.gd")
-const TurnActionsView = preload("res://scripts/game/hud/turn_actions.gd")
+const EnergyAllocationScript = preload("res://scripts/game/hud/energy_allocation.gd")
+const TurnActionsScript = preload("res://scripts/game/hud/turn_actions.gd")
 const DEBUG_GAMEPLAY_ARGUMENT: String = "--debug"
 const DIE_FACE_NORMALS: Dictionary = {
     1: Vector3.DOWN,
@@ -33,12 +33,12 @@ signal energy_allocation_requested(sell_percent: int)
 @onready var pawn_collection: PawnCollectionView = get_node(^"PawnRoot/pawns")
 @onready var hud_root: CanvasLayer = get_node(^"HudRoot")
 @onready var camera_rig: Node3D = get_node(^"CameraRig")
-@onready var energy_allocation: EnergyAllocationView = find_child("EnergyAllocation", true, false) as EnergyAllocationView
+@onready var energy_allocation: EnergyAllocationScript = find_child("EnergyAllocation", true, false) as EnergyAllocationScript
 
 @export var top_bar: TopBarView
 @export var players_list_panel: PlayersListPanelView
 @export var event_log_panel: EventLogPanelView
-@export var turn_actions: TurnActionsView
+@export var turn_actions: TurnActionsScript
 
 var _player_color_ids_by_index: Dictionary = { }
 var _tile_owner_indices_by_tile_index: Dictionary = { }
@@ -294,6 +294,7 @@ func _capture_tile_stack_nodes() -> void:
         var tile_index: int = int(tile_index_variant)
         var land_tile: Node3D = _land_tile_nodes_by_index[tile_index_variant] as Node3D
         assert(land_tile != null)
+        @warning_ignore("integer_division")
         var side_index: int = tile_index / 3
         var tile_suffix: String = "%03d" % side_index
         assert(_base_tile_materials_by_suffix.has(tile_suffix))
