@@ -777,8 +777,7 @@ func rpc_state_snapshot(_seq: int, snapshot: Dictionary) -> void:
     _has_rolled_current_turn = bool(snapshot.get("has_rolled_current_turn", false))
     _last_die_1 = int(snapshot.get("last_die_1", 6))
     _last_die_2 = int(snapshot.get("last_die_2", 6))
-    _buy_property_request_pending = false
-    _pay_toll_request_pending = false
+    _clear_gameplay_request_pending_flags()
     _pending_action_type = ""
     _pending_action_tile_index = -1
     _pending_property_action.clear()
@@ -1009,6 +1008,7 @@ func rpc_turn_started(_seq: int, player_index: int, turn_number: int, _cycle: in
     _buy_property_request_pending = false
     _pay_toll_request_pending = false
     _end_turn_request_pending = false
+    _energy_allocation_request_pending = false
     _pending_action_type = ""
     _pending_action_tile_index = -1
     _pending_property_action.clear()

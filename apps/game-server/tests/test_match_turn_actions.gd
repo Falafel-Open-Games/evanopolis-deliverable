@@ -643,7 +643,7 @@ func test_buy_property_rejected_for_insufficient_fiat() -> void:
     assert_eq(reason, "insufficient_fiat", "buy rejects when player cannot afford property")
 
 
-func test_turn_number_increments_after_last_player_ends_turn() -> void:
+func test_turn_number_increments_after_each_player_turn() -> void:
     var config: Config = Config.from_values("demo_002", 2, 18)
     var game_match: GameMatch = GameMatch.new(config, [])
     var client_a: MatchTestClient = MatchTestClient.new()
@@ -653,11 +653,14 @@ func test_turn_number_increments_after_last_player_ends_turn() -> void:
 
     game_match.rpc_roll_dice("demo_002", "alice")
     assert_eq(game_match.rpc_end_turn("demo_002", "alice"), "", "alice ends turn")
+    assert_eq(game_match.state.current_player_index, 1, "turn advances to second player")
+    assert_eq(game_match.state.turn_number, 2, "turn number increments after first player resolves turn")
+
     game_match.rpc_roll_dice("demo_002", "bob")
     assert_eq(game_match.rpc_end_turn("demo_002", "bob"), "", "bob ends turn")
 
     assert_eq(game_match.state.current_player_index, 0, "turn wraps to first player")
-    assert_eq(game_match.state.turn_number, 2, "turn number increments after last player resolves turn")
+    assert_eq(game_match.state.turn_number, 3, "turn number increments again after second player resolves turn")
 
 
 func _filter_events(client: MatchTestClient, method: String) -> Array[Dictionary]:

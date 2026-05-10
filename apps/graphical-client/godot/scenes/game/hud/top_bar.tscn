@@ -98,7 +98,7 @@ theme_override_constants/margin_bottom = 2
 layout_mode = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer" unique_id=1152700861]
-custom_minimum_size = Vector2(86, 0)
+custom_minimum_size = Vector2(75, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/margin_top = 8
@@ -131,7 +131,7 @@ theme_override_constants/separation = 6
 [node name="EnergySection" type="MarginContainer" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer" unique_id=1039373679]
 layout_mode = 2
 theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
+theme_override_constants/margin_top = 9
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 2
 
@@ -146,45 +146,21 @@ theme = ExtResource("3_g1q52")
 theme_type_variation = &"ResourceLabel"
 theme_override_colors/font_color = Color(0.88235295, 0.654902, 0.29411766, 1)
 text = "⚡ 0"
+horizontal_alignment = 1
 
 [node name="Label2" type="Label" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer/EnergySection/VBoxContainer" unique_id=493324129]
 layout_mode = 2
 theme = ExtResource("3_g1q52")
 text = "Energy"
+horizontal_alignment = 1
 uppercase = true
 
 [node name="VSeparator2" type="VSeparator" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer" unique_id=699405016]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="MarginContainer2" type="MarginContainer" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer" unique_id=210557936]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="VBoxContainer2" type="VBoxContainer" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer2" unique_id=864898791]
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_constants/separation = 0
-
-[node name="EnergyValue" type="Label" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer2/VBoxContainer2" unique_id=1662141715]
-layout_mode = 2
-size_flags_vertical = 6
-theme = ExtResource("3_g1q52")
-theme_type_variation = &"ResourceLabel"
-theme_override_colors/font_color = Color(0.98039216, 0.68235296, 0.28627452, 1)
-text = "⚡ 0"
-horizontal_alignment = 1
-
-[node name="EnergyLabel" type="Label" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer/MarginContainer2/VBoxContainer2" unique_id=1869862282]
-layout_mode = 2
-theme = ExtResource("3_g1q52")
-text = " Energy"
-horizontal_alignment = 1
-uppercase = true
-
 [node name="MarginContainer3" type="MarginContainer" parent="MarginContainer/GameResources/MarginContainer2/HBoxContainer" unique_id=1797642481]
-custom_minimum_size = Vector2(88, 0)
+custom_minimum_size = Vector2(75, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/margin_left = 0
@@ -216,3 +192,92 @@ theme = ExtResource("3_g1q52")
 text = " Bitcoin"
 horizontal_alignment = 1
 uppercase = true
+
+[node name="PerTurnSummary" type="MarginContainer" parent="MarginContainer" unique_id=1704976885]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/PerTurnSummary" unique_id=487631414]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/PerTurnSummary/HBoxContainer" unique_id=1934572474]
+layout_mode = 2
+
+[node name="PerTurnTitle" type="Label" parent="MarginContainer/PerTurnSummary/HBoxContainer/VBoxContainer" unique_id=1858788448]
+layout_mode = 2
+theme = ExtResource("3_g1q52")
+theme_type_variation = &"SubsectionTitle"
+text = "Production Per Turn"
+horizontal_alignment = 1
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="MarginContainer/PerTurnSummary/HBoxContainer/VBoxContainer" unique_id=2017886849]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/PerTurnSummary/HBoxContainer/VBoxContainer/HBoxContainer2" unique_id=2126758672]
+layout_mode = 2
+
+[node name="Panel" type="Panel" parent="MarginContainer/PerTurnSummary/HBoxContainer/VBoxContainer/HBoxContainer2/MarginContainer" unique_id=1333299790]
+layout_mode = 2
+theme = ExtResource("3_g1q52")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/PerTurnSummary/HBoxContainer/VBoxContainer/HBoxContainer2/MarginContainer" unique_id=1612273481]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/PerTurnSummary/HBoxContainer/VBoxContainer/HBoxContainer2/MarginContainer/HBoxContainer" unique_id=25244849]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/PerTurnSummary/HBoxContainer/VBoxContainer/HBoxContainer2/MarginContainer/HBoxContainer/MarginContainer" unique_id=218276784]
+custom_minimum_size = Vector2(35, 0)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="FiatValuePerTurn" type="Label" parent="MarginContainer/PerTurnSummary/HBoxContainer/VBoxContainer/HBoxContainer2/MarginContainer/HBoxContainer/MarginContainer/VBoxContainer" unique_id=1747851321]
+layout_mode = 2
+size_flags_vertical = 6
+theme = ExtResource("3_g1q52")
+theme_type_variation = &"ResourceLabel"
+theme_override_colors/font_color = Color(0.015686275, 0.8, 0.68235296, 1)
+theme_override_font_sizes/font_size = 11
+text = "$ 5"
+horizontal_alignment = 1
+
+[node name="VSeparator" type="VSeparator" parent="MarginContainer/PerTurnSummary/HBoxContainer/VBoxContainer/HBoxContainer2/MarginContainer/HBoxContainer" unique_id=1324837358]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="MarginContainer3" type="MarginContainer" parent="MarginContainer/PerTurnSummary/HBoxContainer/VBoxContainer/HBoxContainer2/MarginContainer/HBoxContainer" unique_id=2101120952]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="MarginContainer/PerTurnSummary/HBoxContainer/VBoxContainer/HBoxContainer2/MarginContainer/HBoxContainer/MarginContainer3" unique_id=2007271272]
+custom_minimum_size = Vector2(35, 0)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="BitcoinValuePerTurn" type="Label" parent="MarginContainer/PerTurnSummary/HBoxContainer/VBoxContainer/HBoxContainer2/MarginContainer/HBoxContainer/MarginContainer3/VBoxContainer2" unique_id=950879166]
+layout_mode = 2
+size_flags_vertical = 6
+theme = ExtResource("3_g1q52")
+theme_type_variation = &"ResourceLabel"
+theme_override_colors/font_color = Color(0.83137256, 0.5058824, 0.3137255, 1)
+theme_override_font_sizes/font_size = 11
+text = "₿ 0.02"
+horizontal_alignment = 1
+
+[node name="OpenAllocationButton" type="Button" parent="MarginContainer/PerTurnSummary/HBoxContainer" unique_id=160639078]
+custom_minimum_size = Vector2(55, 24)
+layout_mode = 2
+size_flags_vertical = 8
+mouse_default_cursor_shape = 2
+theme_override_font_sizes/font_size = 9
+toggle_mode = true
+text = "Change"

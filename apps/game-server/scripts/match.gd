@@ -703,8 +703,9 @@ func _advance_turn() -> void:
             wrapped = true
         if not _is_player_active(next_player_index):
             continue
+        state.turn_number += 1
         if wrapped:
-            state.turn_number += 1
+            state.current_cycle += 1
         state.current_player_index = next_player_index
         _broadcast("rpc_turn_started", [state.current_player_index, state.turn_number, state.current_cycle])
         return

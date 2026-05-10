@@ -10,10 +10,10 @@ content_margin_top = 0.0
 content_margin_right = 0.0
 content_margin_bottom = 0.0
 bg_color = Color(0.101960786, 0.101960786, 0.101960786, 0.8980392)
-corner_radius_top_left = 10
-corner_radius_top_right = 9
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 corner_detail = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a6cr8"]
@@ -37,7 +37,7 @@ layout_mode = 2
 
 [node name="Panel2" type="Panel" parent="." unique_id=1302456100]
 clip_contents = true
-custom_minimum_size = Vector2(0, 29)
+custom_minimum_size = Vector2(38, 21)
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_cjbq1")
@@ -49,12 +49,13 @@ theme = ExtResource("1_e1hnk")
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=1709196722]
 layout_mode = 2
 theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
+theme_override_constants/margin_top = 4
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1227278381]
 layout_mode = 2
+theme_override_constants/separation = 4
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1390471303]
 layout_mode = 2
@@ -66,13 +67,13 @@ theme_type_variation = &"SubsectionTitle"
 theme_override_colors/font_color = Color(0.078431375, 0.69803923, 0.5882353, 1)
 text = "Sell Energy"
 
-[node name="SellEnergyLabel2" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1335281602]
+[node name="Arrows" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1335281602]
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("1_e1hnk")
 theme_type_variation = &"SubsectionTitle"
 theme_override_colors/font_color = Color(0.8, 0.6117647, 0.28627452, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 12
 text = "↵↳"
 horizontal_alignment = 1
 
@@ -85,9 +86,8 @@ theme_override_colors/font_color = Color(0.87058824, 0.5176471, 0.3137255, 1)
 text = "Mine Bitcoin"
 
 [node name="SellVsMineSlider" type="HSlider" parent="MarginContainer/VBoxContainer" unique_id=656501014]
-custom_minimum_size = Vector2(146, 0)
+custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
-size_flags_vertical = 4
 theme_override_styles/slider = SubResource("StyleBoxFlat_a6cr8")
 theme_override_styles/grabber_area = SubResource("StyleBoxFlat_c2lvh")
 theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_i88f8")
@@ -96,6 +96,7 @@ value = 50.0
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1840215577]
 layout_mode = 2
+size_flags_vertical = 0
 
 [node name="EnergyPreview" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer2" unique_id=1293793494]
 layout_mode = 2

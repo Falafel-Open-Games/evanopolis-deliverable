@@ -13,7 +13,8 @@ var _current_mine_100_btc_total: float = 0.0
 var _accepted_sell_percent: int = 50
 var _can_submit_allocation: bool = false
 var _ignore_slider_value_changed: bool = false
-var _should_show: bool = false
+var _is_available: bool = false
+var _is_open: bool = false
 
 func _ready() -> void:
     assert(sell_vs_mine_slider)
@@ -44,8 +45,14 @@ func set_energy_allocation_state(
             should_show
         )
         return
-    _should_show = should_show
-    visible = should_show
+    _is_available = (
+        should_show
+        or can_edit
+        or is_request_pending
+        or sell_100_fiat_total > 0.0
+        or mine_100_btc_total > 0.0
+    )
+    visible = _is_available and _is_open
     _accepted_sell_percent = clampi(sell_percent, 0, 100)
     _current_sell_100_fiat_total = maxf(0.0, sell_100_fiat_total)
     _current_mine_100_btc_total = maxf(0.0, mine_100_btc_total)
@@ -56,6 +63,16 @@ func set_energy_allocation_state(
     _ignore_slider_value_changed = false
     _update_energy_allocation_previews(_accepted_sell_percent)
     _update_submit_allocation_button()
+
+func set_panel_open(is_open: bool) -> void:
+    _is_open = is_open and _is_available
+    visible = _is_available and _is_open
+
+func is_panel_open() -> bool:
+    return _is_open
+
+func is_panel_available() -> bool:
+    return _is_available
 
 func _on_sell_vs_mine_slider_value_changed(value: float) -> void:
     if _ignore_slider_value_changed:
@@ -100,4 +117,4 @@ func _format_preview_amount(value: float, decimals: int) -> String:
     return text
 
 func should_show_in_intro() -> bool:
-    return _should_show
+    return visible

@@ -75,6 +75,7 @@ func _ready() -> void:
     turn_actions.pay_toll_requested.connect(_on_pay_toll_pressed)
     turn_actions.end_turn_requested.connect(_on_end_turn_pressed)
     energy_allocation.allocation_requested.connect(_on_energy_allocation_requested)
+    top_bar.energy_allocation_toggle_requested.connect(_on_energy_allocation_toggle_requested)
     set_turn_action_state(false, false, false, { })
     set_energy_allocation_state(50, false, 0.0, 0.0, false, false)
     set_dice_values(6, 6)
@@ -170,6 +171,11 @@ func set_energy_allocation_state(
         mine_100_btc_total,
         is_request_pending,
         should_show
+    )
+    top_bar.set_per_turn_production(sell_percent, sell_100_fiat_total, mine_100_btc_total)
+    top_bar.set_energy_allocation_toggle_state(
+        energy_allocation.is_panel_available(),
+        energy_allocation.is_panel_open()
     )
 
 func set_pawn_tile_positions(tile_positions_by_player_index: Dictionary) -> void:
@@ -273,7 +279,19 @@ func _has_debug_argument() -> bool:
     return false
 
 func _on_energy_allocation_requested(sell_percent: int) -> void:
+    energy_allocation.set_panel_open(false)
+    top_bar.set_energy_allocation_toggle_state(
+        energy_allocation.is_panel_available(),
+        energy_allocation.is_panel_open()
+    )
     energy_allocation_requested.emit(sell_percent)
+
+func _on_energy_allocation_toggle_requested(is_pressed: bool) -> void:
+    energy_allocation.set_panel_open(is_pressed)
+    top_bar.set_energy_allocation_toggle_state(
+        energy_allocation.is_panel_available(),
+        energy_allocation.is_panel_open()
+    )
 
 func _set_die_face_up(die_node: Node3D, face_value: int) -> void:
     assert(die_node != null)
