@@ -6,7 +6,9 @@ import argparse
 import http.client
 import os
 import select
+import shutil
 import socket
+from http import HTTPStatus
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -22,6 +24,16 @@ HOP_BY_HOP_HEADERS = {
     "trailers",
     "transfer-encoding",
     "upgrade",
+}
+
+PRECOMPRESSIBLE_EXTENSIONS = {
+    ".css",
+    ".html",
+    ".js",
+    ".json",
+    ".pck",
+    ".svg",
+    ".wasm",
 }
 
 
@@ -54,6 +66,78 @@ class StaticWrapperHandler(SimpleHTTPRequestHandler):
             self._proxy_request()
             return
         self.send_error(501, "Unsupported method")
+
+    def copyfile(self, source, outputfile) -> None:
+        try:
+            shutil.copyfileobj(source, outputfile)
+        except (BrokenPipeError, ConnectionResetError):
+            # The browser or tunnel closed the downstream connection while a
+            # large static asset was still streaming. Treat this as a normal
+            # client disconnect instead of printing a full server traceback.
+            pass
+
+    def send_head(self):
+        path = self.translate_path(self.path)
+        if os.path.isdir(path):
+            if not self.path.endswith("/"):
+                self.send_response(HTTPStatus.MOVED_PERMANENTLY)
+                self.send_header("Location", self.path + "/")
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+                return None
+
+            for index_name in self.index_pages:
+                index_path = os.path.join(path, index_name)
+                if os.path.isfile(index_path):
+                    path = index_path
+                    break
+            else:
+                return self.list_directory(path)
+
+        if path.endswith("/"):
+            self.send_error(HTTPStatus.NOT_FOUND, "File not found")
+            return None
+
+        selected_path, content_encoding = self._select_static_variant(path)
+        try:
+            file_handle = open(selected_path, "rb")
+        except OSError:
+            self.send_error(HTTPStatus.NOT_FOUND, "File not found")
+            return None
+
+        try:
+            file_stat = os.fstat(file_handle.fileno())
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-type", self.guess_type(path))
+            self.send_header("Content-Length", str(file_stat.st_size))
+            self.send_header("Last-Modified", self.date_time_string(file_stat.st_mtime))
+            if content_encoding is not None:
+                self.send_header("Content-Encoding", content_encoding)
+                self.send_header("Vary", "Accept-Encoding")
+            self.end_headers()
+            return file_handle
+        except Exception:
+            file_handle.close()
+            raise
+
+    def _select_static_variant(self, path: str) -> tuple[str, str | None]:
+        original_path = Path(path)
+        if original_path.suffix not in PRECOMPRESSIBLE_EXTENSIONS:
+            return path, None
+
+        accepted_encodings = self.headers.get("Accept-Encoding", "").lower()
+        preferred_variants = (
+            (".br", "br"),
+            (".gz", "gzip"),
+        )
+        for extension, encoding in preferred_variants:
+            if encoding not in accepted_encodings:
+                continue
+            candidate_path = Path("%s%s" % (path, extension))
+            if candidate_path.is_file():
+                return os.fspath(candidate_path), encoding
+
+        return path, None
 
     def _proxy_request(self) -> None:
         target_base_url: str

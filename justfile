@@ -91,6 +91,34 @@ dev *args='':
       '  gameServerUrl: window.location.origin.replace(/^http/, "ws"),' \
       '};' \
       > "$dist_runtime_config_path"
+
+    precompress_static_web_wrapper
+  }
+
+  precompress_static_web_wrapper() {
+    local dist_root="apps/web-wrapper/dist"
+
+    if command -v brotli >/dev/null 2>&1; then
+      printf 'Precompressing static assets with brotli...\n'
+      while IFS= read -r -d '' asset_path; do
+        brotli --best --force --keep "$asset_path"
+      done < <(
+        find "$dist_root" -type f \
+          \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.json' -o -name '*.svg' -o -name '*.wasm' -o -name '*.pck' \) \
+          -print0
+      )
+    fi
+
+    if command -v gzip >/dev/null 2>&1; then
+      printf 'Precompressing static assets with gzip...\n'
+      while IFS= read -r -d '' asset_path; do
+        gzip --best --force --keep "$asset_path"
+      done < <(
+        find "$dist_root" -type f \
+          \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.json' -o -name '*.svg' -o -name '*.wasm' -o -name '*.pck' \) \
+          -print0
+      )
+    fi
   }
 
   require_auth_health() {

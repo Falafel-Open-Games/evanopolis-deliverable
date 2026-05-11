@@ -1,4 +1,4 @@
-# 016 - Durable Finished-Match Result Reporting
+# Unassigned - Durable Finished-Match Result Reporting
 
 ## Status
 

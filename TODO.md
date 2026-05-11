@@ -25,7 +25,7 @@ explicitly linked from here as an active runbook.
   client over the wrapper-owned iframe bridge.
 - `apps/graphical-client/` is now a real Godot client with waiting room,
   gameplay board, action UI, energy allocation, reconnect-aware session state,
-  and a documented devlog trail through `012`.
+  and a documented devlog trail through `014`.
 
 ## Delivery Gates
 
@@ -190,10 +190,8 @@ Done when:
 - Current state: active gameplay client with waiting room, board integration,
   action controls, energy allocation, reconnect-aware session state, and a web
   export path used by the wrapper.
-- Open work: improve in-match disconnect handling and validate the real browser
-  launch/reconnect flow repeatedly.
-- Immediate next slice: in-match disconnect feedback and reconnect recovery,
-  tracked in `apps/graphical-client/docs/devlog/012.md`.
+- Open work: keep validating the real browser launch/reconnect flow repeatedly
+  and choose the next graphical-client slice when it becomes concrete.
 
 ### `deploy/` And Runbooks
 
