@@ -1,6 +1,7 @@
 # Rooms API REST Contract
 
-This document is the agreed `v0` REST contract baseline for room creation.
+This document is the agreed `v0` REST contract baseline for room creation and
+the planned durable finished-match result surface.
 
 Its purpose is to replace reliance on baked-in demo configs with runtime room
 creation while keeping the authoritative gameplay runtime in `apps/game-server`.
@@ -8,15 +9,18 @@ creation while keeping the authoritative gameplay runtime in `apps/game-server`.
 ## Scope
 
 The wrapper needs to create a room, receive a shareable `game_id`, and later
-launch players into the Godot game server. The rooms API owns room definitions.
-The game server consumes those definitions and creates live in-memory matches on
-first authenticated join.
+launch players into the Godot game server. The rooms API owns room definitions
+and is the intended durable store for finished-match result records. The game
+server consumes room definitions, creates live in-memory matches on first
+authenticated join, and remains authoritative for gameplay and match outcomes.
 
 ## Goals
 
 - Let the wrapper create a new room through a standalone REST service.
 - Return a shareable `game_id` immediately.
 - Keep the game server authoritative for live match lifecycle and gameplay.
+- Keep finished-match records durable and queryable outside the live game
+  server process.
 - Keep the first version compatible with a single in-memory game-server
   machine.
 - Freeze a narrow enough `v0` contract that wrapper work and backend work can
@@ -28,15 +32,21 @@ first authenticated join.
 - No live match status in the rooms API.
 - No dedicated start-match HTTP endpoint in the first version.
 - No payment enforcement at room creation time.
+- No shift of winner determination or live gameplay authority into the rooms
+  API.
 
 ## High-Level Architecture
 
 - `auth-server` proves player identity and, later, payment eligibility.
 - `rooms-api` creates and returns room definitions keyed by `game_id`.
+- `rooms-api` is the intended persistent API surface for finished-match result
+  lookup by `game_id`.
 - `web-wrapper` calls the rooms API to create rooms and look them up by
   `game_id`.
 - `game-server` verifies JWTs, then reads the room definition from the rooms
   API and lazily creates a live in-memory match if needed.
+- `game-server` later writes an authoritative finished-match result record back
+  to `rooms-api` after the match ends.
 - WebSocket RPC remains the gameplay transport after the client connects to the
   game server.
 
@@ -53,6 +63,10 @@ first authenticated join.
    `GET /v0/rooms/:game_id`.
 7. If the room exists, the game server creates the live in-memory match and
    then proceeds with normal `rpc_join(game_id, player_id)` handling.
+8. When the match ends authoritatively, the game server writes the final result
+   record to the rooms API.
+9. Sponsors or operators can later query the finished result by `game_id`
+   without talking to the live gameplay runtime.
 
 ## Endpoints
 
@@ -167,6 +181,41 @@ The first implementation pass should assume:
 - The game server creates the live in-memory match lazily from the room
   definition on first valid join.
 
+## Planned Finished-Match Result Surface
+
+This result surface is planned documentation, not a statement that the current
+server already exposes it.
+
+Intended direction:
+
+- `game-server` remains the authority that decides when a match has ended
+- `rooms-api` persists the finished result keyed by `game_id`
+- sponsor/operator settlement flows read from `rooms-api`, not from live
+  in-memory gameplay state
+
+Likely write path:
+
+- internal authenticated write from `game-server` to persist a final result
+
+Likely read path:
+
+- `GET /v0/matches/:game_id/result` or equivalent sponsor/operator lookup
+
+Likely result fields:
+
+- `game_id`
+- `status`
+- `started_at`
+- `finished_at`
+- `winner_index`
+- `winner_player_id` or another settlement-safe winner identity field
+- `end_reason`
+- `player_count`
+- `turn_count`
+- `duration_seconds`
+- `final_standings`
+- final tally data needed for prize settlement or audit
+
 ## Match Start Rules
 
 Current direction:
@@ -188,6 +237,14 @@ Production direction:
 - The rooms API should not enforce payment to create a room.
 - The game server should apply payment gating at admission time, aligned with
   `../tabletop-auth`.
+
+## Match Result Persistence Boundary
+
+- The rooms API should persist finished-match result records once the game
+  server has declared the authoritative winner and end reason.
+- The rooms API should not decide live match completion on its own.
+- Sponsor-facing result lookup should read durable match-result data here
+  rather than querying the live gameplay process directly.
 
 ## Deferred Questions
 

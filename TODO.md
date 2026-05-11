@@ -164,6 +164,8 @@ Done when:
 - Current state: room creation and public lookup are implemented, tested, and
   deployable.
 - Open work: define room expiration and cleanup policy.
+- Open work: persist and expose durable finished-match result records keyed by
+  `game_id` after authoritative game-server completion.
 - Launch dependency: keep `entry_fee_amount` and room policy aligned with
   server-side admission enforcement.
 
@@ -172,6 +174,8 @@ Done when:
 - Current state: authoritative runtime, JWT verification, room-definition
   hydration, local run path, deploy path, and rules coverage are in place.
 - Open work: authoritative payment and admission enforcement at join time.
+- Open work: authoritative finished-match result reporting into `rooms-api` for
+  sponsor/operator settlement lookup by `game_id`.
 - Defer unless needed: trimming support scripts copied from migration sources.
 
 ### `apps/web-wrapper`

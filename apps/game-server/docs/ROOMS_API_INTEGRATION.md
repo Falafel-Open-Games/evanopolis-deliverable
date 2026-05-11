@@ -7,9 +7,10 @@ This document describes how `apps/game-server` depends on that API.
 
 ## Responsibility Split
 
-- `rooms-api` owns room definitions keyed by `game_id`
+- `rooms-api` owns room definitions keyed by `game_id` and is the intended
+  durable store for finished-match result records
 - `game-server` owns live in-memory matches, runtime player connectivity, ready
-  state, and gameplay authority
+  state, gameplay authority, and authoritative winner determination
 - `game-server` should not own the public room creation HTTP surface
 
 ## Expected Join Flow
@@ -21,6 +22,8 @@ This document describes how `apps/game-server` depends on that API.
 4. If the room definition exists and no live match is loaded yet, the game
    server creates the in-memory match from that definition.
 5. The game server proceeds with normal authoritative join and gameplay flow.
+6. When the match ends authoritatively, the game server should persist a final
+   result record to `rooms-api` keyed by the same `game_id`.
 
 ## Room Definition Fields Needed By `game-server`
 
@@ -39,12 +42,29 @@ The game server should not depend on `rooms-api` for:
 - turn state
 - admission state beyond room-definition existence
 
+The intended additional dependency is:
+
+- durable persistence of an already-decided finished-match result after the
+  authoritative gameplay runtime ends the match
+
 ## Payment / Admission Boundary
 
 - Payment should be enforced when players participate in a match, not when a
   room definition is created.
 - The game server remains the component that applies admission rules at join
   time, using auth and payment dependencies as needed.
+
+## Finished-Match Result Boundary
+
+- The game server should remain the only component that decides:
+  - whether the match has ended
+  - who won
+  - why the match ended
+  - what the final authoritative tallies are
+- The rooms API should persist and serve that final result after the decision
+  has already been made.
+- Sponsor/operator APIs should consult the durable result record in `rooms-api`
+  rather than interrogating live in-memory gameplay state.
 
 ## Deployment Constraint
 

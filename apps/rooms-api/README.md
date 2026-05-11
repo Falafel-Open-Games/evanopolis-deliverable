@@ -2,14 +2,16 @@
 
 ## Purpose
 
-This app is the canonical REST surface for room creation and room definition
-lookup.
+This app is the canonical REST surface for room creation, room definition
+lookup, and durable match-result lookup.
 
 In the current architecture:
 
 - `web-wrapper` creates rooms here
 - `game-server` reads room definitions here on first authenticated join
 - `game-server` remains authoritative for live match state and gameplay
+- `rooms-api` is the intended persistent home for finished-match result records
+  keyed by `game_id`
 
 ## Contract
 
@@ -20,6 +22,11 @@ The current implementation provides:
 - authenticated `POST /v0/rooms`
 - public `GET /v0/rooms/:game_id`
 - `GET /healthz` for smoke checks
+
+Planned next contract surface:
+
+- internal match-result writes from `game-server`
+- sponsor/operator-facing finished-match result lookup by `game_id`
 
 The current room contract includes:
 
@@ -38,6 +45,15 @@ The public room lookup response currently returns:
 - `player_count`
 - optional `experimental`
 - `created_at`
+
+Planned finished-match result data should include:
+
+- `game_id`
+- finished status and `finished_at`
+- winner identity for settlement use
+- end reason
+- duration / turn-count summary
+- final standings and relevant end-of-match tallies
 
 ## Local Run
 
@@ -103,20 +119,28 @@ variables alongside `AUTH_BASE_URL`.
 
 ## Relationship To `game-server`
 
-- `rooms-api` owns room definitions
+- `rooms-api` owns room definitions and durable finished-match result records
 - `game-server` should lazily instantiate an in-memory match from a room
   definition when the first authenticated player joins with a valid `game_id`
+- `game-server` remains authoritative for live match state, winner
+  determination, and final authoritative match outcomes
 - `game-server` should not depend on `rooms-api` for turn state, ready state,
   or other live match data
+- `rooms-api` should not become the authority that decides whether a live match
+  is finished; it should persist the authoritative result after `game-server`
+  declares it
 
 ## Remaining Work
 
 Active delivery tracking now lives in the repo root
 [TODO.md](../../TODO.md).
 
-For this app, the live open item is keeping room policy and `entry_fee_amount`
-aligned with authoritative server-side admission enforcement and any final room
-lifecycle decision.
+For this app, the live open items are:
+
+- keeping room policy and `entry_fee_amount` aligned with authoritative
+  server-side admission enforcement
+- defining the durable finished-match result contract that `game-server` will
+  write and sponsors/operators will read
 
 For the current repo-level local path, see
 [docs/runbooks/local-stack.md](../../docs/runbooks/local-stack.md).
