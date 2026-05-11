@@ -2,6 +2,9 @@ class_name Pawn
 extends Node3D
 
 const PlayerIdentityCardView = preload("res://scripts/app/player_identity_card.gd")
+const STEP_ARC_HEIGHT: float = 0.4
+const STEP_DURATION_SECONDS: float = 0.3
+const STEP_PAUSE_SECONDS: float = 0.1
 
 var player_index: int = -1
 var color_id: int = PlayerIdentityCardView.DEFAULT_COLOR_ID
@@ -10,6 +13,9 @@ var _mesh_instance: MeshInstance3D = null
 var _material_templates_by_color_id: Array[Material] = []
 var _material_instances_by_color_id: Array[Material] = []
 var _fallback_material_instance: StandardMaterial3D = null
+var _movement_tween: Tween = null
+var _movement_target_transform: Transform3D = Transform3D.IDENTITY
+var _has_movement_target: bool = false
 
 func configure(initial_player_index: int, initial_color_id: int, initial_transform: Transform3D) -> void:
     set_player_index(initial_player_index)
@@ -41,7 +47,58 @@ func set_board_position(board_position: Vector3, board_basis: Basis = Basis.IDEN
     set_board_transform(Transform3D(board_basis, board_position))
 
 func set_board_transform(board_transform: Transform3D) -> void:
+    stop_movement_animation()
     transform = board_transform
+
+func animate_board_transforms(step_transforms: Array[Transform3D]) -> void:
+    if step_transforms.is_empty():
+        return
+    stop_movement_animation()
+    if step_transforms.size() == 1:
+        transform = step_transforms[0]
+        return
+
+    _movement_target_transform = step_transforms[step_transforms.size() - 1]
+    _has_movement_target = true
+    _movement_tween = create_tween()
+    _movement_tween.set_parallel(false)
+    for step_index in range(step_transforms.size()):
+        var from_transform: Transform3D = transform if step_index == 0 else step_transforms[step_index - 1]
+        var to_transform: Transform3D = step_transforms[step_index]
+        _movement_tween.tween_method(
+            _set_arc_transform.bind(from_transform, to_transform),
+            0.0,
+            1.0,
+            STEP_DURATION_SECONDS
+        )
+        if STEP_PAUSE_SECONDS > 0.0 and step_index < step_transforms.size() - 1:
+            _movement_tween.tween_interval(STEP_PAUSE_SECONDS)
+    _movement_tween.finished.connect(_on_movement_tween_finished)
+
+func stop_movement_animation() -> void:
+    if _movement_tween == null:
+        _has_movement_target = false
+        return
+    if _movement_tween.is_running():
+        _movement_tween.kill()
+    _movement_tween = null
+    _has_movement_target = false
+
+func is_animating_to_transform(board_transform: Transform3D) -> bool:
+    if _movement_tween == null or not _has_movement_target:
+        return false
+    return _movement_target_transform.is_equal_approx(board_transform)
+
+func _set_arc_transform(progress: float, from_transform: Transform3D, to_transform: Transform3D) -> void:
+    var clamped_progress: float = clampf(progress, 0.0, 1.0)
+    var next_origin: Vector3 = from_transform.origin.lerp(to_transform.origin, clamped_progress)
+    var arc_offset: float = sin(clamped_progress * PI) * STEP_ARC_HEIGHT
+    next_origin.y += arc_offset
+    transform = Transform3D(from_transform.basis.slerp(to_transform.basis, clamped_progress), next_origin)
+
+func _on_movement_tween_finished() -> void:
+    _movement_tween = null
+    _has_movement_target = false
 
 func _duplicate_template_material(template_material: Material) -> StandardMaterial3D:
     var duplicated_material: StandardMaterial3D = null

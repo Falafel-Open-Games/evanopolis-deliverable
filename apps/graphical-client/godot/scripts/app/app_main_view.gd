@@ -17,6 +17,7 @@ var _gameplay_event_log_messages: Array = []
 var _gameplay_pawn_positions: Dictionary = { }
 var _gameplay_tile_owner_indices: Dictionary = { }
 var _game_root: Node3D = null
+var _last_incremental_pawn_positions: Dictionary = { }
 
 @onready var waiting_room_view: Control = $WaitingRoomMount/WaitingRoomRoot
 @onready var background_texture: TextureRect = $BackgroundTexture
@@ -47,6 +48,7 @@ func _ready() -> void:
     assert(session_node.has_signal("gameplay_player_states_changed"))
     assert(session_node.has_signal("gameplay_event_log_changed"))
     assert(session_node.has_signal("gameplay_pawn_positions_changed"))
+    assert(session_node.has_signal("gameplay_pawn_position_changed"))
     assert(session_node.has_signal("gameplay_tile_ownership_changed"))
     assert(session_node.has_method("get_session_state"))
     assert(session_node.has_method("get_waiting_room_state"))
@@ -83,6 +85,7 @@ func _ready() -> void:
     session_node.connect("gameplay_player_states_changed", Callable(self, "_on_gameplay_player_states_changed"))
     session_node.connect("gameplay_event_log_changed", Callable(self, "_on_gameplay_event_log_changed"))
     session_node.connect("gameplay_pawn_positions_changed", Callable(self, "_on_gameplay_pawn_positions_changed"))
+    session_node.connect("gameplay_pawn_position_changed", Callable(self, "_on_gameplay_pawn_position_changed"))
     session_node.connect("gameplay_tile_ownership_changed", Callable(self, "_on_gameplay_tile_ownership_changed"))
 
     _boot_state = boot_node.call("get_boot_state")
@@ -121,8 +124,21 @@ func _on_gameplay_event_log_changed(messages: Array) -> void:
     _sync_gameplay_event_log()
 
 func _on_gameplay_pawn_positions_changed(tile_positions_by_player_index: Dictionary) -> void:
+    if _last_incremental_pawn_positions.hash() == tile_positions_by_player_index.hash() and _last_incremental_pawn_positions == tile_positions_by_player_index:
+        _gameplay_pawn_positions = tile_positions_by_player_index
+        _last_incremental_pawn_positions.clear()
+        return
     _gameplay_pawn_positions = tile_positions_by_player_index
+    _last_incremental_pawn_positions.clear()
     _sync_gameplay_pawn_positions()
+
+func _on_gameplay_pawn_position_changed(player_index: int, tile_index: int) -> void:
+    _gameplay_pawn_positions[player_index] = tile_index
+    _last_incremental_pawn_positions = _gameplay_pawn_positions.duplicate(true)
+    if _game_root == null:
+        return
+    _game_root.call("set_pawn_tile_position", player_index, tile_index)
+    _debug_print_gameplay_state("pawn_position")
 
 func _on_gameplay_tile_ownership_changed(tile_owner_indices_by_tile_index: Dictionary) -> void:
     _gameplay_tile_owner_indices = tile_owner_indices_by_tile_index

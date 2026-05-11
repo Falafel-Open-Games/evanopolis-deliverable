@@ -39,6 +39,7 @@ signal gameplay_turn_state_changed(turn_state: Dictionary)
 signal gameplay_player_states_changed(states: Array)
 signal gameplay_event_log_changed(messages: Array)
 signal gameplay_pawn_positions_changed(tile_positions_by_player_index: Dictionary)
+signal gameplay_pawn_position_changed(player_index: int, tile_index: int)
 signal gameplay_tile_ownership_changed(tile_owner_indices_by_tile_index: Dictionary)
 
 enum SessionPhase {
@@ -1038,6 +1039,7 @@ func rpc_pawn_moved(_seq: int, _from_tile: int, to_tile: int, _passed_tiles: Arr
     _player_tile_positions[_current_turn_player_index] = to_tile
     _player_landing_sequences[_current_turn_player_index] = _next_landing_sequence
     _next_landing_sequence += 1
+    gameplay_pawn_position_changed.emit(_current_turn_player_index, to_tile)
     _emit_gameplay_pawn_positions()
     _emit_gameplay_player_states()
     _debug_print_authoritative_gameplay_state("pawn_moved")

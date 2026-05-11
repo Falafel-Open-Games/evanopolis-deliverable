@@ -11,6 +11,7 @@ const OFFBOARD_STAGING_TRANSFORM: Transform3D = Transform3D(
     Basis.IDENTITY,
     Vector3(0.0, -1000.0, 0.0)
 )
+const MAX_ANIMATED_TILE_STEPS: int = 18
 
 @onready var initial_positions: Node3D = get_node(^"InitialPositions")
 @onready var pawn_instances: Node3D = get_node(^"PawnInstances")
@@ -91,9 +92,10 @@ func set_pawn_transform(player_index: int, board_transform: Transform3D) -> void
 func set_pawn_tile_index(player_index: int, tile_index: int) -> void:
     assert(tile_index >= 0)
     ensure_pawn(player_index)
+    var previous_tile_index: int = int(_authoritative_tile_positions_by_player_index.get(player_index, -1))
     _record_landing_sequence_if_tile_changed(player_index, tile_index)
     _authoritative_tile_positions_by_player_index[player_index] = tile_index
-    _apply_authoritative_tile_positions()
+    _apply_authoritative_tile_positions(player_index, previous_tile_index)
 
 func sync_authoritative_tile_positions(tile_positions_by_player_index: Dictionary) -> void:
     _sync_landing_sequences(tile_positions_by_player_index)
@@ -127,8 +129,12 @@ func _spawn_transform_for_player(player_index: int, _color_id: int) -> Transform
         return get_tile_transform(tile_index)
     return OFFBOARD_STAGING_TRANSFORM
 
-func _apply_authoritative_tile_positions() -> void:
+func _apply_authoritative_tile_positions(
+    animated_player_index: int = -1,
+    previous_tile_index: int = -1
+) -> void:
     var player_indices_by_tile_index: Dictionary = _player_indices_by_tile_index()
+    var target_transforms_by_player_index: Dictionary = { }
     for tile_index_variant in player_indices_by_tile_index.keys():
         var tile_index: int = int(tile_index_variant)
         var player_indices: Array = player_indices_by_tile_index[tile_index_variant]
@@ -142,7 +148,18 @@ func _apply_authoritative_tile_positions() -> void:
             var player_index: int = int(player_indices[stack_index])
             var stacked_transform: Transform3D = tile_transform
             stacked_transform.origin += tile_up * _pawn_stack_height * stack_index
-            set_pawn_transform(player_index, stacked_transform)
+            target_transforms_by_player_index[player_index] = stacked_transform
+
+    for player_index_variant in target_transforms_by_player_index.keys():
+        var player_index: int = int(player_index_variant)
+        var target_transform: Transform3D = target_transforms_by_player_index[player_index_variant]
+        var pawn: Pawn = _pawns_by_player_index.get(player_index, null) as Pawn
+        if pawn != null and pawn.is_animating_to_transform(target_transform):
+            continue
+        if player_index == animated_player_index:
+            _animate_pawn_to_tile(player_index, previous_tile_index, target_transform)
+            continue
+        set_pawn_transform(player_index, target_transform)
 
 func _player_indices_by_tile_index() -> Dictionary:
     var player_indices_by_tile_index: Dictionary = { }
@@ -190,6 +207,70 @@ func _record_landing_sequence_if_tile_changed(player_index: int, next_tile_index
         return
     _landing_sequence_by_player_index[player_index] = _next_landing_sequence
     _next_landing_sequence += 1
+
+func _animate_pawn_to_tile(player_index: int, previous_tile_index: int, target_transform: Transform3D) -> void:
+    var pawn: Pawn = _pawns_by_player_index.get(player_index, null) as Pawn
+    if pawn == null:
+        return
+    var target_tile_index: int = int(_authoritative_tile_positions_by_player_index.get(player_index, -1))
+    if previous_tile_index < 0 or previous_tile_index == target_tile_index:
+        set_pawn_transform(player_index, target_transform)
+        return
+    var step_tile_indices: Array[int] = _forward_tile_path(previous_tile_index, target_tile_index)
+    if step_tile_indices.is_empty():
+        set_pawn_transform(player_index, target_transform)
+        return
+
+    var step_transforms: Array[Transform3D] = []
+    for step_index in range(step_tile_indices.size()):
+        var step_tile_index: int = step_tile_indices[step_index]
+        var step_transform: Transform3D = _step_tile_transform(step_tile_index)
+        if step_index == step_tile_indices.size() - 1:
+            step_transform = target_transform
+        step_transforms.append(step_transform)
+    pawn.animate_board_transforms(step_transforms)
+
+func _forward_tile_path(previous_tile_index: int, target_tile_index: int) -> Array[int]:
+    var path: Array[int] = []
+    if _tile_transforms_by_index.is_empty():
+        return path
+    var tile_count: int = _tile_transforms_by_index.size()
+    if previous_tile_index < 0 or target_tile_index < 0:
+        return path
+    var current_tile_index: int = previous_tile_index
+    for _step in range(mini(tile_count, MAX_ANIMATED_TILE_STEPS)):
+        current_tile_index = (current_tile_index + 1) % tile_count
+        path.append(current_tile_index)
+        if current_tile_index == target_tile_index:
+            return path
+    path.clear()
+    return path
+
+func _base_tile_transform(tile_index: int) -> Transform3D:
+    var tile_transform: Transform3D = get_tile_transform(tile_index)
+    var tile_up: Vector3 = tile_transform.basis.y.normalized()
+    tile_transform.origin += tile_up * _tile_height_offset(tile_index)
+    return tile_transform
+
+func _step_tile_transform(tile_index: int) -> Transform3D:
+    var tile_transform: Transform3D = _base_tile_transform(tile_index)
+    var occupant_count: int = _occupant_count_for_tile(tile_index)
+    if occupant_count <= 0:
+        return tile_transform
+    var tile_up: Vector3 = tile_transform.basis.y.normalized()
+    tile_transform.origin += tile_up * _pawn_stack_height * occupant_count
+    return tile_transform
+
+func _occupant_count_for_tile(tile_index: int) -> int:
+    var occupant_count: int = 0
+    for player_index_variant in _authoritative_tile_positions_by_player_index.keys():
+        var player_index: int = int(player_index_variant)
+        if not _pawns_by_player_index.has(player_index):
+            continue
+        if int(_authoritative_tile_positions_by_player_index.get(player_index_variant, -1)) != tile_index:
+            continue
+        occupant_count += 1
+    return occupant_count
 
 func _landing_sequence_for_player(player_index: int) -> int:
     return int(_landing_sequence_by_player_index.get(player_index, -1))
