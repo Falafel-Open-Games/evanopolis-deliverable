@@ -18,6 +18,7 @@ var _gameplay_pawn_positions: Dictionary = { }
 var _gameplay_tile_owner_indices: Dictionary = { }
 var _game_root: Node3D = null
 var _last_incremental_pawn_positions: Dictionary = { }
+var _last_incremental_dice_values: Array[int] = []
 
 @onready var waiting_room_view: Control = $WaitingRoomMount/WaitingRoomRoot
 @onready var background_texture: TextureRect = $BackgroundTexture
@@ -49,6 +50,7 @@ func _ready() -> void:
     assert(session_node.has_signal("gameplay_event_log_changed"))
     assert(session_node.has_signal("gameplay_pawn_positions_changed"))
     assert(session_node.has_signal("gameplay_pawn_position_changed"))
+    assert(session_node.has_signal("gameplay_dice_rolled"))
     assert(session_node.has_signal("gameplay_tile_ownership_changed"))
     assert(session_node.has_method("get_session_state"))
     assert(session_node.has_method("get_waiting_room_state"))
@@ -86,6 +88,7 @@ func _ready() -> void:
     session_node.connect("gameplay_event_log_changed", Callable(self, "_on_gameplay_event_log_changed"))
     session_node.connect("gameplay_pawn_positions_changed", Callable(self, "_on_gameplay_pawn_positions_changed"))
     session_node.connect("gameplay_pawn_position_changed", Callable(self, "_on_gameplay_pawn_position_changed"))
+    session_node.connect("gameplay_dice_rolled", Callable(self, "_on_gameplay_dice_rolled"))
     session_node.connect("gameplay_tile_ownership_changed", Callable(self, "_on_gameplay_tile_ownership_changed"))
 
     _boot_state = boot_node.call("get_boot_state")
@@ -139,6 +142,13 @@ func _on_gameplay_pawn_position_changed(player_index: int, tile_index: int) -> v
         return
     _game_root.call("set_pawn_tile_position", player_index, tile_index)
     _debug_print_gameplay_state("pawn_position")
+
+func _on_gameplay_dice_rolled(die_1: int, die_2: int) -> void:
+    _last_incremental_dice_values = [die_1, die_2]
+    if _game_root == null:
+        return
+    _game_root.call("present_dice_roll", die_1, die_2)
+    _debug_print_gameplay_state("dice_rolled")
 
 func _on_gameplay_tile_ownership_changed(tile_owner_indices_by_tile_index: Dictionary) -> void:
     _gameplay_tile_owner_indices = tile_owner_indices_by_tile_index
@@ -290,11 +300,12 @@ func _sync_gameplay_turn_info() -> void:
         int(turn_state.get("current_player_index", -1)),
         bool(turn_state.get("is_match_finished", false))
     )
-    _game_root.call(
-        "set_dice_values",
-        int(turn_state.get("die_1", 6)),
-        int(turn_state.get("die_2", 6))
-    )
+    var die_1: int = int(turn_state.get("die_1", 6))
+    var die_2: int = int(turn_state.get("die_2", 6))
+    if _last_incremental_dice_values.size() == 2 and _last_incremental_dice_values[0] == die_1 and _last_incremental_dice_values[1] == die_2:
+        _last_incremental_dice_values.clear()
+    else:
+        _game_root.call("set_dice_values", die_1, die_2)
     _game_root.call(
         "set_turn_action_state",
         bool(turn_state.get("can_roll_dice", false)),

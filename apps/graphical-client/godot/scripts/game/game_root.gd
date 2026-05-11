@@ -4,6 +4,7 @@ extends Node3D
 const TopBarView = preload("res://scripts/game/hud/top_bar.gd")
 const PlayersListPanelView = preload("res://scripts/game/hud/players_list_panel.gd")
 const PawnCollectionView = preload("res://scripts/game/pawns/pawn_collection.gd")
+const DicePresenter = preload("res://scripts/game/board/dice_presenter.gd")
 const EventLogPanelView = preload("res://scripts/game/hud/event_log_panel.gd")
 const EnergyAllocationScript = preload("res://scripts/game/hud/energy_allocation.gd")
 const TurnActionsScript = preload("res://scripts/game/hud/turn_actions.gd")
@@ -50,6 +51,8 @@ var _top_tile_materials_by_suffix: Dictionary = { }
 var _owner_tile_nodes_by_index: Dictionary = { }
 var _owner_tile_original_transforms_by_index: Dictionary = { }
 var _owner_tile_heights_by_index: Array[float] = []
+var _pending_pawn_moves: Array[Dictionary] = []
+var _dice_presenter: DicePresenter = null
 
 func _ready() -> void:
     assert(board_root)
@@ -67,6 +70,10 @@ func _ready() -> void:
     assert(top_bar)
     assert(players_list_panel)
     assert(event_log_panel)
+    _dice_presenter = DicePresenter.new()
+    add_child(_dice_presenter)
+    _dice_presenter.configure(die_a, die_b, Callable(self, "_basis_for_face_up"))
+    _dice_presenter.presentation_finished.connect(_on_dice_roll_presentation_finished)
     pawn_collection.bind_board_tiles(land_tiles_root)
     _capture_tile_stack_nodes()
     _apply_property_stack_visuals()
@@ -104,8 +111,13 @@ func set_dice_values(die_1: int, die_2: int) -> void:
     if not is_node_ready():
         call_deferred("set_dice_values", die_1, die_2)
         return
-    _set_die_face_up(die_a, die_1)
-    _set_die_face_up(die_b, die_2)
+    _dice_presenter.set_dice_values(die_1, die_2)
+
+func present_dice_roll(die_1: int, die_2: int) -> void:
+    if not is_node_ready():
+        call_deferred("present_dice_roll", die_1, die_2)
+        return
+    _dice_presenter.present_dice_roll(die_1, die_2)
 
 func set_player_states(player_states: Array) -> void:
     if not is_node_ready():
@@ -187,6 +199,12 @@ func set_pawn_tile_positions(tile_positions_by_player_index: Dictionary) -> void
 func set_pawn_tile_position(player_index: int, tile_index: int) -> void:
     if not is_node_ready():
         call_deferred("set_pawn_tile_position", player_index, tile_index)
+        return
+    if _dice_presenter.is_presenting():
+        _pending_pawn_moves.append({
+            "player_index": player_index,
+            "tile_index": tile_index,
+        })
         return
     pawn_collection.set_pawn_tile_index(player_index, tile_index)
 
@@ -508,3 +526,17 @@ func _on_pay_toll_pressed() -> void:
 
 func _on_end_turn_pressed() -> void:
     end_turn_requested.emit()
+
+func _on_dice_roll_presentation_finished(_die_1: int, _die_2: int) -> void:
+    _flush_pending_pawn_moves()
+
+func _flush_pending_pawn_moves() -> void:
+    if _pending_pawn_moves.is_empty():
+        return
+    var queued_moves: Array[Dictionary] = _pending_pawn_moves.duplicate(true)
+    _pending_pawn_moves.clear()
+    for queued_move in queued_moves:
+        pawn_collection.set_pawn_tile_index(
+            int(queued_move.get("player_index", -1)),
+            int(queued_move.get("tile_index", -1))
+        )

@@ -40,6 +40,7 @@ signal gameplay_player_states_changed(states: Array)
 signal gameplay_event_log_changed(messages: Array)
 signal gameplay_pawn_positions_changed(tile_positions_by_player_index: Dictionary)
 signal gameplay_pawn_position_changed(player_index: int, tile_index: int)
+signal gameplay_dice_rolled(die_1: int, die_2: int)
 signal gameplay_tile_ownership_changed(tile_owner_indices_by_tile_index: Dictionary)
 
 enum SessionPhase {
@@ -1023,6 +1024,7 @@ func rpc_dice_rolled(_seq: int, die_1: int, die_2: int, total: int) -> void:
     _has_rolled_current_turn = true
     _last_die_1 = die_1
     _last_die_2 = die_2
+    gameplay_dice_rolled.emit(die_1, die_2)
     _append_gameplay_event_log_message(
         "%s rolled %d + %d = %d" % [
             _event_log_player_name(_current_turn_player_index),
